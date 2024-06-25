@@ -1,0 +1,32 @@
+name: check code style and run tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: restore npm cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: install deps
+        run: |
+          npm ci
+      - name: check code style
+        run: |
+          npm run lint
+      - name: env config
+        run: |
+          echo "PG_DB_URL=postgresql://gamix:gamix-postgres-db@localhost:5432/gamix" >> .env && \
+          echo "PORT=8080" >> .env && \
+          echo "FRONTEND_URL=http://localhost:3030" >> .env
+      - name: run tests
+        run: |
+          npm run db:gen && npm run test
