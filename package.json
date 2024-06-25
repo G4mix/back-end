@@ -1,0 +1,52 @@
+{
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsoa spec-and-routes && ts-node -r tsconfig-paths/register src/index.ts",
+    "dev:watch": "concurrently \"nodemon -x tsoa spec-and-routes\" \"nodemon\"",
+    "db:gen": "prisma generate",
+    "db:push": "prisma db push",
+    "db:init": "npm run db:gen && npm run db:push",
+    "db:mig": "prisma migrate dev",
+    "build": "npm run db:gen && tsoa spec-and-routes && tsc && easy-tspaths",
+    "start": "node dist/index.js",
+    "test": "tsoa spec-and-routes && jest --coverage",
+    "lint": "eslint --fix ./src"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.16.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
+    "tsoa": "^6.3.1",
+    "tsyringe": "^4.8.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.14.8",
+    "@types/swagger-ui-express": "^4.1.6",
+    "@typescript-eslint/eslint-plugin": "^7.14.1",
+    "@typescript-eslint/parser": "^7.14.1",
+    "concurrently": "^8.2.2",
+    "easy-tspaths": "^1.1.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "prisma": "^5.16.0",
+    "ts-jest": "^29.1.5",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.5.2"
+  }
+}

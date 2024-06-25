@@ -1,0 +1,1 @@
+export { HelloWorldRepository } from './HelloWorldRepository'

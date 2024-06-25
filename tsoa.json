@@ -1,0 +1,32 @@
+{
+    "entryFile": "src/index.ts",
+    "noImplicitAdditionalProperties": "throw-on-extras",
+    "controllerPathGlobs": ["src/controller/**/*Controller.ts"],
+    "spec": {
+      "outputDirectory": "src/tsoa",
+      "specVersion": 3,
+      "securityDefinitions": {
+        "api": {
+          "type": "apiKey",
+          "name": "access_token",
+          "in": "query"
+        }
+      }
+    },
+    "routes": {
+      "iocModule": "src/config/ioc.ts",
+      "routesDir": "src/tsoa"
+    },
+    "compilerOptions": {
+      "baseUrl": "./",
+      "paths": {
+        "tsoa": ["node_modules/tsoa/dist"],
+        "@config": ["src/config/index.ts"],
+        "@ioc": ["src/config/ioc.ts"],
+        "@service": ["src/service/index.ts"],
+        "@repository": ["src/repository/index.ts"],
+        "@utils": ["src/utils"],
+        "@tsoa-build/*": ["src/tsoa/*"]
+      }
+    }
+  }
