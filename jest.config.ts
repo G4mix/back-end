@@ -11,7 +11,7 @@ const jestConfig: JestConfigWithTsJest = {
 	transform: {
 		'^.+\\.ts?$': 'ts-jest',
 	},
-	collectCoverageFrom: ['src/**/*.ts', '!src/app.ts', '!src/**/*.d.ts', '!**/node_modules/**', '!src/__tests__/**/*.ts', '!src/config/appLoader.ts', '!src/tsoa/**'],
+	collectCoverageFrom: ['src/**/*.ts', '!src/index.ts', '!src/**/*.d.ts', '!**/node_modules/**', '!src/__tests__/**/*.ts', '!src/tsoa/**', '!src/constants/**'],
 	coverageDirectory: 'coverage',
 	coverageReporters: ['lcov', 'text-summary'],
 	setupFilesAfterEnv: ['reflect-metadata'],

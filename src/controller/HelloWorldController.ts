@@ -14,7 +14,7 @@ export class HelloWorldController extends Controller {
 	 * Hello world message
 	 *
 	 */
-	@SuccessResponse(201)
+	@SuccessResponse(200)
 	@Get()
 	public async helloWorld() {
 		return await this.helloWorldServiceService.hello()

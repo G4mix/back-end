@@ -43,13 +43,13 @@ export class App {
 		App.instance.use(urlencoded({ extended: true }))
 		App.instance.use(json())
 		App.instance.use((req, res, next) => {
-            cors({
-                allowedHeaders: ['Authorization', 'Content-Type'],
-                exposedHeaders: '*',
-                credentials: true,
-                methods: ['OPTIONS', 'GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
-                origin: env['FRONTEND_URL']
-            })(req, res, next)
+			cors({
+				allowedHeaders: ['Authorization', 'Content-Type'],
+				exposedHeaders: '*',
+				credentials: true,
+				methods: ['OPTIONS', 'GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
+				origin: env['FRONTEND_URL']
+			})(req, res, next)
 		})
 		App.instance.disable('x-powered-by')
 	}

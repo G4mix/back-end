@@ -24,7 +24,7 @@
 			"get": {
 				"operationId": "HelloWorld",
 				"responses": {
-					"201": {
+					"200": {
 						"description": "",
 						"content": {
 							"application/json": {
