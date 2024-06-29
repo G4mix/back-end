@@ -9,13 +9,126 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  name     String  @db.VarChar(255)
-  email    String  @unique @db.VarChar(255)
-  password String  @db.VarChar(60)
-  verified Boolean @default(false)
-  picture  String? @db.VarChar(2048)
+  id            String      @id @default(uuid())
+  username      String      @db.VarChar(50)
+  email         String      @unique @db.VarChar(320)
+  password      String      @db.VarChar(60)
+  verified      Boolean     @default(false)
+  loginAttempts Int         @default(0)
+  blockedUntil  DateTime?
+
+  userProfileId String      @unique
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
+
+  viewed        View[]
+  liked         Like[]
+
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+}
+
+model UserProfile {
+  id          String   @id @default(uuid())
+  displayName String?  @db.VarChar(300)
+  icon        String?  @db.VarChar(2048)
+
+  user        User?
+  posts       Post[]
+
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model Post {
+  id         String      @id @default(uuid())
+  title      String?     @db.VarChar(70)
+  content    String?     @db.VarChar(700)
+  authorId   String
+
+  author     UserProfile @relation(fields: [authorId], references: [id])
+  views      View[]
+  likes      Like[]
+  images     Image[]
+  links      Link[]
+  tags       Tag[]
+
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+
+  @@index([authorId])
+}
+
+model Image {
+  id     String @id @default(uuid())
+  src    String @db.VarChar(2048)
+  alt    String @db.VarChar(255)
+  width  Int
+  height Int
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@index([postId])
+}
+
+model Tag {
+  id     String @id @default(uuid())
+  name   String @db.VarChar(50)
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@index([postId])
+}
+
+model Link {
+  id     String @id @default(uuid())
+  url    String @db.VarChar(50)
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@index([postId])
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  content    String   @db.VarChar(200)
+
+  likes      Like[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+model View {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id])
+  
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model Like {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+
+  postId     String?
+  post       Post?    @relation(fields: [postId], references: [id])
+
+  commentId  String?
+  comment    Comment? @relation(fields: [commentId], references: [id])
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([postId])
+  @@index([commentId])
+  @@index([userId])
 }
