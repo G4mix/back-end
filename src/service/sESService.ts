@@ -1,16 +1,15 @@
 import {
 	SESClient,
 	SendTemplatedEmailCommand,
-	SendCustomVerificationEmailCommand,
-	GetIdentityVerificationAttributesCommand
+	GetIdentityVerificationAttributesCommand,
+	VerifyEmailIdentityCommand
 } from '@aws-sdk/client-ses'
 import { inject, injectable, singleton } from 'tsyringe'
 
 export type Email = {
-	source: string;
 	template: string;
 	receiver: string;
-	data: { [key: string]: string };
+	data?: { [key: string]: string };
 }
 
 export type EmailStatus = 'Pending' | 'Success' | 'Failed' | 'TemporaryFailure' | 'NotStarted' | undefined
@@ -40,10 +39,10 @@ export class SESService {
 		}
 	}
 
-	public async verifyIdentity({ receiver, template }: {
-		receiver: string; template: string
+	public async verifyIdentity({ receiver }: {
+		receiver: string;
 	}): Promise<void | 'ERROR_WHILE_CHECKING_EMAIL'> {
-		const email = new SendCustomVerificationEmailCommand({ EmailAddress: receiver, TemplateName: template  })
+		const email = new VerifyEmailIdentityCommand({ EmailAddress: receiver  })
 		try {
 			await this.ses.send(email)
 		} catch (err) {
