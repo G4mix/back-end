@@ -39,7 +39,8 @@
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
       "forceConsistentCasingInFileNames": true,
-      "useUnknownInCatchVariables": true
+      "useUnknownInCatchVariables": true,
+      "typeRoots": ["node_modules", "src/types"]
     },
     "exclude": ["node_modules"],
     "include": ["./src/**/*.ts"]
