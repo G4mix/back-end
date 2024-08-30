@@ -1,1 +1,1 @@
-export { HelloWorldService } from './HelloWorldService'
+export { HelloWorldService } from './authService'
