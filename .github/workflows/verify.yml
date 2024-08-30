@@ -26,7 +26,13 @@ jobs:
         run: |
           echo "PG_DB_URL=postgresql://gamix:gamix-postgres-db@localhost:5432/gamix" >> .env && \
           echo "PORT=8080" >> .env && \
-          echo "FRONTEND_URL=http://localhost:3030" >> .env
+          echo "FRONTEND_URL=http://localhost:3030" >> .env && \
+	        echo "AWS_S3_KEY=dawdwadwa"  >> .env && \
+          echo "AWS_S3_SECRET=dawdwadwa"  >> .env && \
+          echo "AWS_SES_KEY=dwadwadwa"  >> .env && \
+          echo "AWS_SES_SECRET=dwadwadwa"  >> .env && \
+          echo "NODE_ENV=development"  >> .env && \
+          echo "JWT_SIGNING_KEY_SECRET=dwadwawajmdoiwandçiwand.dwad21cxajddwaikdawid.dwawadwadwaidjiwajdwajdwa"  >> .env
       - name: run tests
         run: |
           npm run db:gen && npm run test
