@@ -60,7 +60,12 @@ export class AuthService {
 
 		if (!BCryptEncoder.compare(password, user.password)) {
 			attempts++
-			await this.userRepository.update({ loginAttempts: attempts, email, id: user.id })
+			await this.userRepository.update({
+				loginAttempts: attempts,
+				email,
+				id: user.id,
+				blockedUntil: attempts === 5 ? new Date(now.getTime() + 30 * 60 * 1000) : null
+			})
 			if (attempts === 5) {
 				// const sended = await this.sesService.sendEmail({
 				// 	template: 'BlockedAccount',

@@ -130,7 +130,7 @@
 						}
 					}
 				},
-				"description": "Signup the user in the system",
+				"description": "Update the user in the system",
 				"tags": [
 					"User"
 				],
@@ -161,6 +161,29 @@
 						}
 					}
 				}
+			},
+			"delete": {
+				"operationId": "Delete",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Delete the user of the system",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
 			}
 		}
 	},
