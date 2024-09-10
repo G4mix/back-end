@@ -14,4 +14,8 @@ export class UserService {
 		const user = await this.userRepository.update(data)
 		return { token: JwtManager.generateToken({ sub: user.id, user }) }
 	}
+
+	public async delete({ id }: { id: string; }) {
+		return await this.userRepository.delete({ id })
+	}
 }

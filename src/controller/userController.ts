@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, Body, SuccessResponse, Patch, Request, Security } from 'tsoa'
+import { Route, Tags, Controller, Body, SuccessResponse, Patch, Request, Security, Delete } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { UserService } from '@service/userService'
 import { TsoaRequest } from 'src/types/tsoa'
@@ -13,7 +13,7 @@ export class UserController extends Controller {
 	}
 
 	/**
-	 * Signup the user in the system
+	 * Update the user in the system
 	 *
 	 */
 	@SuccessResponse(200)
@@ -34,5 +34,18 @@ export class UserController extends Controller {
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		this.setHeader('Authorization', `Bearer ${res.token}`)
 		return
+	}
+
+	/**
+	 * Delete the user of the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Delete()
+	@Security('jwt', [])
+	public async delete(@Request() req: TsoaRequest) {
+		const res = await this.userService.delete({ id: req.user.sub })
+		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+		return res
 	}
 }

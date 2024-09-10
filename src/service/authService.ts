@@ -2,8 +2,8 @@ import { JwtManager, BCryptEncoder } from '@utils'
 import { injectable, singleton } from 'tsyringe'
 import { UserRepository } from '@repository'
 import { AuthInput } from 'auth'
-import { EmailStatus, SESService } from './sESService'
-import { User } from '@prisma/client'
+import { SESService } from './sESService'
+import { ApiMessage } from '@constants'
 
 @injectable()
 @singleton()
@@ -34,11 +34,53 @@ export class AuthService {
 		}
 	}
 
-	public async signin() {
-	// public async signin({ email, password }: { email: string; password: string; }) {
-		// const user = await this.userRepository.findByEmail({ email })
-		// if (!user) return 'USER_NOT_FOUND'
+	public async signin({ email, password }: { email: string; password: string; }) {
+		let user = await this.userRepository.findByEmail({ email })
+		if (!user) return 'USER_NOT_FOUND'
+		if (!user.verified) {
+			const res = await this.sesService.checkEmailStatus(email)
+			if (typeof res === 'object' && res.status === 'Success') {
+				user = await this.userRepository.update({ id: user.id, verified: true })
+				await this.sesService.sendEmail({ template: 'SignUp', receiver: user.email })
+			}
+		}
 
+		const now = new Date()
+
+		let attempts = user.loginAttempts
+		const moreThanFiveAttempts = user.loginAttempts >= 5
+		const blockedByTime = (user.blockedUntil != null && user.blockedUntil.getTime() > now.getTime())
+
+		if (moreThanFiveAttempts) {
+			if (blockedByTime) return 'EXCESSIVE_LOGIN_ATTEMPTS'
+			attempts = 0
+			await this.userRepository.update({ id: user.id, loginAttempts: attempts })
+		}
+		
+
+		if (!BCryptEncoder.compare(password, user.password)) {
+			attempts++
+			await this.userRepository.update({ loginAttempts: attempts, email, id: user.id })
+			if (attempts === 5) {
+				// const sended = await this.sesService.sendEmail({
+				// 	template: 'BlockedAccount',
+				// 	receiver: email,
+				// 	token: JwtManager.generateToken({ sub: user.id, verifiedEmail: true, ipAddress: ip }),
+				// 	ipAddress: ip
+				// })
+				// if (typeof sended === 'string') return sended
+			}
+			const possibleErrors: ApiMessage[] = [
+				'WRONG_PASSWORD_ONCE',
+				'WRONG_PASSWORD_TWICE',
+				'WRONG_PASSWORD_THREE_TIMES',
+				'WRONG_PASSWORD_FOUR_TIMES',
+				'WRONG_PASSWORD_FIVE_TIMES',
+			]
+			return possibleErrors[attempts - 1]
+		}
+		user = await this.userRepository.update({ id: user.id, loginAttempts: 0 })
+		return { token: JwtManager.generateToken({ sub: user.id, user }) }
 	}
 
 	public async verifyEmail() {}
@@ -46,24 +88,4 @@ export class AuthService {
 	public async forgetPassword() {}
 
 	public async recoverPassword() {}
-
-	private async handleUserNotVerified({ email, id }: User) {
-		const res = await this.sesService.checkEmailStatus(email)
-		if (typeof res === 'string') return res
-		if (res.status === 'Success') return await this.handleVerifiedInSES({ id })
-		return await this.handleNotVerifiedInSES({ email, status: res.status as EmailStatus })
-	}
-
-	private async handleVerifiedInSES({ id }: { id: string }) {
-		const user = await this.userRepository.update({ id, verified: true })
-		await this.sesService.sendEmail({ template: 'SignUp', receiver: user.email })
-		return user
-	}
-
-	private async handleNotVerifiedInSES({ status, email }: { status: EmailStatus; email: string; }) {
-		if (status === 'Pending') return 'NEED_TO_VERIFY'
-		const verified = await this.sesService.verifyIdentity({ receiver: email })
-		if (typeof verified === 'string') return verified
-		return 'SENT_AGAIN_NEED_TO_VERIFY'
-	}
 }

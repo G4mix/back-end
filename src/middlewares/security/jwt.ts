@@ -17,12 +17,9 @@ export const jwtMiddleware = async ({
 	} catch (err) {
 		return sendErrorMessage({ res })
 	}
-	if (!claims['verifiedEmail']) return sendErrorMessage({ res, message: 'EMAIL_NOT_VERIFIED'})
 		
 	const pg = container.resolve<PrismaClient>('PostgresqlClient')
-	const user = await pg.user.findUnique({
-		where: { id: claims['sub'] }
-	})
+	const user = await pg.user.findUnique({ where: { id: claims['sub'] } })
 	if (!user) return sendErrorMessage({ res, message: 'USER_NOT_FOUND' })
 
 	if (JwtManager.isTokenExpiringIn20Minutes(token) && !res.hasHeader('Authorization')) {

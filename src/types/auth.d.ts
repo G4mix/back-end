@@ -12,5 +12,5 @@ export type UpdateInput = Id & Partial<{
     password: string;
     verified: boolean;
     loginAttempts: number;
-    blockedUntil: Date;
+    blockedUntil: Date | null;
 }>

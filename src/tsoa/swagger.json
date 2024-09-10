@@ -25,6 +25,22 @@
 					"email"
 				],
 				"type": "object"
+			},
+			"Pick_AuthInput.email-or-password_": {
+				"properties": {
+					"email": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"email",
+					"password"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
 			}
 		},
 		"securitySchemes": {
@@ -39,7 +55,7 @@
 		"contact": {}
 	},
 	"paths": {
-		"/api/v1/auth": {
+		"/api/v1/auth/signup": {
 			"post": {
 				"operationId": "Signup",
 				"responses": {
@@ -64,6 +80,37 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/AuthInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/signin": {
+			"post": {
+				"operationId": "Signin",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Signin the user in the system",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Pick_AuthInput.email-or-password_"
 							}
 						}
 					}

@@ -16,7 +16,8 @@ export class UserRepository {
 
 	public async findByEmail({ email }: { email: string; }) {
 		return await this.pg.user.findUnique({
-			where: { email }
+			where: { email },
+			include: { userProfile: true }
 		})
 	}
 
