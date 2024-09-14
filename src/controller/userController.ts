@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, Body, SuccessResponse, Patch, Request, Security, Delete } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { UserService } from '@service/userService'
 import { TsoaRequest } from 'src/types/tsoa'
@@ -21,14 +21,13 @@ export class UserController extends Controller {
 	@Security('jwt', [])
 	public async update(
 		@Request() req: TsoaRequest,
-		@Body() body: {
-			username?: string;
-			email?: string;
-			password?: string;
-		}
+		@FormField() username?: string,
+		@FormField() email?: string,
+		@FormField() password?: string,
+		@UploadedFile() icon?: Express.Multer.File
 	) {
 		const data = {
-			id: req.user.sub, ...body
+			id: req.user.sub, username, email, password, icon
 		}
 		const res = await this.userService.update(data)
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)

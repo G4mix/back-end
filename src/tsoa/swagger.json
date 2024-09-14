@@ -141,22 +141,26 @@
 				],
 				"parameters": [],
 				"requestBody": {
-					"required": true,
+					"required": false,
 					"content": {
-						"application/json": {
+						"multipart/form-data": {
 							"schema": {
+								"type": "object",
 								"properties": {
-									"password": {
+									"username": {
 										"type": "string"
 									},
 									"email": {
 										"type": "string"
 									},
-									"username": {
+									"password": {
 										"type": "string"
+									},
+									"icon": {
+										"type": "string",
+										"format": "binary"
 									}
-								},
-								"type": "object"
+								}
 							}
 						}
 					}

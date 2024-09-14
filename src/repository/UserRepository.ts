@@ -21,10 +21,13 @@ export class UserRepository {
 		})
 	}
 
-	public async update({ id, ...data }: Partial<UpdateInput>) {
+	public async update({ id, icon, ...data }: Partial<UpdateInput>) {
 		return await this.pg.user.update({
 			where: { id },
-			data,
+			data: {
+				...data,
+				userProfile: typeof icon === 'string' ? { update: { data: { icon } } } : undefined
+			},
 			include: { userProfile: true }
 		})
 	}
