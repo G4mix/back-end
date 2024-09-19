@@ -5,7 +5,7 @@ import { LikeService } from '@service'
 
 @injectable()
 @Route('api/v1/like')
-@Tags('User')
+@Tags('Like')
 export class LikeController extends Controller {
 	constructor(private likeService: LikeService) {
 		super()
