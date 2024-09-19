@@ -1,1 +1,2 @@
-export { UserRepository } from './UserRepository'
+export { UserRepository } from './userRepository'
+export { LikeRepository } from './likeRepository'

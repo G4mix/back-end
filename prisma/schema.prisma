@@ -20,9 +20,6 @@ model User {
   userProfileId String      @unique
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
 
-  viewed        View[]
-  liked         Like[]
-
   created_at    DateTime    @default(now())
   updated_at    DateTime    @updatedAt
 }
@@ -34,6 +31,8 @@ model UserProfile {
 
   user        User?
   posts       Post[]
+  viewed        View[]
+  liked         Like[]
 
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
@@ -43,9 +42,10 @@ model Post {
   id         String      @id @default(uuid())
   title      String?     @db.VarChar(70)
   content    String?     @db.VarChar(700)
-  authorId   String
 
+  authorId   String
   author     UserProfile @relation(fields: [authorId], references: [id])
+
   views      View[]
   likes      Like[]
   images     Image[]
@@ -108,11 +108,13 @@ model View {
   postId     String
   post       Post     @relation(fields: [postId], references: [id])
   
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-
+  userProfileId     String
+  userProfile       UserProfile     @relation(fields: [userProfileId], references: [id])
+  
+  @@unique([userProfileId, postId])
+  
   @@index([postId])
-  @@index([userId])
+  @@index([userProfileId])
 }
 
 model Like {
@@ -125,10 +127,13 @@ model Like {
   commentId  String?
   comment    Comment? @relation(fields: [commentId], references: [id])
 
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  userProfileId     String
+  userProfile       UserProfile     @relation(fields: [userProfileId], references: [id])
 
+  @@unique([userProfileId, postId])
+  @@unique([userProfileId, commentId])
+  
   @@index([postId])
   @@index([commentId])
-  @@index([userId])
+  @@index([userProfileId])
 }

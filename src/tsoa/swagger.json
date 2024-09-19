@@ -117,6 +117,48 @@
 				}
 			}
 		},
+		"/api/v1/like": {
+			"get": {
+				"operationId": "LikePost",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Like or unlike a post of a user",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "isLiked",
+						"required": true,
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/v1/user": {
 			"patch": {
 				"operationId": "Update",
