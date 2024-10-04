@@ -1,23 +1,58 @@
+import { SUPPORTED_IMAGES, MAX_SIZE } from '@constants'
 import { injectable, singleton } from 'tsyringe'
 import { PostRepository } from '@repository'
+import { S3Service } from './s3Service'
+import { env } from '@config'
+import sizeOf from 'image-size'
 
 @injectable()
 @singleton()
 export class PostService {
 	constructor(
-        private postRepository: PostRepository
+        private postRepository: PostRepository,
+				private s3Service: S3Service
 	) {}
 
 	public async createPost({
-		title, content, links, tags, images
+		userProfileId, title, content, links, tags, images
 	}: {
-		title: string;
-		content: string;
-		links: string[];
-		tags: string[];
+		userProfileId: string;
+		title?: string;
+		content?: string;
+		links?: string[];
+		tags?: string[];
 		images?: Express.Multer.File[];
 	}) {
-		return await this.postRepository.create({ page, quantity, userProfileId })
+		const uploadedImages: {
+			src: string;
+			alt: string;
+			width: number;
+			height: number;
+		}[] = []
+
+		if (images) {
+			for (const image of images) {
+				if (!Object.keys(SUPPORTED_IMAGES).includes(image.mimetype) || image.size > MAX_SIZE) continue
+
+				const postImageRes = await this.s3Service.uploadFile({
+					bucketName: env.PUBLIC_BUCKET_NAME,
+					key: `user-${userProfileId}/${image.originalname}`,
+					file: image.buffer
+				})
+
+				if (typeof postImageRes === 'object' && postImageRes.fileUrl) {
+					const { width, height } = sizeOf(image.buffer)
+					uploadedImages.push({
+						src: postImageRes.fileUrl,
+						alt: image.originalname,
+						width: width || 500,
+						height: height || 500
+					})
+				}
+			}
+		}
+
+		return await this.postRepository.create({ userProfileId, title, content, links, tags, images: uploadedImages })
 	}
 
 	public async findAllPosts({ page, quantity, userProfileId }: { page: number; quantity: number; userProfileId?: string; }) {

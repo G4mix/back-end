@@ -20,15 +20,16 @@ export class PostController extends Controller {
 	@Post()
 	@Security('jwt', [])
 	public async createPost(
-		@FormField() title: string,
-		@FormField() content: string,
-		@FormField() links: string[],
-		@FormField() tags: string[],
+		@Request() req: TsoaRequest,
+		@FormField() title?: string,
+		@FormField() content?: string,
+		// @FormField() links?: string[],
+		// @FormField() tags?: string[],
 		@UploadedFiles() images?: Express.Multer.File[]
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.createPost({
-				title, content, links, tags, images
+				userProfileId: req.user.user.userProfile.id, title, content, images
 			}),
 			this
 		)
@@ -46,7 +47,13 @@ export class PostController extends Controller {
         @Query() quantity: number,
         @Query() userProfileId?: string
 	) {
-		return ControllerUtils.handleResponse(await this.postService.findAllPosts({ page, quantity, userProfileId }), this)
+		return ControllerUtils.handleResponse(
+			await this.postService.findAllPosts({
+				page,
+				quantity,
+				userProfileId
+			}), this
+		)
 	}
 
 	/**

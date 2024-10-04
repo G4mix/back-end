@@ -7,6 +7,68 @@ import { Id } from 'general'
 export class PostRepository {
 	constructor(@inject('PostgresqlClient') private pg: PrismaClient) {}
 
+	public async create({
+		userProfileId,
+		title,
+		content,
+		links,
+		tags,
+		images
+	}: {
+		userProfileId: string;
+		title?: string;
+		content?: string;
+		links?: string[];
+		tags?: string[];
+		images: {
+			src: string;
+			alt: string;
+			width: number;
+			height: number;
+		}[];
+	}) {
+		const post = await this.pg.post.create({
+			data: {
+				author: { connect: { id: userProfileId } },
+				title,
+				content,
+				links: links && {
+					createMany: {
+						data: links.map(link => ({ url: link }))
+					}
+				},
+				tags: tags && {
+					createMany: {
+						data: tags.map(tag => ({ name: tag }))
+					}
+				},
+				images: images && {
+					createMany: {
+						data: images
+					}
+				}
+			},
+			include: {
+				images: true,
+				links: true,
+				tags: true,
+				_count: {
+					select: {
+						likes: true,
+						views: true
+					}
+				}
+			}
+		})
+		const count = post._count
+		delete (post as any)['_count']
+		return {
+			...post,
+			likesCount: count.likes,
+			viewsCount: count.views
+		}
+	}
+
 	public async findAll({
 		page, quantity, userProfileId: authorId
 	}: { page: number; quantity: number; userProfileId?: string; }) {

@@ -191,9 +191,9 @@
 				]
 			}
 		},
-		"/api/v1/user": {
-			"patch": {
-				"operationId": "Update",
+		"/api/v1/post": {
+			"post": {
+				"operationId": "CreatePost",
 				"responses": {
 					"200": {
 						"description": "",
@@ -204,9 +204,9 @@
 						}
 					}
 				},
-				"description": "Update the user in the system",
+				"description": "Create a post in the system",
 				"tags": [
-					"User"
+					"Post"
 				],
 				"security": [
 					{
@@ -221,18 +221,18 @@
 							"schema": {
 								"type": "object",
 								"properties": {
-									"username": {
+									"title": {
 										"type": "string"
 									},
-									"email": {
+									"content": {
 										"type": "string"
 									},
-									"password": {
-										"type": "string"
-									},
-									"icon": {
-										"type": "string",
-										"format": "binary"
+									"images": {
+										"items": {
+											"type": "string",
+											"format": "binary"
+										},
+										"type": "array"
 									}
 								}
 							}
@@ -240,31 +240,6 @@
 					}
 				}
 			},
-			"delete": {
-				"operationId": "Delete",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Delete the user of the system",
-				"tags": [
-					"User"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": []
-			}
-		},
-		"/api/v1/post": {
 			"get": {
 				"operationId": "FindAllPosts",
 				"responses": {
@@ -380,6 +355,79 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/v1/user": {
+			"patch": {
+				"operationId": "Update",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Update the user in the system",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"username": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									},
+									"icon": {
+										"type": "string",
+										"format": "binary"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "Delete",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Delete the user of the system",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
 			}
 		}
 	},
