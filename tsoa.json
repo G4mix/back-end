@@ -27,6 +27,8 @@
         "@service": ["src/service/index.ts"],
         "@repository": ["src/repository/index.ts"],
         "@utils": ["src/utils"],
+        "@schemas": ["src/schemas/index.ts"],
+        "@middlewares": ["src/middlewares/index.ts"],
         "@setup": ["src/__tests__/config/index.ts"],
         "@setup/*": ["src/__tests__/config/*"],
         "@mocks": ["src/__tests__/mocks/index.ts"],

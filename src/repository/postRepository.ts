@@ -120,23 +120,70 @@ export class PostRepository {
 			this.pg.post.findMany({
 				skip: page * quantity,
 				take: quantity,
-				where
+				where,
+				include: {
+					images: true,
+					links: true,
+					tags: true,
+					_count: {
+						select: {
+							likes: true,
+							views: true
+						}
+					}
+				}
 			}),
 		])
 		const pages = Math.ceil(total / quantity)
 		const nextPage = page + 1
+
+		let posts = data
+
+		posts.map(post => {
+			const count = post._count
+			delete (post as any)['_count']
+			posts = [
+				...posts, 
+				{
+					...post,
+					likesCount: count.likes,
+					viewsCount: count.views
+				} as any
+			]
+		})
 
 		return {
 			page,
 			nextPage: nextPage >= pages ? null : nextPage,
 			pages,
 			total,
-			data,
+			data: posts
 		}
 	}
 
 	public async findById({ id }: Id) {
-		return await this.pg.post.findUnique({ where: { id } })
+		const post = await this.pg.post.findUnique({
+			where: { id },
+			include: {
+				images: true,
+				links: true,
+				tags: true,
+				_count: {
+					select: {
+						likes: true,
+						views: true
+					}
+				}
+			}
+		})
+		if (!post) return post
+		const count = post._count
+		delete (post as any)['_count']
+		return {
+			...post,
+			likesCount: count.likes,
+			viewsCount: count.views
+		}
 	}
 
 	public async delete({ id }: Id) {

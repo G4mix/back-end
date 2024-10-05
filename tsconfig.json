@@ -29,6 +29,8 @@
       "@service": ["src/service/index.ts"],
       "@service/*": ["src/service/*"],
       "@repository": ["src/repository/index.ts"],
+      "@schemas": ["src/schemas/index.ts"],
+      "@middlewares": ["src/middlewares/index.ts"],
       "@utils": ["src/utils"],
       "@setup": ["src/__tests__/config/index.ts"],
       "@setup/*": ["src/__tests__/config/*"],

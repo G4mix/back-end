@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const createPostSchema = z.object({
+export const postSchema = z.object({
 	title: z.undefined().or(z.string().regex(/^[^{}]{3,70}$/, 'INVALID_TITLE')),
 	content: z.undefined().or(z.string().regex(/^[^{}]{3,700}$/, 'INVALID_CONTENT')),
 	links: z.undefined().or(z.array(z.string().url()).max(5, 'TOO_MANY_LINKS')),

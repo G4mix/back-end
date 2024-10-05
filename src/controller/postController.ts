@@ -1,8 +1,11 @@
-import { Route, Tags, Controller, SuccessResponse, Request, Security, Query, Delete, Get, Path, Post, FormField, UploadedFiles, Patch } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Request, Security, Query, Delete, Get, Path, Post, FormField, UploadedFiles, Patch, Middlewares } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { TsoaRequest } from 'src/types/tsoa'
 import { PostService } from '@service'
 import { ControllerUtils } from '@utils'
+import { RequestHandler } from 'express'
+import { postSchema } from '@schemas'
+import { schemaValidation } from '@middlewares'
 
 @injectable()
 @Route('api/v1/post')
@@ -19,6 +22,7 @@ export class PostController extends Controller {
 	@SuccessResponse(200)
 	@Post()
 	@Security('jwt', [])
+	@Middlewares<RequestHandler>(schemaValidation(postSchema))
 	public async createPost(
 		@Request() req: TsoaRequest,
 		@FormField() title?: string,
@@ -42,9 +46,10 @@ export class PostController extends Controller {
 	@SuccessResponse(200)
 	@Patch()
 	@Security('jwt', [])
+	@Middlewares<RequestHandler>(schemaValidation(postSchema))
 	public async updatePost(
 		@Request() req: TsoaRequest,
-		@FormField() postId: string,
+		@Query() postId: string,
 		@FormField() title?: string,
 		@FormField() content?: string,
 		@FormField() links?: string[],
