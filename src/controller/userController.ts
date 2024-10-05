@@ -1,6 +1,6 @@
 import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField } from 'tsoa'
 import { injectable } from 'tsyringe'
-import { UserService } from '@service/userService'
+import { UserService } from '@service'
 import { TsoaRequest } from 'src/types/tsoa'
 import { ControllerUtils } from '@utils'
 

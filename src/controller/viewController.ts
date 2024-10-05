@@ -1,7 +1,7 @@
 import { Route, Tags, Controller, SuccessResponse, Request, Security, Get, Query } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { TsoaRequest } from 'src/types/tsoa'
-import { ViewService } from '@service/viewService'
+import { ViewService } from '@service'
 
 @injectable()
 @Route('api/v1/view')

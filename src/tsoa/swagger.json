@@ -227,6 +227,75 @@
 									"content": {
 										"type": "string"
 									},
+									"links": {
+										"type": "string"
+									},
+									"tags": {
+										"type": "string"
+									},
+									"images": {
+										"items": {
+											"type": "string",
+											"format": "binary"
+										},
+										"type": "array"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"patch": {
+				"operationId": "UpdatePost",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Update a post in the system",
+				"tags": [
+					"Post"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"title": {
+										"type": "string"
+									},
+									"content": {
+										"type": "string"
+									},
+									"links": {
+										"type": "string"
+									},
+									"tags": {
+										"type": "string"
+									},
 									"images": {
 										"items": {
 											"type": "string",
@@ -428,6 +497,63 @@
 					}
 				],
 				"parameters": []
+			}
+		},
+		"/api/v1/view": {
+			"get": {
+				"operationId": "ViewPost",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"userProfileId": {
+											"type": "string"
+										},
+										"postId": {
+											"type": "string"
+										},
+										"created_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"userProfileId",
+										"postId",
+										"created_at",
+										"id"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "View a post of the system",
+				"tags": [
+					"View"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		}
 	},

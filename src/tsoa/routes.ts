@@ -10,6 +10,8 @@ import { LikeController } from './../controller/likeController';
 import { PostController } from './../controller/postController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UserController } from './../controller/userController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { ViewController } from './../controller/viewController';
 import { expressAuthentication } from './../middlewares/security/index';
 // @ts-ignore - no great way to install types from subpackage
 import { iocContainer } from './../config/ioc';
@@ -201,6 +203,8 @@ export function RegisterRoutes(app: Router) {
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
                     title: {"in":"formData","name":"title","dataType":"string"},
                     content: {"in":"formData","name":"content","dataType":"string"},
+                    links: {"in":"formData","name":"links","dataType":"string"},
+                    tags: {"in":"formData","name":"tags","dataType":"string"},
                     images: {"in":"formData","name":"images","dataType":"array","array":{"dataType":"file"}},
             };
 
@@ -219,6 +223,49 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'createPost',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.patch('/api/v1/post',
+            authenticateMiddleware([{"jwt":[]}]),
+            upload.fields([{"name":"images","multiple":true}]),
+            ...(fetchMiddlewares<RequestHandler>(PostController)),
+            ...(fetchMiddlewares<RequestHandler>(PostController.prototype.updatePost)),
+
+            async function PostController_updatePost(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                    postId: {"in":"query","name":"postId","required":true,"dataType":"string"},
+                    title: {"in":"formData","name":"title","dataType":"string"},
+                    content: {"in":"formData","name":"content","dataType":"string"},
+                    links: {"in":"formData","name":"links","dataType":"string"},
+                    tags: {"in":"formData","name":"tags","dataType":"string"},
+                    images: {"in":"formData","name":"images","dataType":"array","array":{"dataType":"file"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<PostController>(PostController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'updatePost',
                 controller,
                 response,
                 next,
@@ -407,6 +454,43 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'delete',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/v1/view',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(ViewController)),
+            ...(fetchMiddlewares<RequestHandler>(ViewController.prototype.viewPost)),
+
+            async function ViewController_viewPost(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                    postId: {"in":"query","name":"postId","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<ViewController>(ViewController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'viewPost',
                 controller,
                 response,
                 next,

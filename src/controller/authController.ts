@@ -1,5 +1,5 @@
 import { Route, Tags, Controller, Body, Post, SuccessResponse } from 'tsoa'
-import { AuthService } from '@service/authService'
+import { AuthService } from '@service'
 import { injectable } from 'tsyringe'
 import { AuthInput } from 'src/types/auth'
 import { ControllerUtils } from '@utils'
