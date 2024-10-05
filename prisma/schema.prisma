@@ -9,51 +9,53 @@ datasource db {
 }
 
 model User {
-  id            String      @id @default(uuid())
-  username      String      @db.VarChar(50)
-  email         String      @unique @db.VarChar(320)
-  password      String      @db.VarChar(60)
-  verified      Boolean     @default(false)
-  loginAttempts Int         @default(0)
+  id            String    @id @default(uuid())
+  username      String    @db.VarChar(50)
+  email         String    @unique @db.VarChar(320)
+  password      String    @db.VarChar(60)
+  verified      Boolean   @default(false)
+  loginAttempts Int       @default(0)
   blockedUntil  DateTime?
 
   userProfileId String      @unique
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
 
-  created_at    DateTime    @default(now())
-  updated_at    DateTime    @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model UserProfile {
-  id          String   @id @default(uuid())
-  displayName String?  @db.VarChar(300)
-  icon        String?  @db.VarChar(2048)
+  id          String  @id @default(uuid())
+  displayName String? @db.VarChar(300)
+  icon        String? @db.VarChar(2048)
 
-  user        User?
-  posts       Post[]
-  viewed        View[]
-  liked         Like[]
+  user    User?
+  comment Comment[]
+  posts   Post[]
+  viewed  View[]
+  liked   Like[]
 
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model Post {
-  id         String      @id @default(uuid())
-  title      String?     @db.VarChar(70)
-  content    String?     @db.VarChar(700)
+  id      String  @id @default(uuid())
+  title   String? @db.VarChar(70)
+  content String? @db.VarChar(700)
 
-  authorId   String
-  author     UserProfile @relation(fields: [authorId], references: [id])
+  authorId String
+  author   UserProfile @relation(fields: [authorId], references: [id])
 
-  views      View[]
-  likes      Like[]
-  images     Image[]
-  links      Link[]
-  tags       Tag[]
+  comment Comment[]
+  views   View[]
+  likes   Like[]
+  images  Image[]
+  links   Link[]
+  tags    Tag[]
 
-  created_at DateTime    @default(now())
-  updated_at DateTime    @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@index([authorId])
 }
@@ -72,8 +74,8 @@ model Image {
 }
 
 model Tag {
-  id     String @id @default(uuid())
-  name   String @db.VarChar(50)
+  id   String @id @default(uuid())
+  name String @db.VarChar(50)
 
   postId String
   post   Post   @relation(fields: [postId], references: [id])
@@ -82,8 +84,8 @@ model Tag {
 }
 
 model Link {
-  id     String @id @default(uuid())
-  url    String @db.VarChar(50)
+  id  String @id @default(uuid())
+  url String @db.VarChar(50)
 
   postId String
   post   Post   @relation(fields: [postId], references: [id])
@@ -92,27 +94,43 @@ model Link {
 }
 
 model Comment {
-  id         String   @id @default(uuid())
-  content    String   @db.VarChar(200)
+  id      String @id @default(uuid())
+  content String @db.VarChar(200)
 
-  likes      Like[]
+  likes Like[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  replies Comment[] @relation("CommentReplies")
+
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id])
+
+  commentId     String?
+  parentComment Comment? @relation("CommentReplies", fields: [commentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
+
+  @@unique([userProfileId, postId])
+  @@unique([userProfileId, commentId])
+  @@index([postId])
+  @@index([commentId])
+  @@index([userProfileId])
 }
 
 model View {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
 
-  postId     String
-  post       Post     @relation(fields: [postId], references: [id])
-  
-  userProfileId     String
-  userProfile       UserProfile     @relation(fields: [userProfileId], references: [id])
-  
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
+
   @@unique([userProfileId, postId])
-  
   @@index([postId])
   @@index([userProfileId])
 }
@@ -121,18 +139,17 @@ model Like {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
 
-  postId     String?
-  post       Post?    @relation(fields: [postId], references: [id])
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id])
 
-  commentId  String?
-  comment    Comment? @relation(fields: [commentId], references: [id])
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id])
 
-  userProfileId     String
-  userProfile       UserProfile     @relation(fields: [userProfileId], references: [id])
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
 
   @@unique([userProfileId, postId])
   @@unique([userProfileId, commentId])
-  
   @@index([postId])
   @@index([commentId])
   @@index([userProfileId])
