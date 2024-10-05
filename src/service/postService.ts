@@ -1,6 +1,8 @@
 import { SUPPORTED_IMAGES, MAX_SIZE } from '@constants'
 import { injectable, singleton } from 'tsyringe'
 import { PostRepository } from '@repository'
+import { ImageInput } from 'image'
+import { PostInput } from 'post'
 import { S3Service } from './s3Service'
 import { env } from '@config'
 import sizeOf from 'image-size'
@@ -15,20 +17,16 @@ export class PostService {
 
 	public async createPost({
 		userProfileId, title, content, links, tags, images
-	}: {
-		userProfileId: string;
-		title?: string;
-		content?: string;
-		links?: string[];
-		tags?: string[];
-		images?: Express.Multer.File[];
-	}) {
-		const uploadedImages: {
-			src: string;
-			alt: string;
-			width: number;
-			height: number;
-		}[] = []
+	}: PostInput) {
+		if (
+			!title &&
+			!content &&
+			(!links || links.length === 0) &&
+			(!tags || tags.length === 0) &&
+			(!images || images.length === 0)
+		) return 'COMPLETELY_EMPTY_POST'
+
+		const uploadedImages: ImageInput[] = []
 
 		if (images) {
 			for (const image of images) {

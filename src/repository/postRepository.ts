@@ -1,6 +1,8 @@
 import { inject, injectable, singleton } from 'tsyringe'
 import { PrismaClient } from '@prisma/client'
 import { Id } from 'general'
+import { PostInput } from 'src/types/post'
+import { ImageInput } from 'src/types/image'
 
 @injectable()
 @singleton()
@@ -14,19 +16,7 @@ export class PostRepository {
 		links,
 		tags,
 		images
-	}: {
-		userProfileId: string;
-		title?: string;
-		content?: string;
-		links?: string[];
-		tags?: string[];
-		images: {
-			src: string;
-			alt: string;
-			width: number;
-			height: number;
-		}[];
-	}) {
+	}: Omit<PostInput, 'images'> & { images: ImageInput[] }) {
 		const post = await this.pg.post.create({
 			data: {
 				author: { connect: { id: userProfileId } },
