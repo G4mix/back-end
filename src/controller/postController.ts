@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, SuccessResponse, Request, Security, Query, Delete, Get, Path, Post, FormField, UploadedFiles } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Request, Security, Query, Delete, Get, Path, Post, FormField, UploadedFiles, Patch } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { TsoaRequest } from 'src/types/tsoa'
 import { PostService } from '@service'
@@ -23,13 +23,37 @@ export class PostController extends Controller {
 		@Request() req: TsoaRequest,
 		@FormField() title?: string,
 		@FormField() content?: string,
-		// @FormField() links?: string[],
-		// @FormField() tags?: string[],
+		@FormField() links?: string[],
+		@FormField() tags?: string[],
 		@UploadedFiles() images?: Express.Multer.File[]
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.createPost({
-				userProfileId: req.user.user.userProfile.id, title, content, images
+				userProfileId: req.user.user.userProfile.id, title, content, links, tags, images
+			}),
+			this
+		)
+	}
+
+	/**
+	 * Update a post in the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Patch()
+	@Security('jwt', [])
+	public async updatePost(
+		@Request() req: TsoaRequest,
+		@FormField() postId: string,
+		@FormField() title?: string,
+		@FormField() content?: string,
+		@FormField() links?: string[],
+		@FormField() tags?: string[],
+		@UploadedFiles() images?: Express.Multer.File[]
+	) {
+		return ControllerUtils.handleResponse(
+			await this.postService.updatePost({
+				userProfileId: req.user.user.userProfile.id, postId, title, content, links, tags, images
 			}),
 			this
 		)

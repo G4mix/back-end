@@ -53,6 +53,40 @@ export class PostService {
 		return await this.postRepository.create({ userProfileId, title, content, links, tags, images: uploadedImages })
 	}
 
+	public async updatePost({
+		userProfileId, postId, title, content, links, tags, images
+	}: PostInput & { postId: string; }) {
+		const postExists = await this.postRepository.findById({ id: postId })
+		if (!postExists) return 'POST_NOT_FOUND'
+		else if (postExists.authorId !== userProfileId) return 'YOU_ARE_NOT_THE_AUTHOR'
+
+		const uploadedImages: ImageInput[] = []
+
+		if (images) {
+			for (const image of images) {
+				if (!Object.keys(SUPPORTED_IMAGES).includes(image.mimetype) || image.size > MAX_SIZE) continue
+
+				const postImageRes = await this.s3Service.uploadFile({
+					bucketName: env.PUBLIC_BUCKET_NAME,
+					key: `user-${userProfileId}/${image.originalname}`,
+					file: image.buffer
+				})
+
+				if (typeof postImageRes === 'object' && postImageRes.fileUrl) {
+					const { width, height } = sizeOf(image.buffer)
+					uploadedImages.push({
+						src: postImageRes.fileUrl,
+						alt: image.originalname,
+						width: width || 500,
+						height: height || 500
+					})
+				}
+			}
+		}
+
+		return await this.postRepository.update({ postId, title, content, links, tags, images: uploadedImages })
+	}
+
 	public async findAllPosts({ page, quantity, userProfileId }: { page: number; quantity: number; userProfileId?: string; }) {
 		return await this.postRepository.findAll({ page, quantity, userProfileId })
 	}
