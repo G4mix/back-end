@@ -1,5 +1,8 @@
-import { Route, Tags, Controller, SuccessResponse, Request, Security, Post, Query, Body } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Request, Security, Post, Query, Body, Middlewares } from 'tsoa'
+import { schemaValidation } from '@middlewares'
+import { RequestHandler } from 'express'
 import { CommentService } from '@service'
+import { commentSchema } from '@schemas'
 import { TsoaRequest } from 'src/types/tsoa'
 import { injectable } from 'tsyringe'
 
@@ -18,13 +21,14 @@ export class CommentController extends Controller {
 	@SuccessResponse(200)
 	@Post('/post')
 	@Security('jwt', [])
+	@Middlewares<RequestHandler>(schemaValidation(commentSchema))
 	public async commentPost(
         @Request() req: TsoaRequest,
         @Query() postId: string,
-				@Body() { content }: { content: string; }
+				@Body() body: { content: string; }
 	) {
 		return await this.commentService.commentPost({
-			userProfileId: req.user.user.userProfile.id, postId, content
+			userProfileId: req.user.user.userProfile.id, postId, content: body.content
 		})
 	}
 
@@ -35,13 +39,14 @@ export class CommentController extends Controller {
 	@SuccessResponse(200)
 	@Post('/comment')
 	@Security('jwt', [])
+	@Middlewares<RequestHandler>(schemaValidation(commentSchema))
 	public async replyPost(
         @Request() req: TsoaRequest,
         @Query() commentId: string,
-				@Body() { content }: { content: string; }
+				@Body() body: { content: string; }
 	) {
 		return await this.commentService.replyComment({
-			userProfileId: req.user.user.userProfile.id, commentId, content
+			userProfileId: req.user.user.userProfile.id, commentId, content: body.content
 		})
 	}
 }
