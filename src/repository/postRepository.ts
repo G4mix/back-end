@@ -137,9 +137,9 @@ export class PostRepository {
 		const pages = Math.ceil(total / quantity)
 		const nextPage = page + 1
 
-		let posts = data
+		let posts: any[] = []
 
-		posts.map(post => {
+		data.map(post => {
 			const count = post._count
 			delete (post as any)['_count']
 			posts = [

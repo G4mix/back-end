@@ -26,4 +26,24 @@ export class CommentService {
 			content
 		})
 	}
+
+	public async listComments({
+		postId, page, quantity
+	}: { postId: string; page: number; quantity: number; }) {
+		return await this.commentRepository.findAll({
+			postId,
+			page,
+			quantity
+		})
+	}
+
+	public async listReplies({
+		commentId, page, quantity
+	}: { commentId: string; page: number; quantity: number; }) {
+		return await this.commentRepository.findAll({
+			commentId,
+			page,
+			quantity
+		})
+	}
 }

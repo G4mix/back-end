@@ -499,7 +499,7 @@
 				"parameters": []
 			}
 		},
-		"/api/v1/comment/post": {
+		"/api/v1/comment/post/{postId}": {
 			"post": {
 				"operationId": "CommentPost",
 				"responses": {
@@ -512,7 +512,7 @@
 										"userProfileId": {
 											"type": "string"
 										},
-										"commentId": {
+										"parentCommentId": {
 											"type": "string"
 										},
 										"postId": {
@@ -535,7 +535,7 @@
 									},
 									"required": [
 										"userProfileId",
-										"commentId",
+										"parentCommentId",
 										"postId",
 										"updated_at",
 										"created_at",
@@ -559,7 +559,7 @@
 				],
 				"parameters": [
 					{
-						"in": "query",
+						"in": "path",
 						"name": "postId",
 						"required": true,
 						"schema": {
@@ -585,9 +585,90 @@
 						}
 					}
 				}
+			},
+			"get": {
+				"operationId": "ListComments",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"data": {
+											"items": {},
+											"type": "array"
+										},
+										"total": {
+											"type": "number",
+											"format": "double"
+										},
+										"pages": {
+											"type": "number",
+											"format": "double"
+										},
+										"nextPage": {
+											"type": "number",
+											"format": "double"
+										},
+										"page": {
+											"type": "number",
+											"format": "double"
+										}
+									},
+									"required": [
+										"data",
+										"total",
+										"pages",
+										"nextPage",
+										"page"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "List comments of a post",
+				"tags": [
+					"Comment"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "quantity",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
-		"/api/v1/comment/comment": {
+		"/api/v1/comment/{commentId}": {
 			"post": {
 				"operationId": "ReplyPost",
 				"responses": {
@@ -600,7 +681,7 @@
 										"userProfileId": {
 											"type": "string"
 										},
-										"commentId": {
+										"parentCommentId": {
 											"type": "string"
 										},
 										"postId": {
@@ -623,7 +704,7 @@
 									},
 									"required": [
 										"userProfileId",
-										"commentId",
+										"parentCommentId",
 										"postId",
 										"updated_at",
 										"created_at",
@@ -647,7 +728,7 @@
 				],
 				"parameters": [
 					{
-						"in": "query",
+						"in": "path",
 						"name": "commentId",
 						"required": true,
 						"schema": {
@@ -673,6 +754,87 @@
 						}
 					}
 				}
+			},
+			"get": {
+				"operationId": "ListReplies",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"data": {
+											"items": {},
+											"type": "array"
+										},
+										"total": {
+											"type": "number",
+											"format": "double"
+										},
+										"pages": {
+											"type": "number",
+											"format": "double"
+										},
+										"nextPage": {
+											"type": "number",
+											"format": "double"
+										},
+										"page": {
+											"type": "number",
+											"format": "double"
+										}
+									},
+									"required": [
+										"data",
+										"total",
+										"pages",
+										"nextPage",
+										"page"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "List replies of a comment",
+				"tags": [
+					"Comment"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "commentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "quantity",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
 		"/api/v1/view": {

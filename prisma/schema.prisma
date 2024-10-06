@@ -18,7 +18,7 @@ model User {
   blockedUntil  DateTime?
 
   userProfileId String      @unique
-  userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -45,7 +45,7 @@ model Post {
   content String? @db.VarChar(700)
 
   authorId String
-  author   UserProfile @relation(fields: [authorId], references: [id])
+  author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   comment Comment[]
   views   View[]
@@ -68,7 +68,7 @@ model Image {
   height Int
 
   postId String
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
 }
@@ -78,7 +78,7 @@ model Tag {
   name String @db.VarChar(50)
 
   postId String
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
 }
@@ -88,7 +88,7 @@ model Link {
   url String @db.VarChar(50)
 
   postId String
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
 }
@@ -102,22 +102,22 @@ model Comment {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  replies Comment[] @relation("CommentReplies")
-
   postId String?
-  post   Post?   @relation(fields: [postId], references: [id])
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  commentId     String?
-  parentComment Comment? @relation("CommentReplies", fields: [commentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  parentCommentId String?
+  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies         Comment[] @relation("CommentReplies")
 
   userProfileId String
-  userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
   @@unique([userProfileId, postId])
-  @@unique([userProfileId, commentId])
+  @@unique([userProfileId, id])
+  @@index([id])
   @@index([postId])
-  @@index([commentId])
   @@index([userProfileId])
+  @@index([parentCommentId])
 }
 
 model View {
@@ -125,10 +125,10 @@ model View {
   created_at DateTime @default(now())
 
   postId String
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   userProfileId String
-  userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
   @@unique([userProfileId, postId])
   @@index([postId])
@@ -140,13 +140,13 @@ model Like {
   created_at DateTime @default(now())
 
   postId String?
-  post   Post?   @relation(fields: [postId], references: [id])
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   commentId String?
-  comment   Comment? @relation(fields: [commentId], references: [id])
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   userProfileId String
-  userProfile   UserProfile @relation(fields: [userProfileId], references: [id])
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
   @@unique([userProfileId, postId])
   @@unique([userProfileId, commentId])
