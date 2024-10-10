@@ -6,11 +6,9 @@ import { inject, injectable, singleton } from 'tsyringe'
 export class S3Service {
 	constructor(@inject('S3Client') private s3: S3Client) {}
 
-	public async uploadFile(
-		bucketName: string,
-		key: string,
-		file: Buffer
-	) {
+	public async uploadFile({
+		bucketName, key, file
+	}: { bucketName: string; key: string; file: Buffer; }) {
 		const command = new PutObjectCommand({
 			Bucket: bucketName,
 			Key: key,

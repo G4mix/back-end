@@ -8,7 +8,7 @@ export const processWatcher = (app: App) => {
 	function stopApplication() {
 		console.log('> [app] Stopping app')
 		if (app.isRunning()) app.stop()
-		container.resolve<PrismaClient>('PrismaClient').$disconnect()
+		container.resolve<PrismaClient>('PostgresqlClient').$disconnect()
 		console.log('> [app] App finished')
 	}
 }

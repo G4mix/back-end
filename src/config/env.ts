@@ -9,7 +9,10 @@ const envSchema = z.object({
 	AWS_S3_SECRET: z.string(),
 	AWS_SES_KEY: z.string(),
 	AWS_SES_SECRET: z.string(),
-	NODE_ENV: z.string()
+	PUBLIC_BUCKET_NAME: z.string(),
+	PRIVATE_BUCKET_NAME: z.string(),
+	NODE_ENV: z.string(),
+	JWT_SIGNING_KEY_SECRET: z.string()
 })
 
 export const env = envSchema.parse(process.env)

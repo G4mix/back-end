@@ -6,12 +6,47 @@
 		"parameters": {},
 		"requestBodies": {},
 		"responses": {},
-		"schemas": {},
+		"schemas": {
+			"AuthInput": {
+				"properties": {
+					"username": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"username",
+					"password",
+					"email"
+				],
+				"type": "object"
+			},
+			"Pick_AuthInput.email-or-password_": {
+				"properties": {
+					"email": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"email",
+					"password"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			}
+		},
 		"securitySchemes": {
-			"api": {
-				"type": "apiKey",
-				"name": "access_token",
-				"in": "query"
+			"jwt": {
+				"type": "http",
+				"scheme": "bearer"
 			}
 		}
 	},
@@ -20,27 +55,843 @@
 		"contact": {}
 	},
 	"paths": {
-		"/api/v1/hello-world": {
+		"/api/v1/auth/signup": {
+			"post": {
+				"operationId": "Signup",
+				"responses": {
+					"201": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Signup the user in the system",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AuthInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/signin": {
+			"post": {
+				"operationId": "Signin",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Signin the user in the system",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Pick_AuthInput.email-or-password_"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/like/post": {
 			"get": {
-				"operationId": "HelloWorld",
+				"operationId": "LikePost",
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"description": "Like or unlike a post of an user",
+				"tags": [
+					"Like"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "isLiked",
+						"required": true,
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/like/comment": {
+			"get": {
+				"operationId": "LikeComment",
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"description": "Like or unlike a comment of an user",
+				"tags": [
+					"Like"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "isLiked",
+						"required": true,
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "commentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/post": {
+			"post": {
+				"operationId": "CreatePost",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Create a post in the system",
+				"tags": [
+					"Post"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"title": {
+										"type": "string"
+									},
+									"content": {
+										"type": "string"
+									},
+									"links": {
+										"type": "string"
+									},
+									"tags": {
+										"type": "string"
+									},
+									"images": {
+										"items": {
+											"type": "string",
+											"format": "binary"
+										},
+										"type": "array"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"patch": {
+				"operationId": "UpdatePost",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Update a post in the system",
+				"tags": [
+					"Post"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"title": {
+										"type": "string"
+									},
+									"content": {
+										"type": "string"
+									},
+									"links": {
+										"type": "string"
+									},
+									"tags": {
+										"type": "string"
+									},
+									"images": {
+										"items": {
+											"type": "string",
+											"format": "binary"
+										},
+										"type": "array"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "FindAllPosts",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Find all posts of an user",
+				"tags": [
+					"Post"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "page",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "quantity",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "userProfileId",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"delete": {
+				"operationId": "DeletePost",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Delete a post of an user",
+				"tags": [
+					"Post"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/post/{postId}": {
+			"get": {
+				"operationId": "FindPostById",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Find a post of an user",
+				"tags": [
+					"Post"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/user": {
+			"patch": {
+				"operationId": "Update",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Update the user in the system",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"username": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									},
+									"icon": {
+										"type": "string",
+										"format": "binary"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "Delete",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Delete the user of the system",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/api/v1/comment/post/{postId}": {
+			"post": {
+				"operationId": "CommentPost",
 				"responses": {
 					"200": {
 						"description": "",
 						"content": {
 							"application/json": {
 								"schema": {
-									"type": "string"
+									"properties": {
+										"userProfileId": {
+											"type": "string"
+										},
+										"parentCommentId": {
+											"type": "string"
+										},
+										"postId": {
+											"type": "string"
+										},
+										"updated_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"created_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"content": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"userProfileId",
+										"parentCommentId",
+										"postId",
+										"updated_at",
+										"created_at",
+										"content",
+										"id"
+									],
+									"type": "object"
 								}
 							}
 						}
 					}
 				},
-				"description": "Hello world message",
+				"description": "Comment in a post",
 				"tags": [
-					"Hello World"
+					"Comment"
 				],
-				"security": [],
-				"parameters": []
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"content": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"content"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "ListComments",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"data": {
+											"items": {},
+											"type": "array"
+										},
+										"total": {
+											"type": "number",
+											"format": "double"
+										},
+										"pages": {
+											"type": "number",
+											"format": "double"
+										},
+										"nextPage": {
+											"type": "number",
+											"format": "double"
+										},
+										"page": {
+											"type": "number",
+											"format": "double"
+										}
+									},
+									"required": [
+										"data",
+										"total",
+										"pages",
+										"nextPage",
+										"page"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "List comments of a post",
+				"tags": [
+					"Comment"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "quantity",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/comment/{commentId}": {
+			"post": {
+				"operationId": "ReplyPost",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"userProfileId": {
+											"type": "string"
+										},
+										"parentCommentId": {
+											"type": "string"
+										},
+										"postId": {
+											"type": "string"
+										},
+										"updated_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"created_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"content": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"userProfileId",
+										"parentCommentId",
+										"postId",
+										"updated_at",
+										"created_at",
+										"content",
+										"id"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Reply a comment",
+				"tags": [
+					"Comment"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "commentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"content": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"content"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "ListReplies",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"data": {
+											"items": {},
+											"type": "array"
+										},
+										"total": {
+											"type": "number",
+											"format": "double"
+										},
+										"pages": {
+											"type": "number",
+											"format": "double"
+										},
+										"nextPage": {
+											"type": "number",
+											"format": "double"
+										},
+										"page": {
+											"type": "number",
+											"format": "double"
+										}
+									},
+									"required": [
+										"data",
+										"total",
+										"pages",
+										"nextPage",
+										"page"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "List replies of a comment",
+				"tags": [
+					"Comment"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "commentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "quantity",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/view": {
+			"get": {
+				"operationId": "ViewPost",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"userProfileId": {
+											"type": "string"
+										},
+										"postId": {
+											"type": "string"
+										},
+										"created_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"userProfileId",
+										"postId",
+										"created_at",
+										"id"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "View a post of the system",
+				"tags": [
+					"View"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		}
 	},

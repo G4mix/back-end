@@ -6,16 +6,16 @@
       "outputDirectory": "src/tsoa",
       "specVersion": 3,
       "securityDefinitions": {
-        "api": {
-          "type": "apiKey",
-          "name": "access_token",
-          "in": "query"
+        "jwt": {
+            "type": "http",
+            "scheme": "bearer"
         }
       }
     },
     "routes": {
       "iocModule": "src/config/ioc.ts",
-      "routesDir": "src/tsoa"
+      "routesDir": "src/tsoa",
+      "authenticationModule": "./src/middlewares/security/index.ts"
     },
     "compilerOptions": {
       "baseUrl": "./",
@@ -27,6 +27,8 @@
         "@service": ["src/service/index.ts"],
         "@repository": ["src/repository/index.ts"],
         "@utils": ["src/utils"],
+        "@schemas": ["src/schemas/index.ts"],
+        "@middlewares": ["src/middlewares/index.ts"],
         "@setup": ["src/__tests__/config/index.ts"],
         "@setup/*": ["src/__tests__/config/*"],
         "@mocks": ["src/__tests__/mocks/index.ts"],

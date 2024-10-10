@@ -1,0 +1,1 @@
+export const EXPIRATION_TIME_TOKEN = 3600
