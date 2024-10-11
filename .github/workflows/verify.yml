@@ -32,7 +32,9 @@ jobs:
           echo "AWS_SES_KEY=dwadwadwa" >> .env && \
           echo "AWS_SES_SECRET=dwadwadwa" >> .env && \
           echo "NODE_ENV=development" >> .env && \
-          echo "JWT_SIGNING_KEY_SECRET=dwadwawajmdoiwandçiwand.dwad21cxajddwaikdawid.dwawadwadwaidjiwajdwajdwa" >> .env
+          echo "JWT_SIGNING_KEY_SECRET=dwadwawajmdoiwandçiwand.dwad21cxajddwaikdawid.dwawadwadwaidjiwajdwajdwa" >> .env && \
+          echo "PUBLIC_BUCKET_NAME=gamix-pub" >> .env && \
+          echo "PRIVATE_BUCKET_NAME=gamix-priv" >> .env
       - name: run tests
         run: |
           npm run db:gen && npm run test

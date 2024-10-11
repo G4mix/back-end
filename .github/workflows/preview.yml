@@ -1,0 +1,57 @@
+name: deploy to preview
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: restore npm cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: install deps and pull vercel
+        run: |
+          npm ci && npm i vercel --global && npx vercel pull --yes --token=${VERCEL_TOKEN}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PREVIEW_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_PREVIEW_ORG_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      - name: build app
+        run: |
+          npm run db:gen && npm run build
+      - name: deploy to preview
+        id: vercel-deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: "--prod"
+          vercel-org-id: ${{ secrets.VERCEL_PREVIEW_ORG_ID}}
+          vercel-project-id: ${{ secrets.VERCEL_PREVIEW_PROJECT_ID}}
+      - name: Delete old preview deployments
+        id: delete_old_deployments
+        run: |
+          DEPLOYMENTS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/deployments")
+          echo "$DEPLOYMENTS" | jq '.[] | select(.environment=="preview") | .id' | while read deployment_id; do
+            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/deployments/$deployment_id"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: gitHub preview deployment
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: '${{ github.token }}'
+          environment-url: ${{steps.vercel-deploy.outputs.preview-url}}
+          environment: 'preview'
+          initial-status: 'success'
+          transient-environment: false
+          production-environment: true
