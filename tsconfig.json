@@ -31,7 +31,7 @@
       "@repository": ["src/repository/index.ts"],
       "@schemas": ["src/schemas/index.ts"],
       "@middlewares": ["src/middlewares/index.ts"],
-      "@utils": ["src/utils"],
+      "@utils": ["src/utils/index.ts"],
       "@setup": ["src/__tests__/config/index.ts"],
       "@setup/*": ["src/__tests__/config/*"],
       "@mocks": ["src/__tests__/mocks/index.ts"],
