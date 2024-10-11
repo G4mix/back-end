@@ -509,13 +509,13 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"userProfileId": {
-											"type": "string"
-										},
 										"parentCommentId": {
 											"type": "string"
 										},
 										"postId": {
+											"type": "string"
+										},
+										"content": {
 											"type": "string"
 										},
 										"updated_at": {
@@ -526,7 +526,7 @@
 											"type": "string",
 											"format": "date-time"
 										},
-										"content": {
+										"userProfileId": {
 											"type": "string"
 										},
 										"id": {
@@ -534,12 +534,12 @@
 										}
 									},
 									"required": [
-										"userProfileId",
 										"parentCommentId",
 										"postId",
+										"content",
 										"updated_at",
 										"created_at",
-										"content",
+										"userProfileId",
 										"id"
 									],
 									"type": "object"
@@ -678,13 +678,13 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"userProfileId": {
-											"type": "string"
-										},
 										"parentCommentId": {
 											"type": "string"
 										},
 										"postId": {
+											"type": "string"
+										},
+										"content": {
 											"type": "string"
 										},
 										"updated_at": {
@@ -695,7 +695,7 @@
 											"type": "string",
 											"format": "date-time"
 										},
-										"content": {
+										"userProfileId": {
 											"type": "string"
 										},
 										"id": {
@@ -703,12 +703,12 @@
 										}
 									},
 									"required": [
-										"userProfileId",
 										"parentCommentId",
 										"postId",
+										"content",
 										"updated_at",
 										"created_at",
-										"content",
+										"userProfileId",
 										"id"
 									],
 									"type": "object"
@@ -847,9 +847,6 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"userProfileId": {
-											"type": "string"
-										},
 										"postId": {
 											"type": "string"
 										},
@@ -857,14 +854,17 @@
 											"type": "string",
 											"format": "date-time"
 										},
+										"userProfileId": {
+											"type": "string"
+										},
 										"id": {
 											"type": "string"
 										}
 									},
 									"required": [
-										"userProfileId",
 										"postId",
 										"created_at",
+										"userProfileId",
 										"id"
 									],
 									"type": "object"

@@ -42,8 +42,8 @@
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
     "useUnknownInCatchVariables": true,
-    "typeRoots": ["node_modules", "node_modules/@types", "src/types"],
-    "types": ["jest", "node"]
+    "skipLibCheck": true,
+    "typeRoots": ["node_modules/@types", "src/types"]
   },
   "exclude": ["node_modules"],
   "include": ["./src/**/*.ts"]

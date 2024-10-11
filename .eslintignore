@@ -1,2 +1,4 @@
 dist
 src/tsoa
+src/__tests__
+node_modules/
