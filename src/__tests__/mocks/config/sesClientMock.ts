@@ -1,6 +1,6 @@
 import { setup } from '@setup'
 
-export class SES]Mock {
+export class SESClientMock {
 	private _throwError: boolean = false
 	private _type: 'send' | 'status-not-found' | 'status' | 'verify' = 'send'
 
