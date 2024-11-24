@@ -23,6 +23,7 @@ export class App {
 	}
 
 	public start(): App {
+		if (this.isRunning()) return this
 		App.server = App.instance.listen(env['PORT'] as string, async () => {
 			console.log(`> [app] App listening at the port ${env['PORT']}`)
 		})

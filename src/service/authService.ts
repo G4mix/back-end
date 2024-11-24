@@ -2,7 +2,7 @@ import { JwtManager, BCryptEncoder } from '@utils'
 import { injectable, singleton } from 'tsyringe'
 import { UserRepository } from '@repository'
 import { AuthInput } from 'auth'
-import { SESService } from './sESService'
+import { SESService } from './sesService'
 import { ApiMessage } from '@constants'
 
 @injectable()
@@ -15,6 +15,7 @@ export class AuthService {
 
 	public async signup({ email, password, username }: AuthInput) {
 		const user = await this.userRepository.findByEmail({ email })
+		console.log(user)
 		if (user) return 'USER_ALREADY_EXISTS'
 
 		const sendedEmail = await this.sesService.verifyIdentity({ receiver: email })

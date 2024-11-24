@@ -1,8 +1,11 @@
-import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField, Middlewares } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { UserService } from '@service'
 import { TsoaRequest } from 'src/types/tsoa'
 import { ControllerUtils } from '@utils'
+import { RequestHandler } from 'express'
+import { schemaValidation } from '@middlewares'
+import { updateUserSchema } from '@schemas'
 
 @injectable()
 @Route('api/v1/user')
@@ -19,6 +22,7 @@ export class UserController extends Controller {
 	@SuccessResponse(200)
 	@Patch()
 	@Security('jwt', [])
+	@Middlewares<RequestHandler>(schemaValidation(updateUserSchema))
 	public async update(
 		@Request() req: TsoaRequest,
 		@FormField() username?: string,

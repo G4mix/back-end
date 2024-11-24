@@ -1,0 +1,18 @@
+import { z } from 'zod'
+
+export const passwordValidation = z.string()
+	.regex(
+		/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,72}$/,
+		'INVALID_PASSWORD'
+	)
+
+export const userSignUpSchema = z.object({
+	username: z.string().regex(/^[^{}]{3,255}$/, 'INVALID_NAME'),
+	email: z.string().email('INVALID_EMAIL'),
+	password: passwordValidation,
+})
+export const updateUserSchema = z.object({
+	username: z.undefined().or(z.string().regex(/^[^{}]{3,255}$/, 'INVALID_NAME')),
+	email: z.undefined().or(z.string().email('INVALID_EMAIL')),
+	password: z.undefined().or(passwordValidation)
+})

@@ -1,8 +1,11 @@
-import { Route, Tags, Controller, Body, Post, SuccessResponse } from 'tsoa'
+import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares } from 'tsoa'
 import { AuthService } from '@service'
 import { injectable } from 'tsyringe'
 import { AuthInput } from 'src/types/auth'
 import { ControllerUtils } from '@utils'
+import { userSignUpSchema } from '@schemas'
+import { schemaValidation } from '@middlewares'
+import { RequestHandler } from 'express'
 
 @injectable()
 @Route('api/v1/auth')
@@ -18,6 +21,7 @@ export class AuthController extends Controller {
 	 */
 	@SuccessResponse(201)
 	@Post('/signup')
+	@Middlewares<RequestHandler>(schemaValidation(userSignUpSchema))
 	public async signup(@Body() body: AuthInput) {
 		const res = await this.authService.signup(body)
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
