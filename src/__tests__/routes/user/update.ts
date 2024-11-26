@@ -2,9 +2,10 @@ import { fetchAPI, getFormData, getTestUser, getValidToken, handleMessage, setup
 
 const { updateTestUser: { email, username, password } } = setup
 
-describe('> [app] PATCH /users', () => {
+describe('> [app] PATCH /user', () => {
 	updateUserWhenAlreadyExists()
 	updateUserWithInvalidImageFormat()
+  updateUserWithExceededMaxSize()
 	updateUserWhenFaqFileUpdateFail()
 	updateUserWithSuccess()
 })
@@ -29,6 +30,17 @@ function updateUserWithInvalidImageFormat() {
 		handleMessage({ response, message: 'INVALID_IMAGE_FORMAT' })
 	})
 }
+function updateUserWithExceededMaxSize() {
+	it('updateUserWithInvalidImageFormat > EXCEEDED_MAX_SIZE', async () => {
+		const dataToHandle = {
+			email, username, password, icon: new Blob([new Uint8Array(1000009)], { type: 'image/png' })
+		}
+		const response = await fetchAPI('/user', 'PATCH', {
+			'Authorization': `Bearer ${await getValidToken()}`,
+		}, getFormData(dataToHandle))
+		handleMessage({ response, message: 'EXCEEDED_MAX_SIZE' })
+	})
+}
 function updateUserWhenFaqFileUpdateFail() {
 	it('updateUserWhenFaqFileUpdateFail > 200', async () => {
 		setup.s3ClientMock.setThrowError(true)
@@ -40,6 +52,8 @@ function updateUserWhenFaqFileUpdateFail() {
 }
 function updateUserWithSuccess() {
 	it('updateUserWithSuccess > 200', async () => {
+    setup['sesClientMock'].setStatus('Pending').setType('status').setThrowError(false)
+
 		const response = await fetchAPI('/user', 'PATCH', {
 			'Authorization': `Bearer ${await getValidToken()}`,
 		}, getFormData({ email, username, password, icon: setup.updateTestUser.icon }))

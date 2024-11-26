@@ -19,7 +19,6 @@ export class S3Service {
 			await this.s3.send(command)
 			return { fileUrl: `https://${bucketName}.s3.amazonaws.com/${key}` }
 		} catch (err) {
-			console.error(err)
 			const errorMessage = (err as Error)?.message
 			return errorMessage
 		}
@@ -39,7 +38,6 @@ export class S3Service {
 		try {
 			return (await this.s3.send(command)).Deleted ?? []
 		} catch (err) {
-			console.error(err)
 			const errorMessage = (err as Error)?.message
 			return errorMessage
 		}

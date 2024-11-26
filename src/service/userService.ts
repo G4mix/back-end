@@ -3,7 +3,6 @@ import { UserRepository } from '@repository'
 import { BCryptEncoder, JwtManager } from '@utils'
 import { MAX_SIZE, SUPPORTED_IMAGES } from '@constants'
 import { S3Service } from './s3Service'
-import { SESService } from './sesService'
 import { env } from '@config'
 
 @injectable()
@@ -11,17 +10,13 @@ import { env } from '@config'
 export class UserService {
 	constructor(
 		private userRepository: UserRepository,
-		private s3Service: S3Service,
-		private sesService: SESService,
+		private s3Service: S3Service
 	) {}
 
-	public async update(data: { id: string; username?: string; email?: string; password?: string; icon?: Express.Multer.File | string }) {
+	public async update(data: { id: string; username?: string; email?: string; password?: string; icon?: Express.Multer.File | string; verified?: boolean; }) {
 		if (data.email) {
 			if (await this.userRepository.findByEmail({ email: data.email })) return 'USER_ALREADY_EXISTS'
-			const res = await this.sesService.checkEmailStatus(data.email)
-			if (typeof res === 'object' && res.status === 'Pending') {
-				await this.sesService.verifyIdentity({ receiver: data.email })
-			}
+			data.verified = false
 		}
 		if (data.password) data.password = BCryptEncoder.encode(data.password)
 		if (data.icon && typeof data.icon !== 'string') {
