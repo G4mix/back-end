@@ -49,7 +49,7 @@ export class App {
 				exposedHeaders: '*',
 				credentials: true,
 				methods: ['OPTIONS', 'GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
-				origin: env['FRONTEND_URL']
+				origin: '*'
 			})(req, res, next)
 		})
 		App.instance.disable('x-powered-by')
