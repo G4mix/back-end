@@ -1,4 +1,4 @@
-import { setup, fetchAPI, handleMessage } from '@setup'
+import { setup, fetchAPI, handleMessage, getTestUser } from '@setup'
 
 const { authHeaders, testUser } = setup
 
@@ -6,9 +6,9 @@ describe('> [app] POST /auth/signup', () => {
 	signupWithInvalidName()
 	signupWithInvalidEmail()
 	signupWithInvalidPassword()
-	// signupWhenTheEmailIsNotSended()
+	signupWhenTheEmailIsNotSended()
 	signupSuccess()
-	// signupWhenTheUserAlreadyExists()
+	signupWhenTheUserAlreadyExists()
 })
 
 function signupWithInvalidName() {
@@ -29,14 +29,14 @@ function signupWithInvalidPassword() {
 		await handleMessage({ response, message: 'INVALID_PASSWORD' })
 	})
 }
-// function signupWhenTheEmailIsNotSended() {
-// 	it('signupWhenTheEmailIsNotSended > ERROR_WHILE_CHECKING_EMAIL', async () => {
-// 		setup['sesClientMock'].setThrowError(true)
-// 		const response = await fetchAPI('/auth/signup', 'POST', authHeaders, testUser)
-// 		await handleMessage({ response, message: 'ERROR_WHILE_CHECKING_EMAIL' })
-// 		setup['sesClientMock'].setThrowError(false)
-// 	})
-// }
+function signupWhenTheEmailIsNotSended() {
+	it('signupWhenTheEmailIsNotSended > ERROR_WHILE_CHECKING_EMAIL', async () => {
+		setup['sesClientMock'].setThrowError(true)
+		const response = await fetchAPI('/auth/signup', 'POST', authHeaders, testUser)
+		await handleMessage({ response, message: 'ERROR_WHILE_CHECKING_EMAIL' })
+		setup['sesClientMock'].setThrowError(false)
+	})
+}
 function signupSuccess() {
 	it('signupSuccess > 201', async () => {
 		setup.pg.users = []
@@ -44,10 +44,10 @@ function signupSuccess() {
 		expect(response.status).toBe(201)
 	})
 }
-// function signupWhenTheUserAlreadyExists() {
-// 	it('signupWhenTheUserAlreadyExists > USER_ALREADY_EXISTS', async () => {
-// 		await getTestUser()
-// 		const response = await fetchAPI('/auth/signup', 'POST', authHeaders, testUser)
-// 		await handleMessage({ response, message: 'USER_ALREADY_EXISTS' })
-// 	})
-// }
+function signupWhenTheUserAlreadyExists() {
+	it('signupWhenTheUserAlreadyExists > USER_ALREADY_EXISTS', async () => {
+		await getTestUser()
+		const response = await fetchAPI('/auth/signup', 'POST', authHeaders, testUser)
+		await handleMessage({ response, message: 'USER_ALREADY_EXISTS' })
+	})
+}

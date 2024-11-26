@@ -11,7 +11,7 @@ beforeAll(async () => {
 		.register('SESClient', { useClass: SESClientMock }, { lifecycle: Lifecycle.Singleton })
 	container
 		.register('S3Client', { useClass: S3ClientMock }, { lifecycle: Lifecycle.Singleton })
-	setup['pg'] = container.resolve<PostgresqlClientMock>('PrismaClient')
+	setup['pg'] = container.resolve<PostgresqlClientMock>('PostgresqlClient')
 	setup['app'] = app
 	setup['sesClientMock'] = container.resolve<SESClientMock>('SESClient')
 	setup['s3ClientMock'] = container.resolve<S3ClientMock>('S3Client')

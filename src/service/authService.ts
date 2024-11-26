@@ -15,7 +15,6 @@ export class AuthService {
 
 	public async signup({ email, password, username }: AuthInput) {
 		const user = await this.userRepository.findByEmail({ email })
-		console.log(user)
 		if (user) return 'USER_ALREADY_EXISTS'
 
 		const sendedEmail = await this.sesService.verifyIdentity({ receiver: email })
