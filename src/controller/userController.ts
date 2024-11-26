@@ -43,12 +43,10 @@ export class UserController extends Controller {
 	 * Delete the user of the system
 	 *
 	 */
-	@SuccessResponse(200)
+	@SuccessResponse(204)
 	@Delete()
 	@Security('jwt', [])
 	public async delete(@Request() req: TsoaRequest) {
-		const res = await this.userService.delete({ id: req.user.sub })
-		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
-		return res
+		await this.userService.delete({ id: req.user.sub })
 	}
 }

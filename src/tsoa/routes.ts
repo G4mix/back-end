@@ -468,7 +468,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 response,
                 next,
                 validatedArgs,
-                successStatus: 200,
+                successStatus: 204,
               });
             } catch (err) {
                 return next(err);

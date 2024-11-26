@@ -4,6 +4,13 @@ import { User } from '@prisma/client'
 export type URL =
 	'/auth/signup' |
 	'/auth/signin' |
+	'/user' |
+	'/like/post' |
+	'/like/comment' |
+	'/post' |
+	`/comment/${string}` |
+	`/comment/post/${string}` |
+	'/view' |
   '/docs'
 
 export type Body = Partial<User> | string | FormData

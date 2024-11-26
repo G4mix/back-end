@@ -1,7 +1,7 @@
 import { messages } from '@constants'
 import { Method, Body, URL, HandleMessageProps } from './setup'
 import { setup } from './setup-constants'
-import { BCryptEncoder } from '@utils'
+import { BCryptEncoder, JwtManager } from '@utils'
 import { UserWithUserProfile } from '@mocks'
 
 export const originalFetch: typeof global.fetch = global.fetch
@@ -35,4 +35,42 @@ export const getTestUser = async (data?: Partial<UserWithUserProfile>): Promise<
 const updateUser = async (data: Partial<UserWithUserProfile>) => {
 	setup.pg['users'][0] = { ...await getTestUser(), ...data }
 	return setup.pg['users'][0]
+}
+
+export const getFormData = (anyData: { [x: string]: string | Blob | boolean }) => {
+	const data = new FormData()
+	for (const key of Object.keys(anyData)) data.append(key, anyData[key as keyof typeof anyData])
+	return data
+}
+
+export const getValidToken = async ({ almostExpiring }: { almostExpiring?: boolean; } = { almostExpiring: false }) => {
+	const user = await getTestUser()
+	return JwtManager.generateToken({
+		sub: user.id, verifiedEmail: true, ipAddress: setup['ipAddress'], expiresIn: almostExpiring ? 900 : undefined, user
+	})
+}
+
+export const getInvalidToken = async ({ invalidate }: {
+	invalidate: 'time' | 'userId' | 'ip'
+}) => {
+	const user = await getTestUser()
+
+	const invalidationTypes = {
+		'time': () => {
+			return JwtManager.generateToken({
+				sub: user.id, verifiedEmail: true, ipAddress: setup['ipAddress'], expiresIn: -10, user
+			})
+		},
+		'userId': () => {
+			return JwtManager.generateToken({
+				sub: 'aaa', verifiedEmail: true, ipAddress: setup['ipAddress'], user
+			})
+		},
+		'ip': () => {
+			return JwtManager.generateToken({
+				sub: user.id, verifiedEmail: true, ipAddress: 'aaa', user
+			})
+		}
+	}
+	return invalidationTypes[invalidate]()
 }

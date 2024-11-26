@@ -478,13 +478,8 @@
 			"delete": {
 				"operationId": "Delete",
 				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
+					"204": {
+						"description": ""
 					}
 				},
 				"description": "Delete the user of the system",
