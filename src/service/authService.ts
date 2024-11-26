@@ -87,10 +87,4 @@ export class AuthService {
 		user = await this.userRepository.update({ id: user.id, loginAttempts: 0 })
 		return { token: JwtManager.generateToken({ sub: user.id, user }) }
 	}
-
-	public async verifyEmail() {}
-
-	public async forgetPassword() {}
-
-	public async recoverPassword() {}
 }

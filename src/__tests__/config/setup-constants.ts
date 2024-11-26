@@ -14,6 +14,7 @@ type Setup = {
 		password: string;
 	};
 	authHeaders: RequestInit['headers'];
+	ipAddress: string;
 }
 
 export const setup: Setup = {
@@ -23,4 +24,5 @@ export const setup: Setup = {
 		username: 'example_user',
 		password: 'Password123!'
 	},
+	ipAddress: '::1',
 } as any
