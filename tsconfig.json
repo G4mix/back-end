@@ -37,14 +37,14 @@
       "@mocks": ["src/__tests__/mocks/index.ts"],
       "@tsoa-build/*": ["src/tsoa/*"]
     },
+    "typeRoots": ["src/types"],
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
-    "useUnknownInCatchVariables": true,
     "skipLibCheck": true,
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "useUnknownInCatchVariables": true
   },
-  "exclude": ["node_modules", "src/__tests__/*.ts"],
+  "exclude": ["./node_modules", "./src/__tests__"],
   "include": ["./src/**/*.ts"]
 }

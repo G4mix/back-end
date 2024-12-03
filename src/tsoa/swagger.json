@@ -55,79 +55,45 @@
 		"contact": {}
 	},
 	"paths": {
-		"/api/v1/auth/signup": {
-			"post": {
-				"operationId": "Signup",
-				"responses": {
-					"201": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Signup the user in the system",
-				"tags": [
-					"Authentication"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/AuthInput"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/signin": {
-			"post": {
-				"operationId": "Signin",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Signin the user in the system",
-				"tags": [
-					"Authentication"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/Pick_AuthInput.email-or-password_"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/like/post": {
+		"/api/v1/view": {
 			"get": {
-				"operationId": "LikePost",
+				"operationId": "ViewPost",
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"postId": {
+											"type": "string"
+										},
+										"created_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"userProfileId": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"postId",
+										"created_at",
+										"userProfileId",
+										"id"
+									],
+									"type": "object"
+								}
+							}
+						}
 					}
 				},
-				"description": "Like or unlike a post of an user",
+				"description": "View a post of the system",
 				"tags": [
-					"Like"
+					"View"
 				],
 				"security": [
 					{
@@ -135,14 +101,6 @@
 					}
 				],
 				"parameters": [
-					{
-						"in": "query",
-						"name": "isLiked",
-						"required": true,
-						"schema": {
-							"type": "boolean"
-						}
-					},
 					{
 						"in": "query",
 						"name": "postId",
@@ -154,41 +112,72 @@
 				]
 			}
 		},
-		"/api/v1/like/comment": {
-			"get": {
-				"operationId": "LikeComment",
+		"/api/v1/user": {
+			"patch": {
+				"operationId": "Update",
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
 					}
 				},
-				"description": "Like or unlike a comment of an user",
+				"description": "Update the user in the system",
 				"tags": [
-					"Like"
+					"User"
 				],
 				"security": [
 					{
 						"jwt": []
 					}
 				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "isLiked",
-						"required": true,
-						"schema": {
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "commentId",
-						"required": true,
-						"schema": {
-							"type": "string"
+				"parameters": [],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"username": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									},
+									"icon": {
+										"type": "string",
+										"format": "binary"
+									}
+								}
+							}
 						}
 					}
-				]
+				}
+			},
+			"delete": {
+				"operationId": "Delete",
+				"responses": {
+					"204": {
+						"description": ""
+					}
+				},
+				"description": "Delete the user of the system",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
 			}
 		},
 		"/api/v1/post": {
@@ -426,72 +415,78 @@
 				]
 			}
 		},
-		"/api/v1/user": {
-			"patch": {
-				"operationId": "Update",
+		"/api/v1/like/post": {
+			"get": {
+				"operationId": "LikePost",
 				"responses": {
 					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Update the user in the system",
-				"tags": [
-					"User"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [],
-				"requestBody": {
-					"required": false,
-					"content": {
-						"multipart/form-data": {
-							"schema": {
-								"type": "object",
-								"properties": {
-									"username": {
-										"type": "string"
-									},
-									"email": {
-										"type": "string"
-									},
-									"password": {
-										"type": "string"
-									},
-									"icon": {
-										"type": "string",
-										"format": "binary"
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"delete": {
-				"operationId": "Delete",
-				"responses": {
-					"204": {
 						"description": ""
 					}
 				},
-				"description": "Delete the user of the system",
+				"description": "Like or unlike a post of an user",
 				"tags": [
-					"User"
+					"Like"
 				],
 				"security": [
 					{
 						"jwt": []
 					}
 				],
-				"parameters": []
+				"parameters": [
+					{
+						"in": "query",
+						"name": "isLiked",
+						"required": true,
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/like/comment": {
+			"get": {
+				"operationId": "LikeComment",
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"description": "Like or unlike a comment of an user",
+				"tags": [
+					"Like"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "isLiked",
+						"required": true,
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "commentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		},
 		"/api/v1/comment/post/{postId}": {
@@ -507,10 +502,10 @@
 										"parentCommentId": {
 											"type": "string"
 										},
-										"postId": {
+										"content": {
 											"type": "string"
 										},
-										"content": {
+										"postId": {
 											"type": "string"
 										},
 										"updated_at": {
@@ -530,8 +525,8 @@
 									},
 									"required": [
 										"parentCommentId",
-										"postId",
 										"content",
+										"postId",
 										"updated_at",
 										"created_at",
 										"userProfileId",
@@ -676,10 +671,10 @@
 										"parentCommentId": {
 											"type": "string"
 										},
-										"postId": {
+										"content": {
 											"type": "string"
 										},
-										"content": {
+										"postId": {
 											"type": "string"
 										},
 										"updated_at": {
@@ -699,8 +694,8 @@
 									},
 									"required": [
 										"parentCommentId",
-										"postId",
 										"content",
+										"postId",
 										"updated_at",
 										"created_at",
 										"userProfileId",
@@ -832,61 +827,66 @@
 				]
 			}
 		},
-		"/api/v1/view": {
-			"get": {
-				"operationId": "ViewPost",
+		"/api/v1/auth/signup": {
+			"post": {
+				"operationId": "Signup",
+				"responses": {
+					"201": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Signup the user in the system",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AuthInput"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/signin": {
+			"post": {
+				"operationId": "Signin",
 				"responses": {
 					"200": {
 						"description": "",
 						"content": {
 							"application/json": {
-								"schema": {
-									"properties": {
-										"postId": {
-											"type": "string"
-										},
-										"created_at": {
-											"type": "string",
-											"format": "date-time"
-										},
-										"userProfileId": {
-											"type": "string"
-										},
-										"id": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"postId",
-										"created_at",
-										"userProfileId",
-										"id"
-									],
-									"type": "object"
-								}
+								"schema": {}
 							}
 						}
 					}
 				},
-				"description": "View a post of the system",
+				"description": "Signin the user in the system",
 				"tags": [
-					"View"
+					"Authentication"
 				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "postId",
-						"required": true,
-						"schema": {
-							"type": "string"
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Pick_AuthInput.email-or-password_"
+							}
 						}
 					}
-				]
+				}
 			}
 		}
 	},

@@ -4,14 +4,14 @@ import { ApiMessage } from '@constants'
 const { authHeaders, testUser: { email, password } } = setup
 
 describe('> [app] POST /auth/signin', () => {
-	singinWhenUserNotExists()
+	signinWhenUserNotExists()
 	signinWithWrongPassword()
 	signinWithSuccess()
 	signinWithSuccess2()
 })
 
-function singinWhenUserNotExists() {
-	it('singinWhenUserNotExists > USER_NOT_FOUND', async () => {
+function signinWhenUserNotExists() {
+	it('signinWhenUserNotExists > USER_NOT_FOUND', async () => {
 		const response = await fetchAPI('/auth/signin', 'POST', authHeaders, { email: 'aba', password })
 		await handleMessage({ response, message: 'USER_NOT_FOUND' })
 	})
