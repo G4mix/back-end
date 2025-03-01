@@ -10,6 +10,8 @@ RUN npm run build
 FROM node:20-alpine
 
 RUN apk update && apk add bash dos2unix
+RUN apk add --no-cache openssl
+
 
 WORKDIR /app
 

@@ -4,7 +4,7 @@ import { compilerOptions } from './tsconfig.json'
 const jestConfig: JestConfigWithTsJest = {
 	preset: 'ts-jest',
 	testEnvironment: 'node',
-	moduleDirectories: ['node_modules', '<rootDir>/src'],
+	moduleDirectories: ['node_modules', '<rootDir>/src', '<rootDir>/src/__tests__'],
 	modulePaths: [compilerOptions.baseUrl],
 	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
 	testRegex: 'src/.*\\.(test|spec)\\.[jt]s$',
