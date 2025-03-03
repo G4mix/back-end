@@ -7,7 +7,7 @@ export type UserWithUserProfile = User & { userProfile: UserProfile; }
 
 export class PostgresqlClientMock {
 	public users: UserWithUserProfile[] = []
-	public rawUndefined: boolean = false
+	public rawUndefined: boolean = false //ngm usa essa merda
 	
 	public get user(): Prisma.UserDelegate<DefaultArgs> {
 		return {

@@ -13,10 +13,12 @@ container
 
 export const app = container.resolve<App>(App)
 try {
-	app.start()
-	processWatcher(app)
-} catch(err) {
-	console.log(err)
+	if (!app.isRunning()) {
+		app.start()
+		processWatcher(app)
+	}
+} catch (err) {
+	console.error("> [app] Error starting app", err)
 }
 
 export default app.getInstance()

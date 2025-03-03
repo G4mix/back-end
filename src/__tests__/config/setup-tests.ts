@@ -17,9 +17,9 @@ beforeAll(async () => {
 	setup['s3ClientMock'] = container.resolve<S3ClientMock>('S3Client')
 })
 
-afterAll(() => {
+afterAll(async () => {
 	jest.fn().mockClear()
-	if (setup['app'].isRunning()) setup['app'].stop()
+	if (setup['app'].isRunning()) await setup['app'].stop()
 })
 
 beforeEach(async () => {
