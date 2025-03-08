@@ -55,63 +55,6 @@
 		"contact": {}
 	},
 	"paths": {
-		"/api/v1/view": {
-			"get": {
-				"operationId": "ViewPost",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"postId": {
-											"type": "string"
-										},
-										"created_at": {
-											"type": "string",
-											"format": "date-time"
-										},
-										"userProfileId": {
-											"type": "string"
-										},
-										"id": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"postId",
-										"created_at",
-										"userProfileId",
-										"id"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"description": "View a post of the system",
-				"tags": [
-					"View"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "postId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
 		"/api/v1/user": {
 			"patch": {
 				"operationId": "Update",
@@ -502,10 +445,10 @@
 										"parentCommentId": {
 											"type": "string"
 										},
-										"content": {
+										"postId": {
 											"type": "string"
 										},
-										"postId": {
+										"content": {
 											"type": "string"
 										},
 										"updated_at": {
@@ -525,8 +468,8 @@
 									},
 									"required": [
 										"parentCommentId",
-										"content",
 										"postId",
+										"content",
 										"updated_at",
 										"created_at",
 										"userProfileId",
@@ -671,10 +614,10 @@
 										"parentCommentId": {
 											"type": "string"
 										},
-										"content": {
+										"postId": {
 											"type": "string"
 										},
-										"postId": {
+										"content": {
 											"type": "string"
 										},
 										"updated_at": {
@@ -694,8 +637,8 @@
 									},
 									"required": [
 										"parentCommentId",
-										"content",
 										"postId",
+										"content",
 										"updated_at",
 										"created_at",
 										"userProfileId",
@@ -887,6 +830,63 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/v1/view": {
+			"get": {
+				"operationId": "ViewPost",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"postId": {
+											"type": "string"
+										},
+										"created_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"userProfileId": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"postId",
+										"created_at",
+										"userProfileId",
+										"id"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "View a post of the system",
+				"tags": [
+					"View"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		}
 	},

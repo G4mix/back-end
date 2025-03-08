@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const passwordValidation = z.string()
 	.regex(
-		/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,72}$/,
+		/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/,
 		'INVALID_PASSWORD'
 	)
 
