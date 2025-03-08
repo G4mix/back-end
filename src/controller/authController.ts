@@ -26,7 +26,7 @@ export class AuthController extends Controller {
 		const res = await this.authService.signup(body)
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		this.setHeader('Authorization', `Bearer ${res.token}`)
-		return
+		return res.user
 	}
 
 	/**
@@ -39,6 +39,6 @@ export class AuthController extends Controller {
 		const res = await this.authService.signin(body)
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		this.setHeader('Authorization', `Bearer ${res.token}`)
-		return
+		return res.user
 	}
 }

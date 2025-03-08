@@ -28,9 +28,9 @@ export class AuthService {
 
 		return {
 			token: JwtManager.generateToken({
-				sub: createdUser.id,
-				user: createdUser
-			})
+				sub: createdUser.id
+			}),
+			user: createdUser
 		}
 	}
 
@@ -85,6 +85,6 @@ export class AuthService {
 			return possibleErrors[attempts - 1]
 		}
 		user = await this.userRepository.update({ id: user.id, loginAttempts: 0 })
-		return { token: JwtManager.generateToken({ sub: user.id, user }) }
+		return { token: JwtManager.generateToken({ sub: user.id }), user }
 	}
 }

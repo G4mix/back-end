@@ -1,5 +1,4 @@
 import { EXPIRATION_TIME_TOKEN } from '@constants'
-import { User, UserProfile } from '@prisma/client'
 import { env } from '@config'
 import jwt from 'jsonwebtoken'
 
@@ -8,7 +7,6 @@ export type Claims = {
 	verifiedEmail?: boolean;
 	ipAddress?: string;
 	exp?: number;
-	user: Pick<User, 'username' | 'email' | 'verified' | 'created_at' | 'updated_at'> & { userProfile: UserProfile; };
 }
 
 export class JwtManager {
@@ -20,10 +18,9 @@ export class JwtManager {
 		sub,
 		verifiedEmail,
 		expiresIn=EXPIRATION_TIME_TOKEN,
-		ipAddress=undefined,
-		user
+		ipAddress=undefined
 	}: Claims & { expiresIn?: number }): string {
-		const claims: Claims = { sub, verifiedEmail, ipAddress, user }
+		const claims: Claims = { sub, verifiedEmail, ipAddress }
 		const token = jwt.sign(claims, env['JWT_SIGNING_KEY_SECRET'], { expiresIn })
 		return token
 	}

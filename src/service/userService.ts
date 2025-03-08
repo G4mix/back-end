@@ -32,7 +32,7 @@ export class UserService {
 			else data['icon'] = undefined
 		}
 		const user = await this.userRepository.update(data)
-		return { token: JwtManager.generateToken({ sub: user.id, user }) }
+		return { token: JwtManager.generateToken({ sub: user.id }), user }
 	}
 
 	public async delete({ id }: { id: string; }) {

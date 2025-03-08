@@ -36,7 +36,7 @@ export class UserController extends Controller {
 		const res = await this.userService.update(data)
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		this.setHeader('Authorization', `Bearer ${res.token}`)
-		return
+		return res.user
 	}
 
 	/**
