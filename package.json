@@ -10,7 +10,7 @@
     "db:mig:deploy": "prisma migrate deploy",
     "build": "npm run db:gen && tsoa spec-and-routes && tsc && easy-tspaths",
     "start": "node dist/index.js",
-    "test": "tsoa spec-and-routes && jest --coverage",
+    "test": "tsoa spec-and-routes && jest --coverage --verbose",
     "lint": "eslint --fix ./src"
   },
   "dependencies": {

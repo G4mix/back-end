@@ -2,7 +2,7 @@ import { PostgresqlClientMock, S3ClientMock, SESClientMock } from '@mocks'
 import { container } from '@ioc'
 import { Lifecycle } from 'tsyringe'
 import { setup } from '@setup'
-import { app } from '../..'
+import { TestApp } from '../app.test'
 
 beforeAll(async () => {
 	container
@@ -12,9 +12,11 @@ beforeAll(async () => {
 	container
 		.register('S3Client', { useClass: S3ClientMock }, { lifecycle: Lifecycle.Singleton })
 	setup['pg'] = container.resolve<PostgresqlClientMock>('PostgresqlClient')
-	setup['app'] = app
 	setup['sesClientMock'] = container.resolve<SESClientMock>('SESClient')
 	setup['s3ClientMock'] = container.resolve<S3ClientMock>('S3Client')
+	
+	const app = container.resolve<TestApp>(TestApp)
+	setup['app'] = app
 })
 
 afterAll(async () => {
@@ -26,6 +28,6 @@ beforeEach(async () => {
 	if (!setup['app'].isRunning()) setup['app'].start()
 	setup['pg']['users'] = []
 	setup['sesClientMock'].setType('send').setThrowError(false).setStatus('Success')
-	setup['s3ClientMock'].setType('send').setThrowError(false).setFileUrl('https://localhost:8080/image.png')
+	setup['s3ClientMock'].setType('send').setThrowError(false).setFileUrl('https://localhost:8081/image.png')
 })
 

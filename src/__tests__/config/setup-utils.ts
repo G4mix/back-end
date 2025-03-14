@@ -9,7 +9,7 @@ export const fetchAPI = async (url: URL, method: Method, headers?: RequestInit['
 	if (headers && headers['Content-Type' as keyof typeof headers] === 'application/json') {
 		body = JSON.stringify(body)
 	}
-	return await originalFetch(`http://localhost:8080/api/v1${url}`, {
+	return await originalFetch(`http://localhost:8081/api/v1${url}`, {
 		method, body: body as RequestInit['body'], headers, credentials: 'include'
 	})
 }

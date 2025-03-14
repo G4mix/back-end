@@ -1,5 +1,5 @@
 import type { PostgresqlClientMock } from '@mocks'
-import type { App } from '@config'
+import type { TestApp } from '../app.test';
 import { SESClientMock } from '../mocks/config/sesClientMock';
 import { S3ClientMock } from '../mocks/config/s3ClientMock';
 
@@ -7,7 +7,7 @@ type Setup = {
 	pg: PostgresqlClientMock;
 	sesClientMock: SESClientMock;
 	s3ClientMock: S3ClientMock;
-	app: App;
+	app: TestApp;
 	testUser: {
 		email: string;
 		username: string;

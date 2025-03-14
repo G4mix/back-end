@@ -16,7 +16,10 @@ import cors from 'cors'
 export class App {
 	private static instance: Application
 	private static server: Server<typeof IncomingMessage, typeof ServerResponse>
-	constructor() {
+	private readonly port: string | number
+
+	constructor(port?: number) {
+		this.port = port || (env['PORT'] as string) || 8080
 		App.instance = express()
 		App.config()
 		App.routes()
@@ -24,8 +27,8 @@ export class App {
 
 	public start(): App {
 		if (this.isRunning()) return this
-		App.server = App.instance.listen(env['PORT'] as string, async () => {
-			console.log(`> [app] App listening at the port ${env['PORT']}`)
+		App.server = App.instance.listen(this.port, async () => {
+			console.log(`> [app] App listening at the port ${this.port}`)
 		})
 		return this
 	}

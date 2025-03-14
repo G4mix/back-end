@@ -1,7 +1,7 @@
 export class S3ClientMock {
 	private _throwError: boolean = false
 	private _type: 'send' = 'send'
-	private _fileUrl: string | undefined = 'https://localhost:8080/image.png'
+	private _fileUrl: string | undefined = 'https://localhost:8081/image.png'
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async send(_something: any) {
