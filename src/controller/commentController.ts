@@ -28,7 +28,7 @@ export class CommentController extends Controller {
 				@Body() body: { content: string; }
 	) {
 		return await this.commentService.commentPost({
-			userProfileId: req.user.user.userProfile.id, postId, content: body.content
+			userProfileId: req.user.userProfileId, postId, content: body.content
 		})
 	}
 
@@ -46,7 +46,7 @@ export class CommentController extends Controller {
 				@Body() body: { content: string; }
 	) {
 		return await this.commentService.replyComment({
-			userProfileId: req.user.user.userProfile.id, commentId, content: body.content
+			userProfileId: req.user.userProfileId, commentId, content: body.content
 		})
 	}
 
