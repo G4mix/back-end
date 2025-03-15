@@ -1,6 +1,6 @@
 import { injectable, singleton } from 'tsyringe'
 import { UserRepository } from '@repository'
-import { BCryptEncoder, JwtManager } from '@utils'
+import { BCryptEncoder } from '@utils'
 import { MAX_SIZE, SUPPORTED_IMAGES } from '@constants'
 import { S3Service } from './s3Service'
 import { env } from '@config'
@@ -31,8 +31,7 @@ export class UserService {
 			if (userIconRes.fileUrl) data['icon'] = userIconRes.fileUrl
 			else data['icon'] = undefined
 		}
-		const user = await this.userRepository.update(data)
-		return { token: JwtManager.generateToken({ sub: user.id }), user }
+		return await this.userRepository.update(data)
 	}
 
 	public async delete({ id }: { id: string; }) {
