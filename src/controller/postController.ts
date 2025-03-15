@@ -33,7 +33,7 @@ export class PostController extends Controller {
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.createPost({
-				userProfileId: req.user.user.userProfile.id, title, content, links, tags, images
+				userProfileId: req.user.userProfileId, title, content, links, tags, images
 			}),
 			this
 		)
@@ -58,7 +58,7 @@ export class PostController extends Controller {
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.updatePost({
-				userProfileId: req.user.user.userProfile.id, postId, title, content, links, tags, images
+				userProfileId: req.user.userProfileId, postId, title, content, links, tags, images
 			}),
 			this
 		)
@@ -111,7 +111,7 @@ export class PostController extends Controller {
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.deletePost({
-				userProfileId: req.user.user.userProfile.id, postId
+				userProfileId: req.user.userProfileId, postId
 			}), this
 		)
 	}

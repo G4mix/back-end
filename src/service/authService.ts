@@ -29,10 +29,12 @@ export class AuthService {
 
 		const data = {
 			accessToken: JwtManager.generateToken({
-				sub: createdUser.id
+				sub: createdUser.id,
+				userProfileId: createdUser.userProfileId
 			}),
 			refreshToken: JwtManager.generateToken({
 				sub: createdUser.id,
+				userProfileId: createdUser.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
 			user: createdUser
@@ -96,10 +98,12 @@ export class AuthService {
 		user = await this.userRepository.update({ id: user.id, loginAttempts: 0 })
 		return {
 			accessToken: JwtManager.generateToken({
-				sub: user.id
+				sub: user.id,
+				userProfileId: user.userProfileId
 			}),
 			refreshToken: JwtManager.generateToken({
 				sub: user.id,
+				userProfileId: user.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
 			user
@@ -113,16 +117,18 @@ export class AuthService {
 		} catch (err) {
 			return 'UNAUTHORIZED'
 		}
-		
+
 		const user = await this.userRepository.findById({ id })
 		if (!user) return 'USER_NOT_FOUND'
 
 		const data = {
 			accessToken: JwtManager.generateToken({
-				sub: user.id
+				sub: user.id,
+				userProfileId: user.userProfileId
 			}),
 			refreshToken: JwtManager.generateToken({
 				sub: user.id,
+				userProfileId: user.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			})
 		}
