@@ -39,14 +39,14 @@ const updateUser = async (data: Partial<UserWithUserProfile>) => {
 
 export const getFormData = (anyData: { [x: string]: string | Blob | boolean }) => {
 	const data = new FormData()
-	for (const key of Object.keys(anyData)) data.append(key, anyData[key as keyof typeof anyData])
+	for (const key of Object.keys(anyData)) data.append(key, anyData[key as keyof typeof anyData] as any)
 	return data
 }
 
 export const getValidToken = async ({ almostExpiring }: { almostExpiring?: boolean; } = { almostExpiring: false }) => {
 	const user = await getTestUser()
 	return JwtManager.generateToken({
-		sub: user.id, verifiedEmail: true, ipAddress: setup['ipAddress'], expiresIn: almostExpiring ? 900 : undefined, user
+		sub: user.id, userProfileId: user.userProfileId, verifiedEmail: true, ipAddress: setup['ipAddress'], expiresIn: almostExpiring ? 900 : undefined
 	})
 }
 
@@ -58,17 +58,17 @@ export const getInvalidToken = async ({ invalidate }: {
 	const invalidationTypes = {
 		'time': () => {
 			return JwtManager.generateToken({
-				sub: user.id, verifiedEmail: true, ipAddress: setup['ipAddress'], expiresIn: -10, user
+				sub: user.id, verifiedEmail: true, ipAddress: setup['ipAddress'], expiresIn: -10, userProfileId: user.userProfileId
 			})
 		},
 		'userId': () => {
 			return JwtManager.generateToken({
-				sub: 'aaa', verifiedEmail: true, ipAddress: setup['ipAddress'], user
+				sub: 'aaa', verifiedEmail: true, ipAddress: setup['ipAddress'], userProfileId: user.userProfileId
 			})
 		},
 		'ip': () => {
 			return JwtManager.generateToken({
-				sub: user.id, verifiedEmail: true, ipAddress: 'aaa', user
+				sub: user.id, verifiedEmail: true, ipAddress: 'aaa', userProfileId: user.userProfileId
 			})
 		}
 	}

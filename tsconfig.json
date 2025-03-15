@@ -37,7 +37,7 @@
       "@mocks": ["src/__tests__/mocks/index.ts"],
       "@tsoa-build/*": ["src/tsoa/*"]
     },
-    "typeRoots": ["src/types"],
+    "typeRoots": ["src/types", "./node_modules/@types"],
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
