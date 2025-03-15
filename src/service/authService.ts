@@ -1,3 +1,4 @@
+import { EXPIRATION_TIME_REFRESH_TOKEN } from '@constants'
 import { JwtManager, BCryptEncoder } from '@utils'
 import { injectable, singleton } from 'tsyringe'
 import { UserRepository } from '@repository'
@@ -26,12 +27,20 @@ export class AuthService {
 			email
 		})
 
-		return {
-			token: JwtManager.generateToken({
+		const data = {
+			accessToken: JwtManager.generateToken({
 				sub: createdUser.id
+			}),
+			refreshToken: JwtManager.generateToken({
+				sub: createdUser.id,
+				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
 			user: createdUser
 		}
+
+		await this.userRepository.update({ token: data.refreshToken })
+
+		return data
 	}
 
 	public async signin({ email, password }: { email: string; password: string; }) {
@@ -85,6 +94,41 @@ export class AuthService {
 			return possibleErrors[attempts - 1]
 		}
 		user = await this.userRepository.update({ id: user.id, loginAttempts: 0 })
-		return { token: JwtManager.generateToken({ sub: user.id }), user }
+		return {
+			accessToken: JwtManager.generateToken({
+				sub: user.id
+			}),
+			refreshToken: JwtManager.generateToken({
+				sub: user.id,
+				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
+			}),
+			user
+		}
+	}
+
+	public async refreshToken({ token }: { token: string; }) {
+		let id
+		try {
+			id = JwtManager.decode(token).sub
+		} catch (err) {
+			return 'UNAUTHORIZED'
+		}
+		
+		const user = await this.userRepository.findById({ id })
+		if (!user) return 'USER_NOT_FOUND'
+
+		const data = {
+			accessToken: JwtManager.generateToken({
+				sub: user.id
+			}),
+			refreshToken: JwtManager.generateToken({
+				sub: user.id,
+				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
+			})
+		}
+
+		await this.userRepository.update({ token: data.refreshToken })
+
+		return data
 	}
 }

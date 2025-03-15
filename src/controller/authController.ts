@@ -25,8 +25,7 @@ export class AuthController extends Controller {
 	public async signup(@Body() body: AuthInput) {
 		const res = await this.authService.signup(body)
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
-		this.setHeader('Authorization', `Bearer ${res.token}`)
-		return res.user
+		return res
 	}
 
 	/**
@@ -38,7 +37,18 @@ export class AuthController extends Controller {
 	public async signin(@Body() body: Pick<AuthInput, 'email' | 'password'>) {
 		const res = await this.authService.signin(body)
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
-		this.setHeader('Authorization', `Bearer ${res.token}`)
-		return res.user
+		return res
+	}
+
+	/**
+	 * Refresh the user session in the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Post('/refresh-token')
+	public async refreshToken(@Body() body: { token: string; }) {
+		const res = await this.authService.refreshToken(body)
+		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+		return res
 	}
 }
