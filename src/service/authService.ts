@@ -5,6 +5,7 @@ import { UserRepository } from '@repository'
 import { AuthInput } from 'auth'
 import { SESService } from './sesService'
 import { ApiMessage } from '@constants'
+import { serializeUser } from '@serializers'
 
 @injectable()
 @singleton()
@@ -37,10 +38,10 @@ export class AuthService {
 				userProfileId: createdUser.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
-			user: createdUser
+			user: serializeUser(createdUser)
 		}
 
-		await this.userRepository.update({ token: data.refreshToken })
+		await this.userRepository.update({ id: createdUser.id, token: data.refreshToken })
 
 		return data
 	}
@@ -95,8 +96,8 @@ export class AuthService {
 			]
 			return possibleErrors[attempts - 1]
 		}
-		user = await this.userRepository.update({ id: user.id, loginAttempts: 0 })
-		return {
+
+		const data = {
 			accessToken: JwtManager.generateToken({
 				sub: user.id,
 				userProfileId: user.userProfileId
@@ -106,8 +107,12 @@ export class AuthService {
 				userProfileId: user.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
-			user
+			user: serializeUser(user)
 		}
+
+		user = await this.userRepository.update({ id: user.id, loginAttempts: 0, token: data.refreshToken })
+
+		return data
 	}
 
 	public async refreshToken({ token }: { token: string; }) {
@@ -133,7 +138,7 @@ export class AuthService {
 			})
 		}
 
-		await this.userRepository.update({ token: data.refreshToken })
+		await this.userRepository.update({ id: user.id, token: data.refreshToken })
 
 		return data
 	}

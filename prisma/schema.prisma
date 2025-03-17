@@ -20,7 +20,7 @@ model User {
   userProfileId String      @unique
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
-  refreshTokenId String       @unique
+  refreshTokenId String?       @unique
   refreshToken   RefreshToken? @relation(fields: [refreshTokenId], references: [id], onDelete: Cascade)
 
   created_at DateTime @default(now())

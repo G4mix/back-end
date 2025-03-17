@@ -4,6 +4,7 @@ import { BCryptEncoder } from '@utils'
 import { MAX_SIZE, SUPPORTED_IMAGES } from '@constants'
 import { S3Service } from './s3Service'
 import { env } from '@config'
+import { serializeUser } from '@serializers'
 
 @injectable()
 @singleton()
@@ -31,7 +32,7 @@ export class UserService {
 			if (userIconRes.fileUrl) data['icon'] = userIconRes.fileUrl
 			else data['icon'] = undefined
 		}
-		return await this.userRepository.update(data)
+		return serializeUser(await this.userRepository.update(data))
 	}
 
 	public async delete({ id }: { id: string; }) {
