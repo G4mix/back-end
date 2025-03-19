@@ -55,6 +55,36 @@
 		"contact": {}
 	},
 	"paths": {
+		"/api/v1/user/{email}": {
+			"get": {
+				"operationId": "Get",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Get the user of the system",
+				"tags": [
+					"User"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "email",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/v1/user": {
 			"patch": {
 				"operationId": "Update",
@@ -863,6 +893,100 @@
 								},
 								"required": [
 									"token"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/callback/{provider}": {
+			"get": {
+				"operationId": "CallbackSocialLoginGet",
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"description": "Callback to the app to get the social login",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "provider",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"google",
+								"linkedin",
+								"github"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "code",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/auth/social-login/{provider}": {
+			"post": {
+				"operationId": "SocialLogin",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Signin or Signup the user in the system with a social login",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "provider",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"google",
+								"linkedin",
+								"github"
+							]
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"codeVerifier": {
+										"type": "string"
+									},
+									"code": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"code"
 								],
 								"type": "object"
 							}

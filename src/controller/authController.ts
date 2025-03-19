@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares } from 'tsoa'
+import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares, Path, Request, Get, Query } from 'tsoa'
 import { AuthService } from '@service'
 import { injectable } from 'tsyringe'
 import { AuthInput } from 'src/types/auth'
@@ -6,6 +6,7 @@ import { ControllerUtils } from '@utils'
 import { userSignUpSchema } from '@schemas'
 import { schemaValidation } from '@middlewares'
 import { RequestHandler } from 'express'
+import { TsoaRequest } from 'src/types/tsoa'
 
 @injectable()
 @Route('api/v1/auth')
@@ -48,6 +49,28 @@ export class AuthController extends Controller {
 	@Post('/refresh-token')
 	public async refreshToken(@Body() body: { token: string; }) {
 		const res = await this.authService.refreshToken(body)
+		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+		return res
+	}
+
+	/**
+	 * Callback to the app to get the social login
+	 *
+	 */
+	@SuccessResponse(200)
+	@Get('/callback/{provider}')
+	public async callbackSocialLoginGet(@Path() provider: 'google' | 'linkedin' | 'github', @Request() req: TsoaRequest, @Query() code?: string) {
+		return req.res?.redirect(`com.gamix://auth/loading?provider=${provider}&code=${code}`)
+	}
+
+	/**
+	 * Signin or Signup the user in the system with a social login
+	 *
+	 */
+	@SuccessResponse(200)
+	@Post('/social-login/{provider}')
+	public async socialLogin(@Path() provider: 'google' | 'linkedin' | 'github', @Body() body: { code: string; codeVerifier?: string; }) {
+		const res = await this.authService.socialLogin({ provider, code: body.code, codeVerifier: body.codeVerifier })
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		return res
 	}

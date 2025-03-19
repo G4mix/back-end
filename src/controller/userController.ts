@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField, Middlewares } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField, Middlewares, Get, Path } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { UserService } from '@service'
 import { TsoaRequest } from 'src/types/tsoa'
@@ -13,6 +13,18 @@ import { updateUserSchema } from '@schemas'
 export class UserController extends Controller {
 	constructor(private userService: UserService) {
 		super()
+	}
+
+	/**
+	 * Get the user of the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Get('{email}')
+	public async get(@Path() email: string) {
+		const res = await this.userService.findByEmail({ email })
+		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+		return res
 	}
 
 	/**
