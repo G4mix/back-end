@@ -1,12 +1,11 @@
 import { EXPIRATION_TIME_REFRESH_TOKEN } from '@constants'
-import { JwtManager, BCryptEncoder, generateRandomPassword } from '@utils'
+import { JwtManager, BCryptEncoder, generateRandomPassword, socialLoginRequests } from '@utils'
 import { injectable, singleton } from 'tsyringe'
 import { UserRepository } from '@repository'
 import { AuthInput } from 'auth'
 import { SESService } from './sesService'
 import { ApiMessage } from '@constants'
 import { serializeUser } from '@serializers'
-import { env } from '@config'
 
 @injectable()
 @singleton()
@@ -117,135 +116,77 @@ export class AuthService {
 	}
 
 	public async socialLogin({ provider, code, codeVerifier }: { provider: 'google' | 'github' | 'linkedin'; code: string; codeVerifier?: string; }) {
-		const providers = {
-			'google': async () => {
-				try {
-					if (!codeVerifier) return null
-					const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/x-www-form-urlencoded',
-						},
-						body: new URLSearchParams({
-							client_id: env.GOOGLE_CLIENT_ID,
-							client_secret: env.GOOGLE_CLIENT_SECRET,
-							code,
-							codeVerifier,
-							redirect_uri: `${env.REDIRECT_URL}/api/v1/auth/callback/google`,
-							grant_type: 'authorization_code'
-						}).toString(),
-					})
-
-					const token = (await tokenRes.json() as any).access_token
-					const userDataRes = await fetch('https://www.googleapis.com/userinfo/v2/me', {
-						headers: { Authorization: `Bearer ${token}` }
-					})
-					const user = await userDataRes.json() as any
-					return { name: user.name, email: user.email }
-				} catch (err) {
-					return null
-				}
-			},
-			'github': async () => {
-				try {
-					const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-							'Accept': 'application/json'
-						},
-						body: JSON.stringify({
-							client_id: env.GITHUB_CLIENT_ID,
-							client_secret: env.GITHUB_CLIENT_SECRET,
-							code,
-							redirect_uri: `${env.REDIRECT_URL}/api/v1/auth/callback/github`
-						}).toString(),
-					})
-
-					const token = (await tokenRes.json() as any).access_token
-
-					const userRes = await fetch('https://api.github.com/user', {
-						headers: {
-							'Accept': 'application/json',
-							'Authorization': `Bearer ${token}`
-						},
-					})
-
-					const user = await userRes.json() as any
-
-					const emailRes = await fetch('https://api.github.com/user/emails', {
-						headers: {
-							'Accept': 'application/json',
-							'Authorization': `Bearer ${token}`
-						},
-					})
-
-					const emails = await emailRes.json() as any
-
-					const primaryEmail = emails.find((email: any) => email.primary && email.verified)?.email
-
-					return { name: user.name, email: primaryEmail || null }
-				} catch (err) {
-					return null
-				}
-			},
-			'linkedin': async () => {
-				try {
-					const tokenRes = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/x-www-form-urlencoded',
-						},
-						body: new URLSearchParams({
-							grant_type: 'authorization_code',
-							code,
-							client_id: env.LINKEDIN_CLIENT_ID,
-							client_secret: env.LINKEDIN_CLIENT_SECRET,
-							redirect_uri: `${env.REDIRECT_URL}/api/v1/auth/callback/linkedin`
-						}).toString()
-					})
-
-					const token = (await tokenRes.json() as any).access_token
-					const userDataRes = await fetch('https://api.linkedin.com/v2/userinfo', {
-						headers: { Authorization: `Bearer ${token}` }
-					})
-					const user = await userDataRes.json() as any
-					console.log(user)
-					return { name: user.name, email: user.email }
-				} catch (err) {
-					return null
-				}
-			}
-		}
-
+		const providers = this.getProviders({ code, codeVerifier })
 		const executeSocialLogin = providers[provider]
 		if (!executeSocialLogin) return 'PROVIDER_NOT_FOUND'
 
-		const userData = await executeSocialLogin() as { email: string; name: string; }
+		let userData: { email: string; name: string; } | null
+		try {
+			userData = await executeSocialLogin()
+		} catch (err) {
+			userData = null
+		}
 		if (!userData) return 'USER_NOT_FOUND'
 
-		let user = await this.userRepository.findByEmail({ email: userData.email })
-		if (!user) {
-			user = await this.userRepository.create({ username: userData.name, email: userData.email, password: BCryptEncoder.encode(generateRandomPassword()) })
+		let oauthUser = await this.userRepository.findOAuthUser({ provider, email: userData.email })
+		if (!oauthUser) {
+			let user = await this.userRepository.findByEmail({ email: userData.email })
+			if (user) return 'PROVIDER_NOT_LINKED'
+
+			user = await this.userRepository.create({
+				username: userData.name,
+				email: userData.email,
+				password: BCryptEncoder.encode(generateRandomPassword())
+			})
+			oauthUser = await this.userRepository.linkOAuthProvider({
+				userId: user.id,
+				provider,
+				email: userData.email
+			})
 		}
 
 		const data = {
 			accessToken: JwtManager.generateToken({
-				sub: user.id,
-				userProfileId: user.userProfileId
+				sub: oauthUser.user.id,
+				userProfileId: oauthUser.user.userProfileId
 			}),
 			refreshToken: JwtManager.generateToken({
-				sub: user.id,
-				userProfileId: user.userProfileId,
+				sub: oauthUser.user.id,
+				userProfileId: oauthUser.user.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
-			user: serializeUser(user)
+			user: serializeUser(oauthUser.user)
 		}
 
-		await this.userRepository.update({ id: user.id, token: data.refreshToken })
+		await this.userRepository.update({ id: oauthUser.user.id, token: data.refreshToken })
 
 		return data
 	}
+
+	public async linkNewOAuthProvider({ userId, provider, code, codeVerifier }: { userId: string; provider: 'google' | 'github' | 'linkedin'; code: string; codeVerifier?: string; }) {
+		const providers = this.getProviders({ code, codeVerifier })
+		const executeSocialLogin = providers[provider]
+		if (!executeSocialLogin) return 'PROVIDER_NOT_FOUND'
+
+		let userData: { email: string; name: string; } | null
+		try {
+			userData = await executeSocialLogin()
+		} catch (err) {
+			userData = null
+		}
+		if (!userData) return 'USER_NOT_FOUND'
+
+		const user = await this.userRepository.findById({ id: userId })
+		if (!user) return 'USER_NOT_FOUND'
+
+		const existingLink = await this.userRepository.findOAuthUser({ provider, email: userData.email })
+		if (existingLink) return 'PROVIDER_ALREADY_LINKED'
+
+		await this.userRepository.linkOAuthProvider({ userId, provider, email: userData.email })
+
+		return { success: true }
+	}
+
 
 	public async refreshToken({ token }: { token: string; }) {
 		let id
@@ -273,5 +214,32 @@ export class AuthService {
 		await this.userRepository.update({ id: user.id, token: data.refreshToken })
 
 		return data
+	}
+
+	private getProviders({ code, codeVerifier }: { code: string; codeVerifier?: string; }) {
+		const { google, github, linkedin } = socialLoginRequests
+
+		return {
+			'google': async () => {
+				if (!codeVerifier) return null
+				const token = await google.getToken({ code, codeVerifier })
+				const user = await google.getUserData({ token })
+				await google.revokeToken({ token })
+				return { name: user.name, email: user.email }
+			},
+			'github': async () => {
+				const token = await github.getToken({ code })
+				const user = await github.getUserData({ token })
+				const primaryEmail = await github.getUserPrimaryEmail({ token })
+				await github.revokeToken({ token })
+				return { name: user.name, email: primaryEmail || null }
+			},
+			'linkedin': async () => {
+				const token = await linkedin.getToken({ code })
+				const user = await linkedin.getUser({ token })
+				await linkedin.revokeToken({ token })
+				return { name: user.name, email: user.email }
+			}
+		}
 	}
 }

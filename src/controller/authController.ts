@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares, Path, Request, Get, Query } from 'tsoa'
+import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares, Path, Request, Get, Query, Security } from 'tsoa'
 import { AuthService } from '@service'
 import { injectable } from 'tsyringe'
 import { AuthInput } from 'src/types/auth'
@@ -24,7 +24,7 @@ export class AuthController extends Controller {
 	@Post('/signup')
 	@Middlewares<RequestHandler>(schemaValidation(userSignUpSchema))
 	public async signup(@Body() body: AuthInput) {
-		const res = await this.authService.signup(body)
+		const res = await this.authService.signup({ ...body, email: body.email.toLowerCase() })
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		return res
 	}
@@ -36,7 +36,7 @@ export class AuthController extends Controller {
 	@SuccessResponse(200)
 	@Post('/signin')
 	public async signin(@Body() body: Pick<AuthInput, 'email' | 'password'>) {
-		const res = await this.authService.signin(body)
+		const res = await this.authService.signin({ ...body, email: body.email.toLowerCase() })
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		return res
 	}
@@ -71,6 +71,19 @@ export class AuthController extends Controller {
 	@Post('/social-login/{provider}')
 	public async socialLogin(@Path() provider: 'google' | 'linkedin' | 'github', @Body() body: { code: string; codeVerifier?: string; }) {
 		const res = await this.authService.socialLogin({ provider, code: body.code, codeVerifier: body.codeVerifier })
+		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+		return res
+	}
+
+	/**
+	 * Link another oauth provider to your account
+	 *
+	 */
+	@SuccessResponse(200)
+	@Post('/link-new-oauth-provider/{provider}')
+	@Security('jwt', [])
+	public async linkNewOAuthProvider(@Path() provider: 'google' | 'linkedin' | 'github', @Body() body: { code: string; codeVerifier?: string; }, @Request() req: TsoaRequest) {
+		const res = await this.authService.linkNewOAuthProvider({ userId: req.user.sub, provider, code: body.code, codeVerifier: body.codeVerifier })
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		return res
 	}

@@ -55,7 +55,7 @@
 		"contact": {}
 	},
 	"paths": {
-		"/api/v1/user/{email}": {
+		"/api/v1/user/exists/{email}": {
 			"get": {
 				"operationId": "Get",
 				"responses": {
@@ -68,7 +68,7 @@
 						}
 					}
 				},
-				"description": "Get the user of the system",
+				"description": "Verify if exists an user with the email in the system",
 				"tags": [
 					"User"
 				],
@@ -957,6 +957,66 @@
 					"Authentication"
 				],
 				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "provider",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"google",
+								"linkedin",
+								"github"
+							]
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"codeVerifier": {
+										"type": "string"
+									},
+									"code": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"code"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/link-new-oauth-provider/{provider}": {
+			"post": {
+				"operationId": "LinkNewOAuthProvider",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Link another oauth provider to your account",
+				"tags": [
+					"Authentication"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
 				"parameters": [
 					{
 						"in": "path",

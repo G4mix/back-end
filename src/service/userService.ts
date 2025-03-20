@@ -14,10 +14,9 @@ export class UserService {
 		private s3Service: S3Service
 	) {}
 
-	public async findByEmail({ email }: { email: string; }) {
-		const user = await this.userRepository.findByEmail({ email })
-		if (!user) return 'USER_NOT_FOUND'
-		return serializeUser(user)
+	public async existsByEmail({ email }: { email: string; }) {
+		const count = await this.userRepository.count({ email })
+		return count > 0 ? { exists: true } : 'USER_NOT_FOUND'
 	}
 
 	public async update(data: { id: string; username?: string; email?: string; password?: string; icon?: Express.Multer.File | string; verified?: boolean; }) {
