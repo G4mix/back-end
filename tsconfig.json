@@ -3,7 +3,7 @@
     "incremental": true,
     "target": "es6",
     "lib": ["es2021"],
-    "rootDir": "./src",
+    "rootDir": "src",
     "module": "commonjs",
     "outDir": "dist",
     "strict": true,
@@ -38,7 +38,7 @@
       "@mocks": ["src/__tests__/mocks/index.ts"],
       "@tsoa-build/*": ["src/tsoa/*"]
     },
-    "typeRoots": ["src/types", "./node_modules/@types"],
+    "typeRoots": ["src/types"],
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -46,6 +46,6 @@
     "skipLibCheck": true,
     "useUnknownInCatchVariables": true
   },
-  "exclude": ["./node_modules", "./src/__tests__"],
-  "include": ["./src/**/*.ts"]
+  "exclude": ["node_modules", "src/__tests__"],
+  "include": ["src/**/*.ts"]
 }
