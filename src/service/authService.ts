@@ -117,7 +117,6 @@ export class AuthService {
 
 	public async handleCallbackUrl({ provider, code, codeVerifier }: { provider: 'google' | 'github' | 'linkedin'; code?: string; codeVerifier?: string; }) {
 		const { google, github, linkedin } = socialLoginRequests
-		console.log(code, provider, codeVerifier)
 		if (!code) return null
 
 		const providers = {
