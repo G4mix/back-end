@@ -117,16 +117,13 @@ export class AuthService {
 
 	public async handleCallbackUrl({ provider, code, codeVerifier }: { provider: 'google' | 'github' | 'linkedin'; code?: string; codeVerifier?: string; }) {
 		const { google, github, linkedin } = socialLoginRequests
-
+		console.log(code, provider, codeVerifier)
 		if (!code) return null
 
 		const providers = {
-			google: async () => {
-				if (!codeVerifier) return null
-				return await google.getToken({ code, codeVerifier })
-			},
-			linkedin: async () => await github.getToken({ code }),
-			github: async () => await linkedin.getToken({ code })
+			google: async () => codeVerifier ? google.getToken({ code, codeVerifier }) : null,
+			linkedin: async () => github.getToken({ code }),
+			github: async () => linkedin.getToken({ code })
 		}
 
 		const executeSocialLogin = providers[provider]
@@ -135,6 +132,7 @@ export class AuthService {
 		try {
 			return executeSocialLogin()
 		} catch (err) {
+			console.log(err)
 			return null
 		}
 	}

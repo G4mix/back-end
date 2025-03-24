@@ -60,7 +60,6 @@ export class AuthController extends Controller {
 	@SuccessResponse(200)
 	@Get('/callback/{provider}')
 	public async callbackSocialLoginGet(@Path() provider: 'google' | 'linkedin' | 'github', @Request() req: TsoaRequest, @Query() code?: string, @Query() state?: string) {
-		console.log(state)
 		const token = await this.authService.handleCallbackUrl({ provider, code, codeVerifier: state })
 		const res = req.res
 		if (!token) return res?.redirect(`com.gamix://auth/loading?provider=${provider}&error=LOGIN_WITH_${provider.toUpperCase()}_FAILED`)
