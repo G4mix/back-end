@@ -115,8 +115,32 @@ export class AuthService {
 		return data
 	}
 
-	public async socialLogin({ provider, code, codeVerifier }: { provider: 'google' | 'github' | 'linkedin'; code: string; codeVerifier?: string; }) {
-		const providers = this.getProviders({ code, codeVerifier })
+	public async handleCallbackUrl({ provider, code, codeVerifier }: { provider: 'google' | 'github' | 'linkedin'; code?: string; codeVerifier?: string; }) {
+		const { google, github, linkedin } = socialLoginRequests
+
+		if (!code) return null
+
+		const providers = {
+			google: async () => {
+				if (!codeVerifier) return null
+				return await google.getToken({ code, codeVerifier })
+			},
+			linkedin: async () => await github.getToken({ code }),
+			github: async () => await linkedin.getToken({ code })
+		}
+
+		const executeSocialLogin = providers[provider]
+		if (!executeSocialLogin) return null
+
+		try {
+			return executeSocialLogin()
+		} catch (err) {
+			return null
+		}
+	}
+
+	public async socialLogin({ provider, token }: { provider: 'google' | 'github' | 'linkedin'; token: string; }) {
+		const providers = this.getProviders({ token })
 		const executeSocialLogin = providers[provider]
 		if (!executeSocialLogin) return 'PROVIDER_NOT_FOUND'
 
@@ -163,8 +187,8 @@ export class AuthService {
 		return data
 	}
 
-	public async linkNewOAuthProvider({ userId, provider, code, codeVerifier }: { userId: string; provider: 'google' | 'github' | 'linkedin'; code: string; codeVerifier?: string; }) {
-		const providers = this.getProviders({ code, codeVerifier })
+	public async linkNewOAuthProvider({ userId, provider, token }: { userId: string; provider: 'google' | 'github' | 'linkedin'; token: string; }) {
+		const providers = this.getProviders({ token })
 		const executeSocialLogin = providers[provider]
 		if (!executeSocialLogin) return 'PROVIDER_NOT_FOUND'
 
@@ -216,26 +240,22 @@ export class AuthService {
 		return data
 	}
 
-	private getProviders({ code, codeVerifier }: { code: string; codeVerifier?: string; }) {
+	private getProviders({ token }: { token: string; }) {
 		const { google, github, linkedin } = socialLoginRequests
 
 		return {
 			'google': async () => {
-				if (!codeVerifier) return null
-				const token = await google.getToken({ code, codeVerifier })
 				const user = await google.getUserData({ token })
 				await google.revokeToken({ token })
 				return { name: user.name, email: user.email }
 			},
 			'github': async () => {
-				const token = await github.getToken({ code })
 				const user = await github.getUserData({ token })
 				const primaryEmail = await github.getUserPrimaryEmail({ token })
 				await github.revokeToken({ token })
 				return { name: user.name, email: primaryEmail || null }
 			},
 			'linkedin': async () => {
-				const token = await linkedin.getToken({ code })
 				const user = await linkedin.getUser({ token })
 				await linkedin.revokeToken({ token })
 				return { name: user.name, email: user.email }

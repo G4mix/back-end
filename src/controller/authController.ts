@@ -59,8 +59,12 @@ export class AuthController extends Controller {
 	 */
 	@SuccessResponse(200)
 	@Get('/callback/{provider}')
-	public async callbackSocialLoginGet(@Path() provider: 'google' | 'linkedin' | 'github', @Request() req: TsoaRequest, @Query() code?: string) {
-		return req.res?.redirect(`com.gamix://auth/loading?provider=${provider}&code=${code}`)
+	public async callbackSocialLoginGet(@Path() provider: 'google' | 'linkedin' | 'github', @Request() req: TsoaRequest, @Query() code?: string, @Query() state?: string) {
+		console.log(state)
+		const token = await this.authService.handleCallbackUrl({ provider, code, codeVerifier: state })
+		const res = req.res
+		if (!token) return res?.redirect(`com.gamix://auth/loading?provider=${provider}&error=LOGIN_WITH_${provider.toUpperCase()}_FAILED`)
+		return res?.redirect(`com.gamix://auth/loading?provider=${provider}&token=${token}`)
 	}
 
 	/**
@@ -69,8 +73,8 @@ export class AuthController extends Controller {
 	 */
 	@SuccessResponse(200)
 	@Post('/social-login/{provider}')
-	public async socialLogin(@Path() provider: 'google' | 'linkedin' | 'github', @Body() body: { code: string; codeVerifier?: string; }) {
-		const res = await this.authService.socialLogin({ provider, code: body.code, codeVerifier: body.codeVerifier })
+	public async socialLogin(@Path() provider: 'google' | 'linkedin' | 'github', @Body() body: { token: string; }) {
+		const res = await this.authService.socialLogin({ provider, token: body.token })
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		return res
 	}
@@ -82,8 +86,8 @@ export class AuthController extends Controller {
 	@SuccessResponse(200)
 	@Post('/link-new-oauth-provider/{provider}')
 	@Security('jwt', [])
-	public async linkNewOAuthProvider(@Path() provider: 'google' | 'linkedin' | 'github', @Body() body: { code: string; codeVerifier?: string; }, @Request() req: TsoaRequest) {
-		const res = await this.authService.linkNewOAuthProvider({ userId: req.user.sub, provider, code: body.code, codeVerifier: body.codeVerifier })
+	public async linkNewOAuthProvider(@Path() provider: 'google' | 'linkedin' | 'github', @Body() body: { token: string; }, @Request() req: TsoaRequest) {
+		const res = await this.authService.linkNewOAuthProvider({ userId: req.user.sub, provider, token: body.token })
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		return res
 	}
