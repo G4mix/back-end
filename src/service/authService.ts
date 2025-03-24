@@ -122,8 +122,8 @@ export class AuthService {
 
 		const providers = {
 			google: async () => codeVerifier ? google.getToken({ code, codeVerifier }) : null,
-			linkedin: async () => github.getToken({ code }),
-			github: async () => linkedin.getToken({ code })
+			linkedin: async () => linkedin.getToken({ code }),
+			github: async () => github.getToken({ code })
 		}
 
 		const executeSocialLogin = providers[provider]
