@@ -20,8 +20,27 @@ model User {
   userProfileId String      @unique
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
+  refreshTokenId String?       @unique
+  refreshToken   RefreshToken? @relation(fields: [refreshTokenId], references: [id], onDelete: Cascade)
+
+  oauthAccounts UserOAuth[]
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+model UserOAuth {
+  id       String @id @default(uuid())
+  provider String
+
+  email  String @unique
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+
+  @@unique([provider, email])
+  @@index([userId])
 }
 
 model UserProfile {
@@ -153,4 +172,11 @@ model Like {
   @@index([postId])
   @@index([commentId])
   @@index([userProfileId])
+}
+
+model RefreshToken {
+  id    String @id @default(uuid())
+  token String
+
+  user User?
 }

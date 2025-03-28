@@ -26,7 +26,6 @@ jobs:
         run: |
           echo "PG_DB_URL=postgresql://gamix:gamix-postgres-db@localhost:5432/gamix" >> .env && \
           echo "PORT=8080" >> .env && \
-          echo "FRONTEND_URL=http://localhost:3030" >> .env && \
           echo "AWS_S3_KEY=dawdwadwa" >> .env && \
           echo "AWS_S3_SECRET=dawdwadwa" >> .env && \
           echo "AWS_SES_KEY=dwadwadwa" >> .env && \
@@ -34,7 +33,14 @@ jobs:
           echo "NODE_ENV=development" >> .env && \
           echo "JWT_SIGNING_KEY_SECRET=dwadwawajmdoiwandçiwand.dwad21cxajddwaikdawid.dwawadwadwaidjiwajdwajdwa" >> .env && \
           echo "PUBLIC_BUCKET_NAME=gamix-pub" >> .env && \
-          echo "PRIVATE_BUCKET_NAME=gamix-priv" >> .env
+          echo "PRIVATE_BUCKET_NAME=gamix-priv" >> .env && \
+          echo "GOOGLE_CLIENT_ID=dwadwadwa" >> .env && \
+          echo "GOOGLE_CLIENT_SECRET=dwadwadwa" >> .env && \
+          echo "GITHUB_CLIENT_ID=dwadwadwa" >> .env && \
+          echo "GITHUB_CLIENT_SECRET=dwadwadwa" >> .env && \
+          echo "LINKEDIN_CLIENT_ID=dwadwadwa" >> .env && \
+          echo "LINKEDIN_CLIENT_SECRET=dwadwadwa" >> .env && \
+          echo "REDIRECT_URL=http://localhost:8080" >> .env
       - name: run tests
         run: |
           npm run db:gen && npm run test

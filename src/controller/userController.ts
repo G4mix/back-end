@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField, Middlewares } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField, Middlewares, Get, Path } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { UserService } from '@service'
 import { TsoaRequest } from 'src/types/tsoa'
@@ -16,6 +16,18 @@ export class UserController extends Controller {
 	}
 
 	/**
+	 * Verify if exists an user with the email in the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Get('/exists/{email}')
+	public async get(@Path() email: string) {
+		const res = await this.userService.existsByEmail({ email: email.toLowerCase() })
+		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+		return res
+	}
+
+	/**
 	 * Update the user in the system
 	 *
 	 */
@@ -30,13 +42,13 @@ export class UserController extends Controller {
 		@FormField() password?: string,
 		@UploadedFile() icon?: Express.Multer.File
 	) {
-		const data = {
-			id: req.user.sub, username, email, password, icon
+		const data: { id: string; username?: string; password?: string; icon?: Express.Multer.File; email?: string; } = {
+			id: req.user.sub, username, password, icon
 		}
+		if (email) data['email'] = email.toLowerCase()
 		const res = await this.userService.update(data)
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
-		this.setHeader('Authorization', `Bearer ${res.token}`)
-		return
+		return res
 	}
 
 	/**

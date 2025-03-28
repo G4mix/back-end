@@ -55,6 +55,36 @@
 		"contact": {}
 	},
 	"paths": {
+		"/api/v1/user/exists/{email}": {
+			"get": {
+				"operationId": "Get",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Verify if exists an user with the email in the system",
+				"tags": [
+					"User"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "email",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/v1/user": {
 			"patch": {
 				"operationId": "Update",
@@ -826,6 +856,199 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/Pick_AuthInput.email-or-password_"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/refresh-token": {
+			"post": {
+				"operationId": "RefreshToken",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Refresh the user session in the system",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"token": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"token"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/callback/{provider}": {
+			"get": {
+				"operationId": "CallbackSocialLoginGet",
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"description": "Callback to the app to get the social login",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "provider",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"google",
+								"linkedin",
+								"github"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "code",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/auth/social-login/{provider}": {
+			"post": {
+				"operationId": "SocialLogin",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Signin or Signup the user in the system with a social login",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "provider",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"google",
+								"linkedin",
+								"github"
+							]
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"codeVerifier": {
+										"type": "string"
+									},
+									"code": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"code"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/link-new-oauth-provider/{provider}": {
+			"post": {
+				"operationId": "LinkNewOAuthProvider",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Link another oauth provider to your account",
+				"tags": [
+					"Authentication"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "provider",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"google",
+								"linkedin",
+								"github"
+							]
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"codeVerifier": {
+										"type": "string"
+									},
+									"code": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"code"
+								],
+								"type": "object"
 							}
 						}
 					}

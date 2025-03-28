@@ -50,7 +50,7 @@ jobs:
         uses: chrnorm/deployment-action@v2
         with:
           token: '${{ github.token }}'
-          environment-url: ${{steps.vercel-deploy.outputs.preview-url}}
+          environment-url: https://preview-gamix-backend.vercel.app
           environment: 'preview'
           initial-status: 'success'
           transient-environment: false

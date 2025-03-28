@@ -24,7 +24,7 @@ export class LikeController extends Controller {
         @Query() postId: string
 	) {
 		return await this.likeService.likePost({
-			userProfileId: req.user.user.userProfile.id, postId, isLiked
+			userProfileId: req.user.userProfileId, postId, isLiked
 		})
 	}
 
@@ -41,7 +41,7 @@ export class LikeController extends Controller {
         @Query() commentId: string
 	) {
 		return await this.likeService.likeComment({
-			userProfileId: req.user.user.userProfile.id, commentId, isLiked
+			userProfileId: req.user.userProfileId, commentId, isLiked
 		})
 	}
 }

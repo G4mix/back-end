@@ -1,9 +1,10 @@
 import { injectable, singleton } from 'tsyringe'
 import { UserRepository } from '@repository'
-import { BCryptEncoder, JwtManager } from '@utils'
+import { BCryptEncoder } from '@utils'
 import { MAX_SIZE, SUPPORTED_IMAGES } from '@constants'
 import { S3Service } from './s3Service'
 import { env } from '@config'
+import { serializeUser } from '@serializers'
 
 @injectable()
 @singleton()
@@ -12,6 +13,11 @@ export class UserService {
 		private userRepository: UserRepository,
 		private s3Service: S3Service
 	) {}
+
+	public async existsByEmail({ email }: { email: string; }) {
+		const count = await this.userRepository.count({ email })
+		return count > 0 ? { exists: true } : 'USER_NOT_FOUND'
+	}
 
 	public async update(data: { id: string; username?: string; email?: string; password?: string; icon?: Express.Multer.File | string; verified?: boolean; }) {
 		if (data.email) {
@@ -31,8 +37,7 @@ export class UserService {
 			if (userIconRes.fileUrl) data['icon'] = userIconRes.fileUrl
 			else data['icon'] = undefined
 		}
-		const user = await this.userRepository.update(data)
-		return { token: JwtManager.generateToken({ sub: user.id, user }) }
+		return serializeUser(await this.userRepository.update(data))
 	}
 
 	public async delete({ id }: { id: string; }) {

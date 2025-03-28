@@ -22,6 +22,6 @@ export class ViewController extends Controller {
 		@Request() req: TsoaRequest,
 		@Query() postId: string
 	) {
-		return await this.viewService.viewPost({ userProfileId: req.user.user.userProfile.id, postId })
+		return await this.viewService.viewPost({ userProfileId: req.user.userProfileId, postId })
 	}
 }
