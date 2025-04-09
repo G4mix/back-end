@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { Id } from 'general'
 import { PostInput } from 'src/types/post'
 import { ImageInput } from 'src/types/image'
-import { serializeAuthor } from 'src/serializers/serializeAuthor'
+import { serializeAuthor } from '@serializers'
 
 @injectable()
 @singleton()
