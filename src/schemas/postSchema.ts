@@ -6,7 +6,4 @@ export const postSchema = z.object({
 	// links: z.undefined().or(z.array(z.string().url()).max(5, 'TOO_MANY_LINKS')),
 	// tags: z.undefined().or(z.array(z.string()).max(10, 'TOO_MANY_TAGS')),
 	// images: z.undefined().or(z.array(z.string().url()).max(8, 'TOO_MANY_IMAGES'))
-	links: z.any(),
-	tags: z.any(),
-	images: z.any()
 })
