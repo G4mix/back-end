@@ -120,7 +120,7 @@ export class PostRepository {
 	}) {
 		const where = {
 			authorId,
-			createdAt: {
+			created_at: {
 				lte: new Date(since)
 			}
 		}
