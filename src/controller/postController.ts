@@ -72,12 +72,16 @@ export class PostController extends Controller {
 	@Get()
 	@Security('jwt', [])
 	public async findAllPosts(
-        @Query() page: number,
-        @Query() quantity: number,
-        @Query() userProfileId?: string
+		@Query() tab: 'following' | 'recommendations' | 'highlights',
+		@Query() since: string,
+		@Query() page: number,
+		@Query() quantity: number,
+		@Query() userProfileId?: string
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.findAllPosts({
+				tab,
+				since,
 				page,
 				quantity,
 				userProfileId

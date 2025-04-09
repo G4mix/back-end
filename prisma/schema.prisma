@@ -104,7 +104,7 @@ model Tag {
 
 model Link {
   id  String @id @default(uuid())
-  url String @db.VarChar(50)
+  url String @db.VarChar(700)
 
   postId String
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)

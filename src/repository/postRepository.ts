@@ -110,9 +110,20 @@ export class PostRepository {
 	}
 
 	public async findAll({
-		page, quantity, userProfileId: authorId
-	}: { page: number; quantity: number; userProfileId?: string; }) {
-		const where = { authorId }
+		since, page, quantity, userProfileId: authorId
+	}: {
+		tab: 'following' | 'recommendations' | 'highlights';
+		since: string;
+		page: number;
+		quantity: number;
+		userProfileId?: string;
+	}) {
+		const where = {
+			authorId,
+			createdAt: {
+				lte: new Date(since)
+			}
+		}
 		const [total, data] = await this.pg.$transaction([
 			this.pg.post.count({
 				where,
