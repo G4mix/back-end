@@ -40,6 +40,7 @@ export class PostRepository {
 				}
 			},
 			include: {
+				author: { include: { user: true } },
 				images: true,
 				links: true,
 				tags: true,
@@ -55,6 +56,7 @@ export class PostRepository {
 		delete (post as any)['_count']
 		return {
 			...post,
+			author: serializeAuthor(post.author),
 			likesCount: count.likes,
 			viewsCount: count.views
 		}
@@ -90,6 +92,7 @@ export class PostRepository {
 				}
 			},
 			include: {
+				author: { include: { user: true } },
 				images: true,
 				links: true,
 				tags: true,
@@ -105,6 +108,7 @@ export class PostRepository {
 		delete (post as any)['_count']
 		return {
 			...post,
+			author: serializeAuthor(post.author),
 			likesCount: count.likes,
 			viewsCount: count.views
 		}
@@ -179,6 +183,7 @@ export class PostRepository {
 		const post = await this.pg.post.findUnique({
 			where: { id },
 			include: {
+				author: { include: { user: true } },
 				images: true,
 				links: true,
 				tags: true,
@@ -195,6 +200,7 @@ export class PostRepository {
 		delete (post as any)['_count']
 		return {
 			...post,
+			author: serializeAuthor(post.author),
 			likesCount: count.likes,
 			viewsCount: count.views
 		}
