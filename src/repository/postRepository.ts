@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { Id } from 'general'
 import { PostInput } from 'src/types/post'
 import { ImageInput } from 'src/types/image'
+import { serializeAuthor } from 'src/serializers/serializeAuthor'
 
 @injectable()
 @singleton()
@@ -133,6 +134,7 @@ export class PostRepository {
 				take: quantity,
 				where,
 				include: {
+					author: { include: { user: true } },
 					images: true,
 					links: true,
 					tags: true,
@@ -157,6 +159,7 @@ export class PostRepository {
 				...posts, 
 				{
 					...post,
+					author: serializeAuthor(post.author),
 					likesCount: count.likes,
 					viewsCount: count.views
 				} as any
