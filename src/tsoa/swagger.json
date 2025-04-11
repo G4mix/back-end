@@ -935,6 +935,14 @@
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "state",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
 					}
 				]
 			}
@@ -978,15 +986,12 @@
 						"application/json": {
 							"schema": {
 								"properties": {
-									"codeVerifier": {
-										"type": "string"
-									},
-									"code": {
+									"token": {
 										"type": "string"
 									}
 								},
 								"required": [
-									"code"
+									"token"
 								],
 								"type": "object"
 							}
@@ -1038,15 +1043,12 @@
 						"application/json": {
 							"schema": {
 								"properties": {
-									"codeVerifier": {
-										"type": "string"
-									},
-									"code": {
+									"token": {
 										"type": "string"
 									}
 								},
 								"required": [
-									"code"
+									"token"
 								],
 								"type": "object"
 							}

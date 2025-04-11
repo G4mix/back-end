@@ -28,13 +28,23 @@ export class UserRepository {
 	}
 
 	public async update({ id, icon, token, ...data }: Partial<UpdateInput> & { token?: string; }) {
+		const updateData: any = {
+			...data,
+			userProfile: typeof icon === 'string' ? { update: { data: { icon } } } : undefined
+		}
+
+		if (typeof token === 'string') {
+			updateData.refreshToken = {
+				upsert: {
+					create: { token },
+					update: { token }
+				}
+			}
+		}
+
 		return this.pg.user.update({
 			where: { id },
-			data: {
-				...data,
-				userProfile: typeof icon === 'string' ? { update: { data: { icon } } } : undefined,
-				refreshToken: typeof token === 'string' ? { upsert: { create: { token }, update: { token } } } : undefined
-			},
+			data: updateData,
 			include: { userProfile: true }
 		})
 	}
