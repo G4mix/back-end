@@ -22,18 +22,18 @@ export class PostController extends Controller {
 	@SuccessResponse(200)
 	@Post()
 	@Security('jwt', [])
-	@Middlewares<RequestHandler>(schemaValidation(postSchema))
+	// @Middlewares<RequestHandler>(schemaValidation(postSchema))
 	public async createPost(
 		@Request() req: TsoaRequest,
 		@FormField() title?: string,
 		@FormField() content?: string,
-		@FormField() links?: string[],
-		@FormField() tags?: string[],
+		@FormField() links?: string,
+		@FormField() tags?: string,
 		@UploadedFiles() images?: Express.Multer.File[]
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.createPost({
-				userProfileId: req.user.userProfileId, title, content, links, tags, images
+				userProfileId: req.user.userProfileId, title, content, links: links ? JSON.parse(links) : undefined, tags: tags ? JSON.parse(tags) : undefined, images
 			}),
 			this
 		)
@@ -52,13 +52,13 @@ export class PostController extends Controller {
 		@Query() postId: string,
 		@FormField() title?: string,
 		@FormField() content?: string,
-		@FormField() links?: string[],
-		@FormField() tags?: string[],
+		@FormField() links?: string,
+		@FormField() tags?: string,
 		@UploadedFiles() images?: Express.Multer.File[]
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.updatePost({
-				userProfileId: req.user.userProfileId, postId, title, content, links, tags, images
+				userProfileId: req.user.userProfileId, postId, title, content, links: links ? JSON.parse(links) : undefined, tags: tags ? JSON.parse(tags) : undefined, images
 			}),
 			this
 		)
