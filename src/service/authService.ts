@@ -6,6 +6,7 @@ import { AuthInput } from 'auth'
 import { SESService } from './sesService'
 import { ApiMessage } from '@constants'
 import { serializeUser } from '@serializers'
+import { User } from '@prisma/client'
 
 @injectable()
 @singleton()
@@ -50,52 +51,11 @@ export class AuthService {
 		let user = await this.userRepository.findByEmail({ email })
 		if (!user) return 'USER_NOT_FOUND'
 		if (!user.verified) {
-			const res = await this.sesService.checkEmailStatus(email)
-			if (typeof res === 'object' && res.status === 'Success') {
-				user = await this.userRepository.update({ id: user.id, verified: true })
-				await this.sesService.sendEmail({ template: 'SignUp', receiver: user.email })
-			}
+			user = await this.verifyUserEmail(user)
 		}
 
-		const now = new Date()
-
-		let attempts = user.loginAttempts
-		const moreThanFiveAttempts = user.loginAttempts >= 5
-		const blockedByTime = (user.blockedUntil != null && user.blockedUntil.getTime() > now.getTime())
-
-		if (moreThanFiveAttempts) {
-			if (blockedByTime) return 'EXCESSIVE_LOGIN_ATTEMPTS'
-			attempts = 0
-			await this.userRepository.update({ id: user.id, loginAttempts: attempts })
-		}
-		
-
-		if (!BCryptEncoder.compare(password, user.password)) {
-			attempts++
-			await this.userRepository.update({
-				loginAttempts: attempts,
-				email,
-				id: user.id,
-				blockedUntil: attempts === 5 ? new Date(now.getTime() + 30 * 60 * 1000) : null
-			})
-			if (attempts === 5) {
-				// const sended = await this.sesService.sendEmail({
-				// 	template: 'BlockedAccount',
-				// 	receiver: email,
-				// 	token: JwtManager.generateToken({ sub: user.id, verifiedEmail: true, ipAddress: ip }),
-				// 	ipAddress: ip
-				// })
-				// if (typeof sended === 'string') return sended
-			}
-			const possibleErrors: ApiMessage[] = [
-				'WRONG_PASSWORD_ONCE',
-				'WRONG_PASSWORD_TWICE',
-				'WRONG_PASSWORD_THREE_TIMES',
-				'WRONG_PASSWORD_FOUR_TIMES',
-				'WRONG_PASSWORD_FIVE_TIMES',
-			]
-			return possibleErrors[attempts - 1]
-		}
+		const loginAttemptsResult = await this.handleLoginAttempts({ user, password, email });
+		if (loginAttemptsResult !== 'SUCCESS') return loginAttemptsResult;
 
 		const data = {
 			accessToken: JwtManager.generateToken({
@@ -258,5 +218,60 @@ export class AuthService {
 				return { name: user.name, email: user.email }
 			}
 		}
+	}
+	
+	private async verifyUserEmail(user: User & { userProfile: { id: string; created_at: Date; updated_at: Date; icon: string | null; displayName: string | null; } }) {
+		const res = await this.sesService.checkEmailStatus(user.email)
+		if (typeof res === 'object' && res.status === 'Success') {
+			user = await this.userRepository.update({ id: user.id, verified: true })
+			await this.sesService.sendEmail({ template: 'SignUp', receiver: user.email })
+		}
+
+		return user;
+	}
+
+	private async handleLoginAttempts({ user, password, email}: { user: User; password: string; email: string }) {
+		const now = new Date()
+
+		let attempts = user.loginAttempts
+		const moreThanFiveAttempts = user.loginAttempts >= 5
+		const blockedByTime = (user.blockedUntil != null && user.blockedUntil.getTime() > now.getTime())
+
+		if (moreThanFiveAttempts) {
+			if (blockedByTime) return 'EXCESSIVE_LOGIN_ATTEMPTS'
+			attempts = 0
+			await this.userRepository.update({ id: user.id, loginAttempts: attempts })
+		}
+		
+
+		const isPasswordCorrect = !BCryptEncoder.compare(password, user.password)
+		if (isPasswordCorrect) {
+			attempts++
+			await this.userRepository.update({
+				loginAttempts: attempts,
+				email,
+				id: user.id,
+				blockedUntil: attempts === 5 ? new Date(now.getTime() + 30 * 60 * 1000) : null
+			})
+			if (attempts === 5) {
+				// const sended = await this.sesService.sendEmail({
+				// 	template: 'BlockedAccount',
+				// 	receiver: email,
+				// 	token: JwtManager.generateToken({ sub: user.id, verifiedEmail: true, ipAddress: ip }),
+				// 	ipAddress: ip
+				// })
+				// if (typeof sended === 'string') return sended
+			}
+			const possibleErrors: ApiMessage[] = [
+				'WRONG_PASSWORD_ONCE',
+				'WRONG_PASSWORD_TWICE',
+				'WRONG_PASSWORD_THREE_TIMES',
+				'WRONG_PASSWORD_FOUR_TIMES',
+				'WRONG_PASSWORD_FIVE_TIMES',
+			]
+			return possibleErrors[attempts - 1]
+		}
+
+		return 'SUCCESS'
 	}
 }
