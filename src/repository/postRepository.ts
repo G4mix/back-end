@@ -47,7 +47,8 @@ export class PostRepository {
 				_count: {
 					select: {
 						likes: true,
-						views: true
+						views: true,
+						comments: true
 					}
 				}
 			}
@@ -58,7 +59,8 @@ export class PostRepository {
 			...post,
 			author: serializeAuthor(post.author),
 			likesCount: count.likes,
-			viewsCount: count.views
+			viewsCount: count.views,
+			commentsCount: count.comments
 		}
 	}
 
@@ -99,7 +101,8 @@ export class PostRepository {
 				_count: {
 					select: {
 						likes: true,
-						views: true
+						views: true,
+						comments: true
 					}
 				}
 			}
@@ -110,7 +113,8 @@ export class PostRepository {
 			...post,
 			author: serializeAuthor(post.author),
 			likesCount: count.likes,
-			viewsCount: count.views
+			viewsCount: count.views,
+			commentsCount: count.comments
 		}
 	}
 
@@ -145,7 +149,8 @@ export class PostRepository {
 					_count: {
 						select: {
 							likes: true,
-							views: true
+							views: true,
+							comments: true
 						}
 					}
 				}
@@ -165,7 +170,8 @@ export class PostRepository {
 					...post,
 					author: serializeAuthor(post.author),
 					likesCount: count.likes,
-					viewsCount: count.views
+					viewsCount: count.views,
+					commentsCount: count.comments
 				} as any
 			]
 		})
@@ -190,7 +196,8 @@ export class PostRepository {
 				_count: {
 					select: {
 						likes: true,
-						views: true
+						views: true,
+						comments: true
 					}
 				}
 			}
@@ -202,7 +209,8 @@ export class PostRepository {
 			...post,
 			author: serializeAuthor(post.author),
 			likesCount: count.likes,
-			viewsCount: count.views
+			viewsCount: count.views,
+			commentsCount: count.comments
 		}
 	}
 
