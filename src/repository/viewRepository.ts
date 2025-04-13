@@ -5,17 +5,12 @@ import { PrismaClient } from '@prisma/client'
 @singleton()
 export class ViewRepository {
 	constructor(@inject('PostgresqlClient') private pg: PrismaClient) {}
-	public async create({
-		userProfileId, postId
-	}: { userProfileId: string; postId: string; }) {
-		return await this.pg.view.create({ data: { userProfileId, postId } })
-	}
-
-	public async existsByPostIdAndUserProfileUserId({
-		userProfileId, postId
-	}: { userProfileId: string; postId: string; }) {
-		return await this.pg.view.findUnique({
-			where: { userProfileId_postId: { userProfileId, postId } }
+	public async createMany({
+		userProfileId, posts
+	}: { userProfileId: string; posts: string[]; }) {
+		await this.pg.view.createMany({
+			skipDuplicates: true,
+			data: posts.map((postId) => ({ userProfileId, postId }))
 		})
 	}
 }

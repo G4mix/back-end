@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, SuccessResponse, Request, Security, Get, Query } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Request, Security, Body, Post } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { TsoaRequest } from 'src/types/tsoa'
 import { ViewService } from '@service'
@@ -16,12 +16,12 @@ export class ViewController extends Controller {
 	 *
 	 */
 	@SuccessResponse(200)
-	@Get()
+	@Post()
 	@Security('jwt', [])
 	public async viewPost(
 		@Request() req: TsoaRequest,
-		@Query() postId: string
+		@Body() body: { posts: string[] }
 	) {
-		return await this.viewService.viewPost({ userProfileId: req.user.userProfileId, postId })
+		return await this.viewService.viewPosts({ userProfileId: req.user.userProfileId, posts: body.posts })
 	}
 }

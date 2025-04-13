@@ -8,11 +8,7 @@ export class ViewService {
 		private viewRepository: ViewRepository
 	) {}
 
-	public async viewPost({ userProfileId, postId }: { userProfileId: string; postId: string; }) {
-		const postHasBeenViewed = await this.viewRepository.existsByPostIdAndUserProfileUserId({
-			userProfileId, postId
-		})
-		if (postHasBeenViewed) return postHasBeenViewed
-		return await this.viewRepository.create({ userProfileId, postId })
+	public async viewPosts({ userProfileId, posts }: { userProfileId: string; posts: string[]; }) {
+		return await this.viewRepository.createMany({ userProfileId, posts })
 	}
 }
