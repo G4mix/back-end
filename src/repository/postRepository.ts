@@ -141,6 +141,9 @@ export class PostRepository {
 				skip: page * quantity,
 				take: quantity,
 				where,
+				orderBy: {
+					created_at: 'desc',
+				},
 				include: {
 					author: { include: { user: true } },
 					images: true,
