@@ -1,3 +1,5 @@
+import { EventFrequency } from '@prisma/client'
+
 export type PostInput = {
   userProfileId: string;
   title?: string;
@@ -5,4 +7,14 @@ export type PostInput = {
   links?: string[];
   tags?: string[];
   images?: Express.Multer.File[];
+  event?: EventInput;
+}
+
+export type EventInput = {
+  subject: string;
+  startDate: string;
+  endDate: string;
+  description?: string;
+  location?: string;
+  frequency?: EventFrequency;
 }

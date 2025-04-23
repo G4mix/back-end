@@ -192,6 +192,9 @@
 									"links": {
 										"type": "string"
 									},
+									"event": {
+										"type": "string"
+									},
 									"tags": {
 										"type": "string"
 									},
@@ -1079,39 +1082,11 @@
 			}
 		},
 		"/api/v1/view": {
-			"get": {
+			"post": {
 				"operationId": "ViewPost",
 				"responses": {
 					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"postId": {
-											"type": "string"
-										},
-										"created_at": {
-											"type": "string",
-											"format": "date-time"
-										},
-										"userProfileId": {
-											"type": "string"
-										},
-										"id": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"postId",
-										"created_at",
-										"userProfileId",
-										"id"
-									],
-									"type": "object"
-								}
-							}
-						}
+						"description": ""
 					}
 				},
 				"description": "View a post of the system",
@@ -1123,16 +1098,28 @@
 						"jwt": []
 					}
 				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "postId",
-						"required": true,
-						"schema": {
-							"type": "string"
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"posts": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									}
+								},
+								"required": [
+									"posts"
+								],
+								"type": "object"
+							}
 						}
 					}
-				]
+				}
 			}
 		}
 	},

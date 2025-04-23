@@ -28,12 +28,13 @@ export class PostController extends Controller {
 		@FormField() title?: string,
 		@FormField() content?: string,
 		@FormField() links?: string,
+		@FormField() event?: string,
 		@FormField() tags?: string,
 		@UploadedFiles() images?: Express.Multer.File[]
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.createPost({
-				userProfileId: req.user.userProfileId, title, content, links: links ? JSON.parse(links) : undefined, tags: tags ? JSON.parse(tags) : undefined, images
+				userProfileId: req.user.userProfileId, title, content, links: links ? JSON.parse(links) : undefined, tags: tags ? JSON.parse(tags) : undefined, images, event: event ? JSON.parse(event) : undefined
 			}),
 			this
 		)
@@ -53,12 +54,13 @@ export class PostController extends Controller {
 		@FormField() title?: string,
 		@FormField() content?: string,
 		@FormField() links?: string,
+		@FormField() event?: string,
 		@FormField() tags?: string,
 		@UploadedFiles() images?: Express.Multer.File[]
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.updatePost({
-				userProfileId: req.user.userProfileId, postId, title, content, links: links ? JSON.parse(links) : undefined, tags: tags ? JSON.parse(tags) : undefined, images
+				userProfileId: req.user.userProfileId, postId, title, content, links: links ? JSON.parse(links) : undefined, tags: tags ? JSON.parse(tags) : undefined, images, event: event ? JSON.parse(event) : undefined
 			}),
 			this
 		)

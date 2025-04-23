@@ -180,6 +180,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                     title: {"in":"formData","name":"title","dataType":"string"},
                     content: {"in":"formData","name":"content","dataType":"string"},
                     links: {"in":"formData","name":"links","dataType":"string"},
+                    event: {"in":"formData","name":"event","dataType":"string"},
                     tags: {"in":"formData","name":"tags","dataType":"string"},
                     images: {"in":"formData","name":"images","dataType":"array","array":{"dataType":"file"}},
             };
@@ -811,7 +812,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/view',
+        app.post('/api/v1/view',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ViewController)),
             ...(fetchMiddlewares<RequestHandler>(ViewController.prototype.viewPost)),
@@ -819,7 +820,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
             async function ViewController_viewPost(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
-                    postId: {"in":"query","name":"postId","required":true,"dataType":"string"},
+                    body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"posts":{"dataType":"array","array":{"dataType":"string"},"required":true}}},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -8,6 +8,13 @@ datasource db {
   relationMode = "prisma"
 }
 
+enum EventFrequency {
+  DAILY
+  MONTHLY
+  WEEKLY
+  YEARLY
+}
+
 model User {
   id            String    @id @default(uuid())
   username      String    @db.VarChar(50)
@@ -66,17 +73,32 @@ model Post {
   authorId String
   author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
+  eventId String?  @unique
+  event   Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
   comments Comment[]
-  views   View[]
-  likes   Like[]
-  images  Image[]
-  links   Link[]
-  tags    Tag[]
+  views    View[]
+  likes    Like[]
+  images   Image[]
+  links    Link[]
+  tags     Tag[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   @@index([authorId])
+}
+
+model Event {
+  id          String @id @default(uuid())
+  subject     String @db.VarChar(255)
+  description String? @db.VarChar(255)
+  location    String? @db.VarChar(1000)
+  startDate   DateTime
+  endDate     DateTime
+  frequency   EventFrequency?
+
+  post Post?
 }
 
 model Image {

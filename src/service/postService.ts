@@ -16,11 +16,12 @@ export class PostService {
 	) {}
 
 	public async createPost({
-		userProfileId, title, content, links, tags, images
+		userProfileId, title, content, links, tags, images, event
 	}: PostInput) {
 		if (
 			!title &&
 			!content &&
+			!event &&
 			(!links || links.length === 0) &&
 			(!tags || tags.length === 0) &&
 			(!images || images.length === 0)
@@ -50,7 +51,7 @@ export class PostService {
 			}
 		}
 
-		return await this.postRepository.create({ userProfileId, title, content, links, tags, images: uploadedImages })
+		return await this.postRepository.create({ userProfileId, title, content, links, tags, images: uploadedImages, event })
 	}
 
 	public async updatePost({

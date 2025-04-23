@@ -16,7 +16,8 @@ export class PostRepository {
 		content,
 		links,
 		tags,
-		images
+		images,
+		event
 	}: Omit<PostInput, 'images'> & { images: ImageInput[] }) {
 		const post = await this.pg.post.create({
 			data: {
@@ -37,13 +38,15 @@ export class PostRepository {
 					createMany: {
 						data: images
 					}
-				}
+				},
+				event: event ? { create: event } : undefined
 			},
 			include: {
 				author: { include: { user: true } },
 				images: true,
 				links: true,
 				tags: true,
+				event: true,
 				_count: {
 					select: {
 						likes: true,
@@ -70,7 +73,8 @@ export class PostRepository {
 		content,
 		links,
 		tags,
-		images
+		images,
+		event
 	}: Omit<PostInput, 'images' | 'userProfileId'> & { postId: string; images: ImageInput[]; }) {
 		const post = await this.pg.post.update({
 			where: { id: postId },
@@ -91,13 +95,15 @@ export class PostRepository {
 					createMany: {
 						data: images
 					}
-				}
+				},
+				event: event ? { upsert: { create: event, update: event } } : undefined
 			},
 			include: {
 				author: { include: { user: true } },
 				images: true,
 				links: true,
 				tags: true,
+				event: true,
 				_count: {
 					select: {
 						likes: true,
@@ -149,6 +155,7 @@ export class PostRepository {
 					images: true,
 					links: true,
 					tags: true,
+					event: true,
 					_count: {
 						select: {
 							likes: true,
@@ -196,6 +203,7 @@ export class PostRepository {
 				images: true,
 				links: true,
 				tags: true,
+				event: true,
 				_count: {
 					select: {
 						likes: true,
