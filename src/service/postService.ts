@@ -6,6 +6,7 @@ import { PostInput } from 'post'
 import { S3Service } from './s3Service'
 import { env } from '@config'
 import sizeOf from 'image-size'
+import { z } from 'zod'
 
 @injectable()
 @singleton()
@@ -26,6 +27,30 @@ export class PostService {
 			(!tags || tags.length === 0) &&
 			(!images || images.length === 0)
 		) return 'COMPLETELY_EMPTY_POST'
+
+		const linksSchema = z.undefined().or(z.array(z.string().url()))
+		const tagsSchema = z.undefined().or(z.array(z.string()))
+		const eventSubjectSchema = z
+			.undefined().or(
+				z
+					.string()
+					.regex(/^[^{}]{3,70}$/, 'INVALID_EVENT_SUBJECT')
+			)
+
+		const eventDescriptionSchema = z
+			.undefined().or (
+				z
+					.string()
+					.regex(/^[^{}]{3,70}$/, 'INVALID_EVENT_DESCRIPTION')
+			)
+
+		if (links && links.length > 5) return 'TOO_MANY_LINKS'
+		else if (tags && tags.length > 10) return 'TOO_MANY_TAGS'
+		else if (images && images.length > 8) return 'TOO_MANY_IMAGES'
+		else if (!linksSchema.safeParse(links).success) return 'INVALID_LINKS'
+		else if (!tagsSchema.safeParse(tags).success) return 'INVALID_TAGS'
+		else if (event && !eventSubjectSchema.safeParse(event.subject)) return 'INVALID_EVENT_SUBJECT'
+		else if (event && !eventDescriptionSchema.safeParse(event.description)) return 'INVALID_EVENT_DESCRIPTION'
 
 		const uploadedImages: ImageInput[] = []
 
@@ -55,11 +80,34 @@ export class PostService {
 	}
 
 	public async updatePost({
-		userProfileId, postId, title, content, links, tags, images
+		userProfileId, postId, title, content, links, tags, images, event
 	}: PostInput & { postId: string; }) {
 		const postExists = await this.postRepository.findById({ id: postId })
 		if (!postExists) return 'POST_NOT_FOUND'
 		else if (postExists.authorId !== userProfileId) return 'YOU_ARE_NOT_THE_AUTHOR'
+
+		const linksSchema = z.undefined().or(z.array(z.string().url()))
+		const tagsSchema = z.undefined().or(z.array(z.string()))
+		const eventSubjectSchema = z
+			.undefined().or(
+				z
+					.string()
+					.regex(/^[^{}]{3,70}$/, 'INVALID_EVENT_SUBJECT')
+			)
+		const eventDescriptionSchema = z
+			.undefined().or (
+				z
+					.string()
+					.regex(/^[^{}]{3,70}$/, 'INVALID_EVENT_DESCRIPTION')
+			)
+
+		if (links && links.length > 5) return 'TOO_MANY_LINKS'
+		else if (tags && tags.length > 10) return 'TOO_MANY_TAGS'
+		else if (images && images.length > 8) return 'TOO_MANY_IMAGES'
+		else if (!linksSchema.safeParse(links).success) return 'INVALID_LINKS'
+		else if (!tagsSchema.safeParse(tags).success) return 'INVALID_TAGS'
+		else if (event && !eventSubjectSchema.safeParse(event.subject)) return 'INVALID_EVENT_SUBJECT'
+		else if (event && !eventDescriptionSchema.safeParse(event.description)) return 'INVALID_EVENT_DESCRIPTION'
 
 		const uploadedImages: ImageInput[] = []
 

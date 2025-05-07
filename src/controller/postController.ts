@@ -22,7 +22,7 @@ export class PostController extends Controller {
 	@SuccessResponse(200)
 	@Post()
 	@Security('jwt', [])
-	// @Middlewares<RequestHandler>(schemaValidation(postSchema))
+	@Middlewares<RequestHandler>(schemaValidation(postSchema))
 	public async createPost(
 		@Request() req: TsoaRequest,
 		@FormField() title?: string,
