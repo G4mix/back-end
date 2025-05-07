@@ -1,5 +1,6 @@
 import { inject, injectable, singleton } from 'tsyringe'
 import { PrismaClient } from '@prisma/client'
+import { serializeAuthor } from '@serializers'
 
 @injectable()
 @singleton()
@@ -8,9 +9,24 @@ export class CommentRepository {
 	public async create({
 		postId, commentId, userProfileId, content
 	}: { postId?: string; commentId?: string; userProfileId: string; content: string; }) {
-		return await this.pg.comment.create({
-			data: { postId, parentCommentId: commentId, userProfileId, content }
+		const comment = await this.pg.comment.create({
+			data: { postId, parentCommentId: commentId, authorId: userProfileId, content },
+			include: {
+				author: { include: { user: true } },
+				_count: {
+					select: {
+						likes: true
+					}
+				}
+			}
 		})
+		const count = comment._count
+		delete (comment as any)['_count']
+		return {
+			...comment,
+			author: serializeAuthor(comment.author),
+			likesCount: count.likes
+		}
 	}
 	public async findAll({
 		postId, commentId, page, quantity
@@ -26,6 +42,7 @@ export class CommentRepository {
 				take: quantity,
 				where,
 				include: {
+					author: { include: { user: true } },
 					_count: {
 						select: {
 							likes: true
@@ -46,6 +63,7 @@ export class CommentRepository {
 				...comments, 
 				{
 					...comment,
+					author: serializeAuthor(comment.author),
 					likesCount: count.likes
 				} as any
 			]

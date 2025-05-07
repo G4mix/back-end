@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, SuccessResponse, Request, Security, Post, Body, Middlewares, Path, Get, Query } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Request, Security, Post, Body, Middlewares, Get, Query } from 'tsoa'
 import { schemaValidation } from '@middlewares'
 import { RequestHandler } from 'express'
 import { CommentService } from '@service'
@@ -15,70 +15,38 @@ export class CommentController extends Controller {
 	}
 
 	/**
-	 * Comment in a post
+	 * Comment in a post or in a comment
 	 *
 	 */
 	@SuccessResponse(200)
-	@Post('/post/{postId}')
+	@Post()
 	@Security('jwt', [])
 	@Middlewares<RequestHandler>(schemaValidation(commentSchema))
 	public async commentPost(
         @Request() req: TsoaRequest,
-        @Path() postId: string,
-				@Body() body: { content: string; }
+				@Body() body: { content: string; },
+				@Query() commentId?: string,
+				@Query() postId?: string
 	) {
-		return await this.commentService.commentPost({
-			userProfileId: req.user.userProfileId, postId, content: body.content
+		return await this.commentService.comment({
+			userProfileId: req.user.userProfileId, postId, commentId, content: body.content
 		})
 	}
 
 	/**
-	 * Reply a comment
+	 * List comments of a post or replies of a comment
 	 *
 	 */
 	@SuccessResponse(200)
-	@Post('/{commentId}')
-	@Security('jwt', [])
-	@Middlewares<RequestHandler>(schemaValidation(commentSchema))
-	public async replyPost(
-        @Request() req: TsoaRequest,
-        @Path() commentId: string,
-				@Body() body: { content: string; }
-	) {
-		return await this.commentService.replyComment({
-			userProfileId: req.user.userProfileId, commentId, content: body.content
-		})
-	}
-
-	/**
-	 * List comments of a post
-	 *
-	 */
-	@SuccessResponse(200)
-	@Get('/post/{postId}')
+	@Get()
 	@Security('jwt', [])
 	@Middlewares<RequestHandler>(schemaValidation(commentSchema))
 	public async listComments(
-        @Path() postId: string,
-        @Query() page: number,
-        @Query() quantity: number
+		@Query() page: number,
+		@Query() quantity: number,
+		@Query() commentId?: string,
+		@Query() postId?: string
 	) {
-		return await this.commentService.listComments({ postId, page, quantity })
-	}
-
-	/**
-	 * List replies of a comment
-	 *
-	 */
-	@SuccessResponse(200)
-	@Get('/{commentId}')
-	@Security('jwt', [])
-	@Middlewares<RequestHandler>(schemaValidation(commentSchema))
-	public async listReplies(
-        @Path() commentId: string,
-        @Query() page: number,
-        @Query() quantity: number
-	) {
-		return await this.commentService.listReplies({ commentId, page, quantity })
+		return await this.commentService.listComments({ postId, commentId, page, quantity })
 	}
 }

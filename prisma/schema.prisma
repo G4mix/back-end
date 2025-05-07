@@ -150,14 +150,14 @@ model Comment {
   parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   replies         Comment[] @relation("CommentReplies")
 
-  userProfileId String
-  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  authorId String
+  author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  @@unique([userProfileId, postId])
-  @@unique([userProfileId, id])
+  @@unique([authorId, postId])
+  @@unique([authorId, id])
   @@index([id])
   @@index([postId])
-  @@index([userProfileId])
+  @@index([authorId])
   @@index([parentCommentId])
 }
 
