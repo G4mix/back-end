@@ -31,6 +31,7 @@ export class CommentRepository {
 	public async findAll({
 		postId, commentId, page, quantity, since
 	}: { postId?: string; commentId?: string; page: number; quantity: number; since: string; }) {
+		console.log({ postId, commentId, since })
 		const where = {
 			postId,
 			parentCommentId: commentId,
