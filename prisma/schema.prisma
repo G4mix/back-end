@@ -143,8 +143,8 @@ model Comment {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  postId String?
-  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   parentCommentId String?
   parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
@@ -153,8 +153,9 @@ model Comment {
   authorId String
   author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  @@unique([authorId, postId])
-  @@unique([authorId, id])
+
+  @@unique([postId])
+  @@unique([postId, parentCommentId])
   @@index([id])
   @@index([postId])
   @@index([authorId])

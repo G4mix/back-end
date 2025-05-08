@@ -8,7 +8,7 @@ export class CommentRepository {
 	constructor(@inject('PostgresqlClient') private pg: PrismaClient) {}
 	public async create({
 		postId, commentId, userProfileId, content
-	}: { postId?: string; commentId?: string; userProfileId: string; content: string; }) {
+	}: { postId: string; commentId?: string; userProfileId: string; content: string; }) {
 		console.log({ postId, parentCommentId: commentId, authorId: userProfileId, content })
 		const comment = await this.pg.comment.create({
 			data: { postId, parentCommentId: commentId, authorId: userProfileId, content },
@@ -31,7 +31,7 @@ export class CommentRepository {
 	}
 	public async findAll({
 		postId, commentId, page, quantity, since
-	}: { postId?: string; commentId?: string; page: number; quantity: number; since: string; }) {
+	}: { postId: string; commentId?: string; page: number; quantity: number; since: string; }) {
 		console.log({ postId, commentId, since })
 		const where = {
 			postId,

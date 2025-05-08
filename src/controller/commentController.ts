@@ -25,8 +25,8 @@ export class CommentController extends Controller {
 	public async commentPost(
         @Request() req: TsoaRequest,
 				@Body() body: { content: string; },
-				@Query() commentId?: string,
-				@Query() postId?: string
+				@Query() postId: string,
+				@Query() commentId?: string
 	) {
 		return await this.commentService.comment({
 			userProfileId: req.user.userProfileId, postId, commentId, content: body.content
@@ -45,8 +45,8 @@ export class CommentController extends Controller {
 		@Query() page: number,
 		@Query() quantity: number,
 		@Query() since: string,
-		@Query() commentId?: string,
-		@Query() postId?: string
+		@Query() postId: string,
+		@Query() commentId?: string
 	) {
 		return await this.commentService.listComments({ postId, commentId, page, quantity, since })
 	}

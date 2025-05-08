@@ -9,7 +9,7 @@ export class CommentService {
 	) {}
 	public async comment({
 		userProfileId, postId, content, commentId
-	}: { userProfileId: string; postId?: string; commentId?: string; content: string; }) {
+	}: { userProfileId: string; postId: string; commentId?: string; content: string; }) {
 		return await this.commentRepository.create({
 			postId,
 			commentId,
@@ -20,7 +20,7 @@ export class CommentService {
 
 	public async listComments({
 		postId, commentId, page, quantity, since
-	}: { postId?: string; commentId?: string; page: number; quantity: number; since: string; }) {
+	}: { postId: string; commentId?: string; page: number; quantity: number; since: string; }) {
 		return await this.commentRepository.findAll({
 			postId,
 			commentId,
