@@ -69,7 +69,7 @@ export class CommentRepository {
 		console.log({ postId, commentId, since })
 		const where = {
 			postId,
-			parentCommentId: commentId,
+			parentCommentId: commentId ? commentId : null,
 			created_at: {
 				lte: new Date(since)
 			}
