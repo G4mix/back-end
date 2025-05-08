@@ -153,9 +153,6 @@ model Comment {
   authorId String
   author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-
-  @@unique([postId])
-  @@unique([postId, parentCommentId])
   @@index([id])
   @@index([postId])
   @@index([authorId])
