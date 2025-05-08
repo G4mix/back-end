@@ -9,6 +9,7 @@ export class CommentRepository {
 	public async create({
 		postId, commentId, userProfileId, content
 	}: { postId?: string; commentId?: string; userProfileId: string; content: string; }) {
+		console.log({ postId, parentCommentId: commentId, authorId: userProfileId, content })
 		const comment = await this.pg.comment.create({
 			data: { postId, parentCommentId: commentId, authorId: userProfileId, content },
 			include: {
