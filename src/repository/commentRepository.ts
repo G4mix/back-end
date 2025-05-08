@@ -42,14 +42,14 @@ export class CommentRepository {
 		let replies: any[] = []
 
 		replies = comment.replies.map(reply => {
-			const count = reply._count
-			delete (count as any)['_count']
+			const replyCount = reply._count
+			delete (reply as any)['_count']
 			replies = [
 				...replies, 
 				{
 					...reply,
 					author: serializeAuthor(reply.author),
-					likesCount: count.likes
+					likesCount: replyCount.likes
 				} as any
 			]
 		})
@@ -128,16 +128,16 @@ export class CommentRepository {
 			]
 
 			let replies: any[] = []
-
+			console.log(replies[0])
 			replies = comment.replies.map(reply => {
-				const count = reply._count
+				const replyCount = reply._count
 				delete (reply as any)['_count']
 				replies = [
 					...replies, 
 					{
 						...reply,
 						author: serializeAuthor(reply.author),
-						likesCount: count.likes
+						likesCount: replyCount.likes
 					} as any
 				]
 			})
