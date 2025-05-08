@@ -14,21 +14,55 @@ export class CommentRepository {
 			data: { postId, parentCommentId: commentId, authorId: userProfileId, content },
 			include: {
 				author: { include: { user: true } },
+				replies: {
+					take: 2,
+					orderBy: {
+						created_at: 'desc'
+					},
+					include: {
+						author: { include: { user: true } },
+						_count: {
+							select: {
+								likes: true
+							}
+						}
+					}
+				},
 				_count: {
 					select: {
-						likes: true
+						likes: true,
+						replies: true
 					}
 				}
 			}
 		})
 		const count = comment._count
 		delete (comment as any)['_count']
+
+		let replies: any[] = []
+
+		replies = comment.replies.map(reply => {
+			const count = reply._count
+			delete (count as any)['_count']
+			replies = [
+				...replies, 
+				{
+					...reply,
+					author: serializeAuthor(reply.author),
+					likesCount: count.likes
+				} as any
+			]
+		})
+
 		return {
 			...comment,
+			replies,
 			author: serializeAuthor(comment.author),
-			likesCount: count.likes
+			likesCount: count.likes,
+			repliesCount: count.replies
 		}
 	}
+
 	public async findAll({
 		postId, commentId, page, quantity, since
 	}: { postId: string; commentId?: string; page: number; quantity: number; since: string; }) {
@@ -54,6 +88,20 @@ export class CommentRepository {
 				},
 				include: {
 					author: { include: { user: true } },
+					replies: {
+						take: 2,
+						orderBy: {
+							created_at: 'desc'
+						},
+						include: {
+							author: { include: { user: true } },
+							_count: {
+								select: {
+									likes: true
+								}
+							}
+						}
+					},
 					_count: {
 						select: {
 							likes: true
@@ -78,6 +126,21 @@ export class CommentRepository {
 					likesCount: count.likes
 				} as any
 			]
+
+			let replies: any[] = []
+
+			replies = comment.replies.map(reply => {
+				const count = reply._count
+				delete (reply as any)['_count']
+				replies = [
+					...replies, 
+					{
+						...reply,
+						author: serializeAuthor(reply.author),
+						likesCount: count.likes
+					} as any
+				]
+			})
 		})
 
 		return {
