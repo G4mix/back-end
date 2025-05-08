@@ -29,10 +29,16 @@ export class CommentRepository {
 		}
 	}
 	public async findAll({
-		postId, commentId, page, quantity
-	}: { postId?: string; commentId?: string; page: number; quantity: number; }) {
-		const where = { postId, parentCommentId: commentId }
-
+		postId, commentId, page, quantity, since
+	}: { postId?: string; commentId?: string; page: number; quantity: number; since: string; }) {
+		const where = {
+			postId,
+			parentCommentId: commentId,
+			created_at: {
+				lte: new Date(since)
+			}
+		}
+		
 		const [total, data] = await this.pg.$transaction([
 			this.pg.comment.count({
 				where,
@@ -41,6 +47,9 @@ export class CommentRepository {
 				skip: page * quantity,
 				take: quantity,
 				where,
+				orderBy: {
+					created_at: 'desc',
+				},
 				include: {
 					author: { include: { user: true } },
 					_count: {

@@ -44,9 +44,10 @@ export class CommentController extends Controller {
 	public async listComments(
 		@Query() page: number,
 		@Query() quantity: number,
+		@Query() since: string,
 		@Query() commentId?: string,
 		@Query() postId?: string
 	) {
-		return await this.commentService.listComments({ postId, commentId, page, quantity })
+		return await this.commentService.listComments({ postId, commentId, page, quantity, since })
 	}
 }
