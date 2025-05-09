@@ -9,7 +9,6 @@ export class CommentRepository {
 	public async create({
 		postId, commentId, userProfileId, content
 	}: { postId: string; commentId?: string; userProfileId: string; content: string; }) {
-		console.log({ postId, parentCommentId: commentId, authorId: userProfileId, content })
 		const comment = await this.pg.comment.create({
 			data: { postId, parentCommentId: commentId, authorId: userProfileId, content },
 			include: {
@@ -66,7 +65,6 @@ export class CommentRepository {
 	public async findAll({
 		postId, commentId, page, quantity, since
 	}: { postId: string; commentId?: string; page: number; quantity: number; since: string; }) {
-		console.log({ postId, commentId, since })
 		const where = {
 			postId,
 			parentCommentId: commentId ? commentId : null,
@@ -118,17 +116,9 @@ export class CommentRepository {
 		data.map(comment => {
 			const count = comment._count
 			delete (comment as any)['_count']
-			comments = [
-				...comments, 
-				{
-					...comment,
-					author: serializeAuthor(comment.author),
-					likesCount: count.likes
-				} as any
-			]
 
 			let replies: any[] = []
-			console.log(replies[0])
+			
 			replies = comment.replies.map(reply => {
 				const replyCount = reply._count
 				delete (reply as any)['_count']
@@ -141,6 +131,16 @@ export class CommentRepository {
 					} as any
 				]
 			})
+
+			comments = [
+				...comments, 
+				{
+					...comment,
+					replies,
+					author: serializeAuthor(comment.author),
+					likesCount: count.likes
+				} as any
+			]
 		})
 
 		return {
