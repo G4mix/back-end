@@ -38,20 +38,15 @@ export class CommentRepository {
 		const count = comment._count
 		delete (comment as any)['_count']
 
-		let replies: any[] = []
-
-		replies = comment.replies.map(reply => {
+		const replies = comment.replies.map(reply => {
 			const replyCount = reply._count
 			delete (reply as any)['_count']
-			replies = [
-				...replies, 
-				{
-					...reply,
-					author: serializeAuthor(reply.author),
-					likesCount: replyCount.likes
-				} as any
-			]
-		})
+			return {
+				...reply,
+				author: serializeAuthor(reply.author),
+				likesCount: replyCount.likes
+			}
+		})		
 
 		return {
 			...comment,
@@ -117,20 +112,15 @@ export class CommentRepository {
 			const count = comment._count
 			delete (comment as any)['_count']
 
-			let replies: any[] = []
-			
-			replies = comment.replies.map(reply => {
+			const replies = comment.replies.map(reply => {
 				const replyCount = reply._count
 				delete (reply as any)['_count']
-				replies = [
-					...replies, 
-					{
-						...reply,
-						author: serializeAuthor(reply.author),
-						likesCount: replyCount.likes
-					} as any
-				]
-			})
+				return {
+					...reply,
+					author: serializeAuthor(reply.author),
+					likesCount: replyCount.likes
+				}
+			})			
 
 			comments = [
 				...comments, 
