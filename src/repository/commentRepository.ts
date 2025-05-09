@@ -57,6 +57,33 @@ export class CommentRepository {
 		}
 	}
 
+	public async findCommentById({
+		commentId
+	}: { commentId: string; }) {
+		const comment = await this.pg.comment.findUnique({
+			where: { id: commentId },
+			include: {
+				author: { include: { user: true } },
+				_count: {
+					select: {
+						likes: true
+					}
+				}
+			}
+		})
+
+		if (!comment) return comment;
+
+		const count = comment._count
+		delete (comment as any)['_count']
+
+		return {
+			...comment,
+			author: serializeAuthor(comment.author),
+			likesCount: count.likes
+		}
+	}
+
 	public async findAll({
 		postId, commentId, page, quantity, since
 	}: { postId: string; commentId?: string; page: number; quantity: number; since: string; }) {

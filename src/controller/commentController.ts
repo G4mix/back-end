@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, SuccessResponse, Request, Security, Post, Body, Middlewares, Get, Query } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Request, Security, Post, Body, Middlewares, Get, Query, Path } from 'tsoa'
 import { schemaValidation } from '@middlewares'
 import { RequestHandler } from 'express'
 import { CommentService } from '@service'
@@ -49,5 +49,19 @@ export class CommentController extends Controller {
 		@Query() commentId?: string
 	) {
 		return await this.commentService.listComments({ postId, commentId, page, quantity, since })
+	}
+
+	/**
+	 * Find a comment of the platform by id
+	 *
+	 */
+	@SuccessResponse(200)
+	@Get('/{commentId}')
+	@Security('jwt', [])
+	@Middlewares<RequestHandler>(schemaValidation(commentSchema))
+	public async findCommentById(
+		@Path() commentId: string
+	) {
+		return await this.commentService.findCommentById({ commentId })
 	}
 }

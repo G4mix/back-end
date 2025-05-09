@@ -29,4 +29,12 @@ export class CommentService {
 			since
 		})
 	}
+
+	public async findCommentById({
+		commentId
+	}: { commentId: string; }) {
+		return await this.commentRepository.findCommentById({
+			commentId
+		})
+	}
 }
