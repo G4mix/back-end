@@ -13,20 +13,6 @@ export class CommentRepository {
 			data: { postId, parentCommentId: commentId, authorId: userProfileId, content },
 			include: {
 				author: { include: { user: true } },
-				replies: {
-					take: 2,
-					orderBy: {
-						created_at: 'desc'
-					},
-					include: {
-						author: { include: { user: true } },
-						_count: {
-							select: {
-								likes: true
-							}
-						}
-					}
-				},
 				_count: {
 					select: {
 						likes: true,
@@ -38,19 +24,8 @@ export class CommentRepository {
 		const count = comment._count
 		delete (comment as any)['_count']
 
-		const replies = comment.replies.map(reply => {
-			const replyCount = reply._count
-			delete (reply as any)['_count']
-			return {
-				...reply,
-				author: serializeAuthor(reply.author),
-				likesCount: replyCount.likes
-			}
-		})		
-
 		return {
 			...comment,
-			replies,
 			author: serializeAuthor(comment.author),
 			likesCount: count.likes,
 			repliesCount: count.replies
@@ -108,20 +83,6 @@ export class CommentRepository {
 				},
 				include: {
 					author: { include: { user: true } },
-					replies: {
-						take: 2,
-						orderBy: {
-							created_at: 'desc'
-						},
-						include: {
-							author: { include: { user: true } },
-							_count: {
-								select: {
-									likes: true
-								}
-							}
-						}
-					},
 					_count: {
 						select: {
 							likes: true
@@ -137,23 +98,12 @@ export class CommentRepository {
 
 		data.map(comment => {
 			const count = comment._count
-			delete (comment as any)['_count']
-
-			const replies = comment.replies.map(reply => {
-				const replyCount = reply._count
-				delete (reply as any)['_count']
-				return {
-					...reply,
-					author: serializeAuthor(reply.author),
-					likesCount: replyCount.likes
-				}
-			})			
+			delete (comment as any)['_count']	
 
 			comments = [
 				...comments, 
 				{
 					...comment,
-					replies,
 					author: serializeAuthor(comment.author),
 					likesCount: count.likes
 				} as any
