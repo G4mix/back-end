@@ -11,27 +11,21 @@ export class UserRepository {
 
 	public async findAll({ userId, search, page, quantity }: { search: string; userId: string; page: number; quantity: number; }) {
 		const where = {
-			AND: [
+			id: {
+				not: userId,
+			},
+			OR: [
 				{
-					OR: [
-						{
-							username: {
-								contains: search
-							},
-						},
-						{
-							displayName: {
-								contains: search
-							},
-						},
-					],
-				},
-				{
-					id: {
-						not: userId
+					username: {
+						contains: search
 					},
 				},
-			],
+				{
+					displayName: {
+						contains: search
+					},
+				},
+			]
 		}
 
 		const [total, data] = await this.pg.$transaction([
