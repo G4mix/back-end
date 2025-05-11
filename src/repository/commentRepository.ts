@@ -85,7 +85,8 @@ export class CommentRepository {
 					author: { include: { user: true } },
 					_count: {
 						select: {
-							likes: true
+							likes: true,
+							replies: true
 						}
 					}
 				}
