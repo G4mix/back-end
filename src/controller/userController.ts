@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField, Middlewares, Get, Path } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Patch, Request, Security, Delete, UploadedFile, FormField, Middlewares, Get, Path, Query } from 'tsoa'
 import { injectable } from 'tsyringe'
 import { UserService } from '@service'
 import { TsoaRequest } from 'src/types/tsoa'
@@ -13,6 +13,16 @@ import { updateUserSchema } from '@schemas'
 export class UserController extends Controller {
 	constructor(private userService: UserService) {
 		super()
+	}
+
+	/**
+	 * Verify if exists an user with the email in the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Get()
+	public async findAll(@Query() search: string, @Query() page: number, @Query() quantity: number ) {
+		return await this.userService.findAll({ search: search.toLocaleLowerCase(), page, quantity })
 	}
 
 	/**

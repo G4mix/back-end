@@ -14,6 +14,10 @@ export class UserService {
 		private s3Service: S3Service
 	) {}
 
+	public async findAll({ search, page, quantity }: { search: string; page: number; quantity: number; }) {
+		return await this.userRepository.findAll({ search, page, quantity })
+	}
+
 	public async existsByEmail({ email }: { email: string; }) {
 		const count = await this.userRepository.count({ email })
 		return count > 0 ? { exists: true } : 'USER_NOT_FOUND'
