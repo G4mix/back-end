@@ -21,8 +21,8 @@ export class UserController extends Controller {
 	 */
 	@SuccessResponse(200)
 	@Get()
-	public async findAll(@Query() search: string, @Query() page: number, @Query() quantity: number ) {
-		return await this.userService.findAll({ search: search.toLocaleLowerCase(), page, quantity })
+	public async findAll(@Request() req: TsoaRequest, @Query() search: string, @Query() page: number, @Query() quantity: number ) {
+		return await this.userService.findAll({ search: search.toLocaleLowerCase(), userId: req.user.sub, page, quantity })
 	}
 
 	/**

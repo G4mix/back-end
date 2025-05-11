@@ -9,20 +9,27 @@ import { serializeUser } from '@serializers'
 export class UserRepository {
 	constructor(@inject('PostgresqlClient') private pg: PrismaClient) { }
 
-	public async findAll({ search, page, quantity }: { search: string; page: number; quantity: number; }) {
+	public async findAll({ userId, search, page, quantity }: { search: string; userId: string; page: number; quantity: number; }) {
 		const where = {
-			OR: [
+			AND: [
 				{
-					username: {
-						contains: search,
-					},
+					OR: [
+						{
+							username: {
+								contains: search
+							},
+						},
+						{
+							displayName: {
+								contains: search
+							},
+						},
+					],
 				},
 				{
-					userProfile: {
-						displayName: {
-							contains: search
-						},
-					}
+					id: {
+						not: userId
+					},
 				},
 			],
 		}

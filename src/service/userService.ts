@@ -14,8 +14,8 @@ export class UserService {
 		private s3Service: S3Service
 	) {}
 
-	public async findAll({ search, page, quantity }: { search: string; page: number; quantity: number; }) {
-		return await this.userRepository.findAll({ search, page, quantity })
+	public async findAll({ search, page, quantity, userId }: { search: string; userId: string; page: number; quantity: number; }) {
+		return await this.userRepository.findAll({ search, page, quantity, userId })
 	}
 
 	public async existsByEmail({ email }: { email: string; }) {
