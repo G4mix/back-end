@@ -105,7 +105,8 @@ export class CommentRepository {
 				{
 					...comment,
 					author: serializeAuthor(comment.author),
-					likesCount: count.likes
+					likesCount: count.likes,
+					repliesCount: count.replies
 				} as any
 			]
 		})
