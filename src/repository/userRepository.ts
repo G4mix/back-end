@@ -21,9 +21,11 @@ export class UserRepository {
 					},
 				},
 				{
-					displayName: {
-						contains: search
-					},
+					userProfile: {
+						displayName: {
+							contains: search
+						}
+					}
 				},
 			]
 		}
