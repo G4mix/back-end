@@ -93,6 +93,7 @@ export class UserRepository {
 		})
 	}
 
+	
 	public async update({ id, icon, token, code, ...data }: Partial<UpdateInput> & { token?: string; }) {
 		return this.pg.user.update({
 			where: { id },
