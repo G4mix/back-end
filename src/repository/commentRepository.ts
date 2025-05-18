@@ -47,7 +47,7 @@ export class CommentRepository {
 			}
 		})
 
-		if (!comment) return comment;
+		if (!comment) return comment
 
 		const count = comment._count
 		delete (comment as any)['_count']

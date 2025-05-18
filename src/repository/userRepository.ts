@@ -69,7 +69,11 @@ export class UserRepository {
 
 	public async findById({ id }: Id) {
 		return this.pg.user.findUnique({
-			where: { id }
+			where: { id },
+			include: {
+				userProfile: true,
+				userCode: true
+			}
 		})
 	}
 
@@ -82,7 +86,10 @@ export class UserRepository {
 	public async findByEmail({ email }: { email: string; }) {
 		return this.pg.user.findUnique({
 			where: { email },
-			include: { userProfile: true }
+			include: {
+				userProfile: true,
+				userCode: true
+			}
 		})
 	}
 
@@ -92,9 +99,10 @@ export class UserRepository {
 			data: {
 				...data,
 				userProfile: typeof icon === 'string' ? { update: { data: { icon } } } : undefined,
+				userCode: data.code ? { upsert: { where: { user: { id } }, create: { code: data.code }, update: { code: data.code } } } : undefined,
 				refreshToken: typeof token === 'string' ? { upsert: { create: { token }, update: { token } } } : undefined
 			},
-			include: { userProfile: true }
+			include: { userProfile: true, userCode: true }
 		})
 	}
 
@@ -108,7 +116,7 @@ export class UserRepository {
 					create: {}
 				}
 			},
-			include: { userProfile: true }
+			include: { userProfile: true, userCode: true }
 		})
 	}
 

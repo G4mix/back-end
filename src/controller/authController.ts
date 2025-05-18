@@ -3,7 +3,7 @@ import { AuthService } from '@service'
 import { injectable } from 'tsyringe'
 import { AuthInput } from 'src/types/auth'
 import { ControllerUtils } from '@utils'
-import { userSignUpSchema } from '@schemas'
+import { userChangePasswordSchema, userSignUpSchema } from '@schemas'
 import { schemaValidation } from '@middlewares'
 import { RequestHandler } from 'express'
 import { TsoaRequest } from 'src/types/tsoa'
@@ -37,6 +37,44 @@ export class AuthController extends Controller {
 	@Post('/signin')
 	public async signin(@Body() body: Pick<AuthInput, 'email' | 'password'>) {
 		const res = await this.authService.signin({ ...body, email: body.email.toLowerCase() })
+		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+		return res
+	}
+
+	/**
+	 * Send recover email to change the password of an user of the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Post('/send-recover-email')
+	public async sendRecoverEmail(@Body() body: { email: string }) {
+		const res = await this.authService.sendRecoverEmail({ email: body.email.toLowerCase() })
+		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+		return res
+	}
+
+	/**
+	 * Verify recover email code to change the password of an user of the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Post('/verify-email-code')
+	public async verifyEmailCode(@Body() body: { code: string; email: string; }) {
+		const res = await this.authService.verifyEmailCode({ code: body.code.toUpperCase(), email: body.email })
+		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+		return res
+	}
+
+	/**
+	 * Change password of an user of the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Post('/change-password')
+	@Security('jwt', [])
+	@Middlewares<RequestHandler>(schemaValidation(userChangePasswordSchema))
+	public async changePassword(@Body() body: { password: string }, @Request() req: TsoaRequest) {
+		const res = await this.authService.changePassword({ password: body.password, userId: req.user.sub })
 		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
 		return res
 	}

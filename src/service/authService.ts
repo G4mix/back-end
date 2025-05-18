@@ -1,5 +1,5 @@
 import { EXPIRATION_TIME_REFRESH_TOKEN } from '@constants'
-import { JwtManager, BCryptEncoder, generateRandomPassword, socialLoginRequests } from '@utils'
+import { JwtManager, BCryptEncoder, generateRandomPassword, socialLoginRequests, generateRandomCode } from '@utils'
 import { injectable, singleton } from 'tsyringe'
 import { UserRepository } from '@repository'
 import { AuthInput } from 'auth'
@@ -19,8 +19,8 @@ export class AuthService {
 		const user = await this.userRepository.findByEmail({ email })
 		if (user) return 'USER_ALREADY_EXISTS'
 
-		const sendedEmail = await this.sesService.verifyIdentity({ receiver: email })
-		if (typeof sendedEmail === 'string') return sendedEmail
+		const sentEmail = await this.sesService.verifyIdentity({ receiver: email })
+		if (typeof sentEmail === 'string') return sentEmail
 
 		const createdUser = await this.userRepository.create({
 			password: BCryptEncoder.encode(password),
@@ -68,7 +68,6 @@ export class AuthService {
 			attempts = 0
 			await this.userRepository.update({ id: user.id, loginAttempts: attempts })
 		}
-		
 
 		if (!BCryptEncoder.compare(password, user.password)) {
 			attempts++
@@ -113,6 +112,59 @@ export class AuthService {
 		user = await this.userRepository.update({ id: user.id, loginAttempts: 0, token: data.refreshToken })
 
 		return data
+	}
+
+	public async sendRecoverEmail({ email }: { email: string; }) {
+		const user = await this.userRepository.findByEmail({ email })
+		if (!user) return 'USER_NOT_FOUND'
+		const code = generateRandomCode()
+		const sentEmail = await this.sesService.sendEmail({ template: 'RecoverEmailCodeTemplate', receiver: email, data: { code } })
+		if (typeof sentEmail === 'string') return sentEmail
+		await this.userRepository.update({ id: user.id, code })
+		return { email: user.email }
+	}
+
+	public async verifyEmailCode({ code, email }: { code: string; email: string; }) {
+		const user = await this.userRepository.findByEmail({ email })
+		if (!user || !user.userCode) return 'USER_NOT_FOUND'
+
+		const isCodeExpired = () => {
+			if (!user.userCode) return
+			const TEN_MINUTES = 10 * 60 * 1000
+			const updatedDate = new Date(user.userCode.updated_at).getTime()
+			const now = Date.now()
+		
+			return now - updatedDate >= TEN_MINUTES
+		}
+
+		if (isCodeExpired()) return 'CODE_EXPIRED'
+		if (user.userCode.code !== code) return 'CODE_NOT_EQUALS'
+
+		return { 
+			accessToken: JwtManager.generateToken({
+				sub: user.id,
+				userProfileId: user.userProfileId,
+				validRoutes: [{ route: '/auth/change-password', method: 'POST' }]
+			})
+		}
+	}
+
+	public async changePassword({ password, userId: id }: { password: string; userId: string; }) {
+		const user = await this.userRepository.findById({ id })
+		if (!user) return 'USER_NOT_FOUND'
+		await this.userRepository.update({ id, password: BCryptEncoder.encode(password) })
+		return {
+			accessToken: JwtManager.generateToken({
+				sub: user.id,
+				userProfileId: user.userProfileId
+			}),
+			refreshToken: JwtManager.generateToken({
+				sub: user.id,
+				userProfileId: user.userProfileId,
+				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
+			}),
+			user: serializeUser(user)
+		}
 	}
 
 	public async handleCallbackUrl({ provider, code, codeVerifier }: { provider: 'google' | 'github' | 'linkedin'; code?: string; codeVerifier?: string; }) {

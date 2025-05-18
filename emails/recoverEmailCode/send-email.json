@@ -1,0 +1,8 @@
+{
+  "Source":"System - Gamix <gamix.app.prod@gmail.com>",
+  "Template": "RecoverEmailCodeTemplate",
+  "Destination": {
+    "ToAddresses": ["dbex.foda@gmail.com"]
+  },
+  "TemplateData": "{ \"code\":\"A23KD1\" }"
+}

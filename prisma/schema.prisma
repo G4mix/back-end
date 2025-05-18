@@ -24,6 +24,9 @@ model User {
   loginAttempts Int       @default(0)
   blockedUntil  DateTime?
 
+  userCodeId String?   @unique
+  userCode   UserCode? @relation(fields: [userCodeId], references: [id], onDelete: Cascade)
+
   userProfileId String      @unique
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
@@ -34,6 +37,14 @@ model User {
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+model UserCode {
+  id         String   @id @default(uuid())
+  code       String   @db.VarChar(6)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User?
 }
 
 model UserOAuth {
@@ -73,8 +84,8 @@ model Post {
   authorId String
   author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  eventId String?  @unique
-  event   Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId String? @unique
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   comments Comment[]
   views    View[]
@@ -90,10 +101,10 @@ model Post {
 }
 
 model Event {
-  id          String @id @default(uuid())
-  subject     String @db.VarChar(255)
-  description String? @db.VarChar(255)
-  location    String? @db.VarChar(1000)
+  id          String          @id @default(uuid())
+  subject     String          @db.VarChar(255)
+  description String?         @db.VarChar(255)
+  location    String?         @db.VarChar(1000)
   startDate   DateTime
   endDate     DateTime
   frequency   EventFrequency?

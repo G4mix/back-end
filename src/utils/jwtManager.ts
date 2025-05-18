@@ -6,6 +6,7 @@ export type Claims = {
 	sub: string;
 	userProfileId: string;
 	verifiedEmail?: boolean;
+	validRoutes?: { route: string; method: string; }[]
 	ipAddress?: string;
 	exp?: number;
 }
@@ -16,9 +17,10 @@ export class JwtManager {
 		userProfileId,
 		verifiedEmail,
 		expiresIn=EXPIRATION_TIME_ACCESS_TOKEN,
-		ipAddress=undefined
+		ipAddress=undefined,
+		validRoutes
 	}: Claims & { expiresIn?: number }): string {
-		const claims: Claims = { sub, verifiedEmail, userProfileId, ipAddress }
+		const claims: Claims = { sub, verifiedEmail, userProfileId, ipAddress, validRoutes }
 		const token = jwt.sign(claims, env['JWT_SIGNING_KEY_SECRET'], { expiresIn })
 		return token
 	}

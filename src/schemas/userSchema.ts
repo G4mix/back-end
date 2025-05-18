@@ -11,8 +11,13 @@ export const userSignUpSchema = z.object({
 	email: z.string().email('INVALID_EMAIL'),
 	password: passwordValidation,
 })
+
 export const updateUserSchema = z.object({
 	username: z.undefined().or(z.string().regex(/^[^{}]{3,255}$/, 'INVALID_NAME')),
 	email: z.undefined().or(z.string().email('INVALID_EMAIL')),
 	password: z.undefined().or(passwordValidation)
+})
+
+export const userChangePasswordSchema = z.object({
+	password: passwordValidation
 })

@@ -14,4 +14,5 @@ export type UpdateInput = Id & Partial<{
     loginAttempts: number;
     blockedUntil: Date | null;
     icon?: Express.Multer.File | string;
+    code?: string;
 }>
