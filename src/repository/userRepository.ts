@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { AuthInput, UpdateInput } from 'auth'
 import { Id } from 'general'
 import { serializeUser } from '@serializers'
+import { generateRandomCode } from '@utils'
 
 @injectable()
 @singleton()
@@ -93,14 +94,13 @@ export class UserRepository {
 		})
 	}
 
-	
 	public async update({ id, icon, token, code, ...data }: Partial<UpdateInput> & { token?: string; }) {
 		return this.pg.user.update({
 			where: { id },
 			data: {
 				...data,
 				userProfile: typeof icon === 'string' ? { update: { data: { icon } } } : undefined,
-				userCode: code ? { upsert: { where: { user: { id } }, create: { code }, update: { code } } } : undefined,
+				userCode: typeof code === 'string' ? { update: { where: { user: { id } }, data: { code } } } : undefined,
 				refreshToken: typeof token === 'string' ? { upsert: { create: { token }, update: { token } } } : undefined
 			},
 			include: { userProfile: true, userCode: true }
@@ -115,6 +115,11 @@ export class UserRepository {
 				username,
 				userProfile: {
 					create: {}
+				},
+				userCode: {
+					create: {
+						code: generateRandomCode()
+					}
 				}
 			},
 			include: { userProfile: true, userCode: true }

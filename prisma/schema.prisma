@@ -24,8 +24,8 @@ model User {
   loginAttempts Int       @default(0)
   blockedUntil  DateTime?
 
-  userCodeId String?   @unique
-  userCode   UserCode? @relation(fields: [userCodeId], references: [id], onDelete: Cascade)
+  userCodeId String   @unique
+  userCode   UserCode @relation(fields: [userCodeId], references: [id], onDelete: Cascade)
 
   userProfileId String      @unique
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
