@@ -9,7 +9,7 @@ export function expressAuthentication(
 	const token = req.headers['authorization']?.substring(7)
 
 	if (token) {
-		return jwtMiddleware({ res, token })
+		return jwtMiddleware({ req, res, token })
 	}
 	return Promise.resolve(res.status(messages['UNAUTHORIZED']).json({ message: 'UNAUTHORIZED' }))
 }
