@@ -93,13 +93,13 @@ export class UserRepository {
 		})
 	}
 
-	public async update({ id, icon, token, ...data }: Partial<UpdateInput> & { token?: string; }) {
+	public async update({ id, icon, token, code, ...data }: Partial<UpdateInput> & { token?: string; }) {
 		return this.pg.user.update({
 			where: { id },
 			data: {
 				...data,
 				userProfile: typeof icon === 'string' ? { update: { data: { icon } } } : undefined,
-				userCode: data.code ? { upsert: { where: { user: { id } }, create: { code: data.code }, update: { code: data.code } } } : undefined,
+				userCode: code ? { upsert: { where: { user: { id } }, create: { code }, update: { code } } } : undefined,
 				refreshToken: typeof token === 'string' ? { upsert: { create: { token }, update: { token } } } : undefined
 			},
 			include: { userProfile: true, userCode: true }
