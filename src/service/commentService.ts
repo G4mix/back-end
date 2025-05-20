@@ -19,22 +19,24 @@ export class CommentService {
 	}
 
 	public async listComments({
-		postId, commentId, page, quantity, since
-	}: { postId: string; commentId?: string; page: number; quantity: number; since: string; }) {
+		postId, commentId, page, quantity, since, userProfileId
+	}: { postId: string; userProfileId: string; commentId?: string; page: number; quantity: number; since: string; }) {
 		return await this.commentRepository.findAll({
 			postId,
 			commentId,
 			page,
 			quantity,
-			since
+			since,
+			userProfileId
 		})
 	}
 
 	public async findCommentById({
-		commentId
-	}: { commentId: string; }) {
+		commentId, userProfileId
+	}: { commentId: string; userProfileId: string; }) {
 		return await this.commentRepository.findCommentById({
-			commentId
+			commentId,
+			userProfileId
 		})
 	}
 }

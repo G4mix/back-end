@@ -42,13 +42,14 @@ export class CommentController extends Controller {
 	@Security('jwt', [])
 	@Middlewares<RequestHandler>(schemaValidation(commentSchema))
 	public async listComments(
+		@Request() req: TsoaRequest,
 		@Query() page: number,
 		@Query() quantity: number,
 		@Query() since: string,
 		@Query() postId: string,
 		@Query() commentId?: string
 	) {
-		return await this.commentService.listComments({ postId, commentId, page, quantity, since })
+		return await this.commentService.listComments({ postId, commentId, page, quantity, since, userProfileId: req.user.userProfileId })
 	}
 
 	/**
@@ -60,8 +61,9 @@ export class CommentController extends Controller {
 	@Security('jwt', [])
 	@Middlewares<RequestHandler>(schemaValidation(commentSchema))
 	public async findCommentById(
+		@Request() req: TsoaRequest,
 		@Path() commentId: string
 	) {
-		return await this.commentService.findCommentById({ commentId })
+		return await this.commentService.findCommentById({ commentId, userProfileId: req.user.userProfileId })
 	}
 }

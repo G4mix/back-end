@@ -99,9 +99,10 @@ export class PostController extends Controller {
 	@Get('/{postId}')
 	@Security('jwt', [])
 	public async findPostById(
-        @Path() postId: string
+		@Request() req: TsoaRequest,
+		@Path() postId: string
 	) {
-		return ControllerUtils.handleResponse(await this.postService.findPostById({ postId }), this)
+		return ControllerUtils.handleResponse(await this.postService.findPostById({ postId, userProfileId: req.user.userProfileId }), this)
 	}
 
 	/**

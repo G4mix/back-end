@@ -55,15 +55,46 @@
 		"contact": {}
 	},
 	"paths": {
-		"/api/v1/user/exists/{email}": {
+		"/api/v1/user": {
 			"get": {
-				"operationId": "Get",
+				"operationId": "FindAll",
 				"responses": {
 					"200": {
 						"description": "",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"properties": {
+										"data": {
+											"items": {},
+											"type": "array"
+										},
+										"total": {
+											"type": "number",
+											"format": "double"
+										},
+										"pages": {
+											"type": "number",
+											"format": "double"
+										},
+										"nextPage": {
+											"type": "number",
+											"format": "double"
+										},
+										"page": {
+											"type": "number",
+											"format": "double"
+										}
+									},
+									"required": [
+										"data",
+										"total",
+										"pages",
+										"nextPage",
+										"page"
+									],
+									"type": "object"
+								}
 							}
 						}
 					}
@@ -72,20 +103,40 @@
 				"tags": [
 					"User"
 				],
-				"security": [],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
 				"parameters": [
 					{
-						"in": "path",
-						"name": "email",
+						"in": "query",
+						"name": "search",
 						"required": true,
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "quantity",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
 					}
 				]
-			}
-		},
-		"/api/v1/user": {
+			},
 			"patch": {
 				"operationId": "Update",
 				"responses": {
@@ -151,6 +202,186 @@
 					}
 				],
 				"parameters": []
+			}
+		},
+		"/api/v1/user/data": {
+			"get": {
+				"operationId": "FindByToken",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{
+											"properties": {
+												"userCode": {
+													"properties": {
+														"code": {
+															"type": "string"
+														},
+														"updated_at": {
+															"type": "string",
+															"format": "date-time"
+														},
+														"created_at": {
+															"type": "string",
+															"format": "date-time"
+														},
+														"id": {
+															"type": "string"
+														}
+													},
+													"required": [
+														"code",
+														"updated_at",
+														"created_at",
+														"id"
+													],
+													"type": "object"
+												},
+												"userProfile": {
+													"properties": {
+														"updated_at": {
+															"type": "string",
+															"format": "date-time"
+														},
+														"created_at": {
+															"type": "string",
+															"format": "date-time"
+														},
+														"icon": {
+															"type": "string"
+														},
+														"displayName": {
+															"type": "string"
+														},
+														"id": {
+															"type": "string"
+														}
+													},
+													"required": [
+														"updated_at",
+														"created_at",
+														"icon",
+														"displayName",
+														"id"
+													],
+													"type": "object"
+												}
+											},
+											"required": [
+												"userCode",
+												"userProfile"
+											],
+											"type": "object"
+										},
+										{
+											"properties": {
+												"refreshTokenId": {
+													"type": "string"
+												},
+												"userProfileId": {
+													"type": "string"
+												},
+												"userCodeId": {
+													"type": "string"
+												},
+												"blockedUntil": {
+													"type": "string",
+													"format": "date-time"
+												},
+												"loginAttempts": {
+													"type": "number",
+													"format": "double"
+												},
+												"verified": {
+													"type": "boolean"
+												},
+												"password": {
+													"type": "string"
+												},
+												"email": {
+													"type": "string"
+												},
+												"updated_at": {
+													"type": "string",
+													"format": "date-time"
+												},
+												"created_at": {
+													"type": "string",
+													"format": "date-time"
+												},
+												"id": {
+													"type": "string"
+												},
+												"username": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"refreshTokenId",
+												"userProfileId",
+												"userCodeId",
+												"blockedUntil",
+												"loginAttempts",
+												"verified",
+												"password",
+												"email",
+												"updated_at",
+												"created_at",
+												"id",
+												"username"
+											],
+											"type": "object"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Verify if exists an user with the email in the system",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/api/v1/user/exists/{email}": {
+			"get": {
+				"operationId": "Get",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Verify if exists an user with the email in the system",
+				"tags": [
+					"User"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "email",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		},
 		"/api/v1/post": {
@@ -524,19 +755,31 @@
 										},
 										"_count": {
 											"properties": {
+												"replies": {
+													"type": "number",
+													"format": "double"
+												},
 												"likes": {
 													"type": "number",
 													"format": "double"
 												}
 											},
 											"required": [
+												"replies",
 												"likes"
 											],
 											"type": "object"
 										},
+										"repliesCount": {
+											"type": "number",
+											"format": "double"
+										},
 										"likesCount": {
 											"type": "number",
 											"format": "double"
+										},
+										"isLiked": {
+											"type": "boolean"
 										},
 										"author": {
 											"properties": {
@@ -595,7 +838,9 @@
 										"created_at",
 										"id",
 										"_count",
+										"repliesCount",
 										"likesCount",
+										"isLiked",
 										"author"
 									],
 									"type": "object"
@@ -616,15 +861,15 @@
 				"parameters": [
 					{
 						"in": "query",
-						"name": "commentId",
-						"required": false,
+						"name": "postId",
+						"required": true,
 						"schema": {
 							"type": "string"
 						}
 					},
 					{
 						"in": "query",
-						"name": "postId",
+						"name": "commentId",
 						"required": false,
 						"schema": {
 							"type": "string"
@@ -660,7 +905,123 @@
 								"schema": {
 									"properties": {
 										"data": {
-											"items": {},
+											"items": {
+												"properties": {
+													"parentCommentId": {
+														"type": "string"
+													},
+													"postId": {
+														"type": "string"
+													},
+													"authorId": {
+														"type": "string"
+													},
+													"content": {
+														"type": "string"
+													},
+													"updated_at": {
+														"type": "string",
+														"format": "date-time"
+													},
+													"created_at": {
+														"type": "string",
+														"format": "date-time"
+													},
+													"id": {
+														"type": "string"
+													},
+													"_count": {
+														"properties": {
+															"replies": {
+																"type": "number",
+																"format": "double"
+															},
+															"likes": {
+																"type": "number",
+																"format": "double"
+															}
+														},
+														"required": [
+															"replies",
+															"likes"
+														],
+														"type": "object"
+													},
+													"repliesCount": {
+														"type": "number",
+														"format": "double"
+													},
+													"likesCount": {
+														"type": "number",
+														"format": "double"
+													},
+													"isLiked": {
+														"type": "boolean"
+													},
+													"author": {
+														"properties": {
+															"user": {
+																"properties": {
+																	"created_at": {
+																		"type": "string"
+																	},
+																	"verified": {
+																		"type": "boolean"
+																	},
+																	"email": {
+																		"type": "string"
+																	},
+																	"username": {
+																		"type": "string"
+																	},
+																	"id": {
+																		"type": "string"
+																	}
+																},
+																"required": [
+																	"created_at",
+																	"verified",
+																	"email",
+																	"username",
+																	"id"
+																],
+																"type": "object"
+															},
+															"displayName": {
+																"type": "string"
+															},
+															"icon": {
+																"type": "string"
+															},
+															"id": {
+																"type": "string"
+															}
+														},
+														"required": [
+															"user",
+															"displayName",
+															"icon",
+															"id"
+														],
+														"type": "object"
+													}
+												},
+												"required": [
+													"parentCommentId",
+													"postId",
+													"authorId",
+													"content",
+													"updated_at",
+													"created_at",
+													"id",
+													"_count",
+													"repliesCount",
+													"likesCount",
+													"isLiked",
+													"author"
+												],
+												"type": "object"
+											},
 											"type": "array"
 										},
 										"total": {
@@ -731,16 +1092,386 @@
 					},
 					{
 						"in": "query",
-						"name": "commentId",
-						"required": false,
+						"name": "postId",
+						"required": true,
 						"schema": {
 							"type": "string"
 						}
 					},
 					{
 						"in": "query",
-						"name": "postId",
+						"name": "commentId",
 						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/comment/{commentId}": {
+			"get": {
+				"operationId": "FindCommentById",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"allOf": [
+												{
+													"properties": {
+														"likes": {
+															"items": {
+																"properties": {
+																	"commentId": {
+																		"type": "string"
+																	},
+																	"postId": {
+																		"type": "string"
+																	},
+																	"userProfileId": {
+																		"type": "string"
+																	},
+																	"created_at": {
+																		"type": "string",
+																		"format": "date-time"
+																	},
+																	"id": {
+																		"type": "string"
+																	}
+																},
+																"required": [
+																	"commentId",
+																	"postId",
+																	"userProfileId",
+																	"created_at",
+																	"id"
+																],
+																"type": "object"
+															},
+															"type": "array"
+														},
+														"author": {
+															"allOf": [
+																{
+																	"properties": {
+																		"user": {
+																			"properties": {
+																				"refreshTokenId": {
+																					"type": "string"
+																				},
+																				"userProfileId": {
+																					"type": "string"
+																				},
+																				"userCodeId": {
+																					"type": "string"
+																				},
+																				"blockedUntil": {
+																					"type": "string",
+																					"format": "date-time"
+																				},
+																				"loginAttempts": {
+																					"type": "number",
+																					"format": "double"
+																				},
+																				"verified": {
+																					"type": "boolean"
+																				},
+																				"password": {
+																					"type": "string"
+																				},
+																				"email": {
+																					"type": "string"
+																				},
+																				"updated_at": {
+																					"type": "string",
+																					"format": "date-time"
+																				},
+																				"created_at": {
+																					"type": "string",
+																					"format": "date-time"
+																				},
+																				"id": {
+																					"type": "string"
+																				},
+																				"username": {
+																					"type": "string"
+																				}
+																			},
+																			"required": [
+																				"refreshTokenId",
+																				"userProfileId",
+																				"userCodeId",
+																				"blockedUntil",
+																				"loginAttempts",
+																				"verified",
+																				"password",
+																				"email",
+																				"updated_at",
+																				"created_at",
+																				"id",
+																				"username"
+																			],
+																			"type": "object"
+																		}
+																	},
+																	"required": [
+																		"user"
+																	],
+																	"type": "object"
+																},
+																{
+																	"properties": {
+																		"updated_at": {
+																			"type": "string",
+																			"format": "date-time"
+																		},
+																		"created_at": {
+																			"type": "string",
+																			"format": "date-time"
+																		},
+																		"icon": {
+																			"type": "string"
+																		},
+																		"displayName": {
+																			"type": "string"
+																		},
+																		"id": {
+																			"type": "string"
+																		}
+																	},
+																	"required": [
+																		"updated_at",
+																		"created_at",
+																		"icon",
+																		"displayName",
+																		"id"
+																	],
+																	"type": "object"
+																}
+															]
+														},
+														"_count": {
+															"properties": {
+																"likes": {
+																	"type": "number",
+																	"format": "double"
+																}
+															},
+															"required": [
+																"likes"
+															],
+															"type": "object"
+														}
+													},
+													"required": [
+														"likes",
+														"author",
+														"_count"
+													],
+													"type": "object"
+												},
+												{
+													"properties": {
+														"parentCommentId": {
+															"type": "string"
+														},
+														"postId": {
+															"type": "string"
+														},
+														"authorId": {
+															"type": "string"
+														},
+														"content": {
+															"type": "string"
+														},
+														"updated_at": {
+															"type": "string",
+															"format": "date-time"
+														},
+														"created_at": {
+															"type": "string",
+															"format": "date-time"
+														},
+														"id": {
+															"type": "string"
+														}
+													},
+													"required": [
+														"parentCommentId",
+														"postId",
+														"authorId",
+														"content",
+														"updated_at",
+														"created_at",
+														"id"
+													],
+													"type": "object"
+												}
+											]
+										},
+										{
+											"properties": {
+												"parentCommentId": {
+													"type": "string"
+												},
+												"postId": {
+													"type": "string"
+												},
+												"authorId": {
+													"type": "string"
+												},
+												"content": {
+													"type": "string"
+												},
+												"updated_at": {
+													"type": "string",
+													"format": "date-time"
+												},
+												"created_at": {
+													"type": "string",
+													"format": "date-time"
+												},
+												"id": {
+													"type": "string"
+												},
+												"likes": {
+													"items": {
+														"properties": {
+															"commentId": {
+																"type": "string"
+															},
+															"postId": {
+																"type": "string"
+															},
+															"userProfileId": {
+																"type": "string"
+															},
+															"created_at": {
+																"type": "string",
+																"format": "date-time"
+															},
+															"id": {
+																"type": "string"
+															}
+														},
+														"required": [
+															"commentId",
+															"postId",
+															"userProfileId",
+															"created_at",
+															"id"
+														],
+														"type": "object"
+													},
+													"type": "array"
+												},
+												"_count": {
+													"properties": {
+														"likes": {
+															"type": "number",
+															"format": "double"
+														}
+													},
+													"required": [
+														"likes"
+													],
+													"type": "object"
+												},
+												"likesCount": {
+													"type": "number",
+													"format": "double"
+												},
+												"isLiked": {
+													"type": "boolean"
+												},
+												"author": {
+													"properties": {
+														"user": {
+															"properties": {
+																"created_at": {
+																	"type": "string"
+																},
+																"verified": {
+																	"type": "boolean"
+																},
+																"email": {
+																	"type": "string"
+																},
+																"username": {
+																	"type": "string"
+																},
+																"id": {
+																	"type": "string"
+																}
+															},
+															"required": [
+																"created_at",
+																"verified",
+																"email",
+																"username",
+																"id"
+															],
+															"type": "object"
+														},
+														"displayName": {
+															"type": "string"
+														},
+														"icon": {
+															"type": "string"
+														},
+														"id": {
+															"type": "string"
+														}
+													},
+													"required": [
+														"user",
+														"displayName",
+														"icon",
+														"id"
+													],
+													"type": "object"
+												}
+											},
+											"required": [
+												"parentCommentId",
+												"postId",
+												"authorId",
+												"content",
+												"updated_at",
+												"created_at",
+												"id",
+												"likes",
+												"_count",
+												"likesCount",
+												"isLiked",
+												"author"
+											],
+											"type": "object"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Find a comment of the platform by id",
+				"tags": [
+					"Comment"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "commentId",
+						"required": true,
 						"schema": {
 							"type": "string"
 						}
@@ -804,6 +1535,131 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/Pick_AuthInput.email-or-password_"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/send-recover-email": {
+			"post": {
+				"operationId": "SendRecoverEmail",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Send recover email to change the password of an user of the system",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"email": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"email"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/verify-email-code": {
+			"post": {
+				"operationId": "VerifyEmailCode",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Verify recover email code to change the password of an user of the system",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"email": {
+										"type": "string"
+									},
+									"code": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"email",
+									"code"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/change-password": {
+			"post": {
+				"operationId": "ChangePassword",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Change password of an user of the system",
+				"tags": [
+					"Authentication"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"password": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"password"
+								],
+								"type": "object"
 							}
 						}
 					}
