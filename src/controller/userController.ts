@@ -22,8 +22,19 @@ export class UserController extends Controller {
 	@SuccessResponse(200)
 	@Get()
 	@Security('jwt', [])
-	public async findAll(@Request() req: TsoaRequest, @Query() search: string, @Query() page: number, @Query() quantity: number ) {
+	public async findAll(@Request() req: TsoaRequest, @Query() search: string, @Query() page: number, @Query() quantity: number) {
 		return await this.userService.findAll({ search: search.toLocaleLowerCase(), userId: req.user.sub, page, quantity })
+	}
+
+	/**
+	 * Verify if exists an user with the email in the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Get('/data')
+	@Security('jwt', [])
+	public async findByToken(@Request() req: TsoaRequest) {
+		return await this.userService.findByToken({ id: req.user.sub })
 	}
 
 	/**

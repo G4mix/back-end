@@ -61,6 +61,8 @@ export class PostRepository {
 		return {
 			...post,
 			author: serializeAuthor(post.author),
+			isLiked: false,
+			isViewed: false,
 			likesCount: count.likes,
 			viewsCount: count.views,
 			commentsCount: count.comments
@@ -69,13 +71,14 @@ export class PostRepository {
 
 	public async update({
 		postId,
+		userProfileId,
 		title,
 		content,
 		links,
 		tags,
 		images,
 		event
-	}: Omit<PostInput, 'images' | 'userProfileId'> & { postId: string; images: ImageInput[]; }) {
+	}: Omit<PostInput, 'images'> & { postId: string; images: ImageInput[]; }) {
 		const post = await this.pg.post.update({
 			where: { id: postId },
 			data: {
@@ -104,6 +107,16 @@ export class PostRepository {
 				links: true,
 				tags: true,
 				event: true,
+				likes: {
+					where: {
+						postId, userProfileId
+					}
+				},
+				views: {
+					where: {
+						postId, userProfileId
+					}
+				},
 				_count: {
 					select: {
 						likes: true,
@@ -113,11 +126,17 @@ export class PostRepository {
 				}
 			}
 		})
+		const likes = post.likes
+		const views = post.views
 		const count = post._count
 		delete (post as any)['_count']
+		delete (post as any)['likes']
+		delete (post as any)['views']
 		return {
 			...post,
 			author: serializeAuthor(post.author),
+			isLiked: likes.length > 0,
+			isViewed: views.length > 0,
 			likesCount: count.likes,
 			viewsCount: count.views,
 			commentsCount: count.comments
@@ -125,7 +144,10 @@ export class PostRepository {
 	}
 
 	public async findAll({
-		since, page, quantity, userProfileId: authorId
+		since,
+		page,
+		quantity,
+		userProfileId: authorId
 	}: {
 		tab: 'following' | 'recommendations' | 'highlights';
 		since: string;
@@ -139,17 +161,14 @@ export class PostRepository {
 				lte: new Date(since)
 			}
 		}
-		const [total, data] = await this.pg.$transaction([
-			this.pg.post.count({
-				where,
-			}),
+	
+		const [total, postsData] = await this.pg.$transaction([
+			this.pg.post.count({ where }),
 			this.pg.post.findMany({
 				skip: page * quantity,
 				take: quantity,
 				where,
-				orderBy: {
-					created_at: 'desc',
-				},
+				orderBy: { created_at: 'desc' },
 				include: {
 					author: { include: { user: true } },
 					images: true,
@@ -166,36 +185,62 @@ export class PostRepository {
 				}
 			}),
 		])
+	
+		const postIds = postsData.map(post => post.id)
+	
+		let userLikes: { postId: null | string }[] = []
+		let userViews: { postId: string }[] = []
+	
+		if (authorId) {
+			[userLikes, userViews] = await this.pg.$transaction([
+				this.pg.like.findMany({
+					where: {
+						postId: { in: postIds },
+						userProfileId: authorId
+					},
+					select: { postId: true }
+				}),
+				this.pg.view.findMany({
+					where: {
+						postId: { in: postIds },
+						userProfileId: authorId
+					},
+					select: { postId: true }
+				})
+			])
+		}
+	
+		const likedPostIds = new Set(userLikes.map(like => like.postId))
+		const viewedPostIds = new Set(userViews.map(view => view.postId))
+	
+		const formatted = postsData.map(post => {
+			const count = post._count
+			delete (post as any)._count
+	
+			return {
+				...post,
+				author: serializeAuthor(post.author),
+				isLiked: likedPostIds.has(post.id),
+				isViewed: viewedPostIds.has(post.id),
+				likesCount: count.likes,
+				viewsCount: count.views,
+				commentsCount: count.comments
+			}
+		})
+	
 		const pages = Math.ceil(total / quantity)
 		const nextPage = page + 1
-
-		let posts: any[] = []
-
-		data.map(post => {
-			const count = post._count
-			delete (post as any)['_count']
-			posts = [
-				...posts, 
-				{
-					...post,
-					author: serializeAuthor(post.author),
-					likesCount: count.likes,
-					viewsCount: count.views,
-					commentsCount: count.comments
-				} as any
-			]
-		})
-
+	
 		return {
 			page,
 			nextPage: nextPage >= pages ? null : nextPage,
 			pages,
 			total,
-			data: posts
+			data: formatted
 		}
-	}
+	}	
 
-	public async findById({ id }: Id) {
+	public async findById({ id, userProfileId }: Id & { userProfileId: string; }) {
 		const post = await this.pg.post.findUnique({
 			where: { id },
 			include: {
@@ -204,6 +249,16 @@ export class PostRepository {
 				links: true,
 				tags: true,
 				event: true,
+				likes: {
+					where: {
+						postId: id, userProfileId
+					}
+				},
+				views: {
+					where: {
+						postId: id, userProfileId
+					}
+				},
 				_count: {
 					select: {
 						likes: true,
@@ -213,12 +268,19 @@ export class PostRepository {
 				}
 			}
 		})
+		
 		if (!post) return post
+		const likes = post.likes
+		const views = post.views
 		const count = post._count
 		delete (post as any)['_count']
+		delete (post as any)['likes']
+		delete (post as any)['views']
 		return {
 			...post,
 			author: serializeAuthor(post.author),
+			isLiked: likes.length > 0,
+			isViewed: views.length > 0,
 			likesCount: count.likes,
 			viewsCount: count.views,
 			commentsCount: count.comments

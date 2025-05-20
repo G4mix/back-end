@@ -82,7 +82,7 @@ export class PostService {
 	public async updatePost({
 		userProfileId, postId, title, content, links, tags, images, event
 	}: PostInput & { postId: string; }) {
-		const postExists = await this.postRepository.findById({ id: postId })
+		const postExists = await this.postRepository.findById({ id: postId, userProfileId })
 		if (!postExists) return 'POST_NOT_FOUND'
 		else if (postExists.authorId !== userProfileId) return 'YOU_ARE_NOT_THE_AUTHOR'
 
@@ -133,7 +133,7 @@ export class PostService {
 			}
 		}
 
-		return await this.postRepository.update({ postId, title, content, links, tags, images: uploadedImages })
+		return await this.postRepository.update({ postId, title, content, links, tags, images: uploadedImages, userProfileId })
 	}
 
 	public async findAllPosts({ tab, since, page, quantity, userProfileId }: {
@@ -146,14 +146,14 @@ export class PostService {
 		return await this.postRepository.findAll({ tab, since, page, quantity, userProfileId })
 	}
 
-	public async findPostById({ postId: id }: { postId: string; }) {
-		return await this.postRepository.findById({ id }) ?? 'POST_NOT_FOUND'
+	public async findPostById({ postId: id, userProfileId }: { postId: string; userProfileId: string; }) {
+		return await this.postRepository.findById({ id, userProfileId }) ?? 'POST_NOT_FOUND'
 	}
 
 	public async deletePost({
 		userProfileId, postId: id
 	}: { userProfileId: string; postId: string; }) {
-		const post = await this.postRepository.findById({ id })
+		const post = await this.postRepository.findById({ id, userProfileId })
 		if (!post) return 'POST_NOT_FOUND'
 		if (post.authorId !== userProfileId) return 'THIS_POST_BELONG_TO_ANOTHER_USER'
 		return await this.postRepository.delete({ id })

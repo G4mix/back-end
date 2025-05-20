@@ -18,6 +18,10 @@ export class UserService {
 		return await this.userRepository.findAll({ search, page, quantity, userId })
 	}
 
+	public async findByToken({ id }: { id: string; }) {
+		return await this.userRepository.findById({ id })
+	}
+
 	public async existsByEmail({ email }: { email: string; }) {
 		const count = await this.userRepository.count({ email })
 		return count > 0 ? { exists: true } : 'USER_NOT_FOUND'
