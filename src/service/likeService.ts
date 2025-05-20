@@ -15,6 +15,7 @@ export class LikeService {
 		if (isLiked) {
 			if (userHasLikedPost) return
 			await this.likeRepository.create({ postId, userProfileId })
+			return
 		}
 		if (!userHasLikedPost) return
 		await this.likeRepository.delete({ id: userHasLikedPost.id })
@@ -27,6 +28,7 @@ export class LikeService {
 		if (isLiked) {
 			if (userHasLikedPost) return
 			await this.likeRepository.create({ commentId, userProfileId })
+			return
 		}
 		if (!userHasLikedPost) return
 		await this.likeRepository.delete({ id: userHasLikedPost.id })
