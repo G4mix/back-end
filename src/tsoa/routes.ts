@@ -377,6 +377,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
             async function PostController_findPostById(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
                     postId: {"in":"path","name":"postId","required":true,"dataType":"string"},
             };
 
@@ -565,6 +566,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
             async function CommentController_listComments(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
                     page: {"in":"query","name":"page","required":true,"dataType":"double"},
                     quantity: {"in":"query","name":"quantity","required":true,"dataType":"double"},
                     since: {"in":"query","name":"since","required":true,"dataType":"string"},
@@ -605,6 +607,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
             async function CommentController_findCommentById(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
                     commentId: {"in":"path","name":"commentId","required":true,"dataType":"string"},
             };
 
