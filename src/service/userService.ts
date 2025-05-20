@@ -19,7 +19,8 @@ export class UserService {
 	}
 
 	public async findByToken({ id }: { id: string; }) {
-		return await this.userRepository.findById({ id })
+		const user = await this.userRepository.findById({ id })
+		return user ? serializeUser(user) : 'USER_NOT_FOUND'
 	}
 
 	public async existsByEmail({ email }: { email: string; }) {
