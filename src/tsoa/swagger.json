@@ -213,128 +213,59 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"allOf": [
+									"anyOf": [
 										{
 											"properties": {
-												"userCode": {
-													"properties": {
-														"code": {
-															"type": "string"
-														},
-														"updated_at": {
-															"type": "string",
-															"format": "date-time"
-														},
-														"created_at": {
-															"type": "string",
-															"format": "date-time"
-														},
-														"id": {
-															"type": "string"
-														}
-													},
-													"required": [
-														"code",
-														"updated_at",
-														"created_at",
-														"id"
-													],
-													"type": "object"
-												},
 												"userProfile": {
 													"properties": {
-														"updated_at": {
-															"type": "string",
-															"format": "date-time"
-														},
-														"created_at": {
-															"type": "string",
-															"format": "date-time"
+														"displayName": {
+															"type": "string"
 														},
 														"icon": {
 															"type": "string"
 														},
-														"displayName": {
-															"type": "string"
-														},
 														"id": {
 															"type": "string"
 														}
 													},
 													"required": [
-														"updated_at",
-														"created_at",
-														"icon",
 														"displayName",
+														"icon",
 														"id"
 													],
 													"type": "object"
-												}
-											},
-											"required": [
-												"userCode",
-												"userProfile"
-											],
-											"type": "object"
-										},
-										{
-											"properties": {
-												"refreshTokenId": {
+												},
+												"created_at": {
 													"type": "string"
-												},
-												"userProfileId": {
-													"type": "string"
-												},
-												"userCodeId": {
-													"type": "string"
-												},
-												"blockedUntil": {
-													"type": "string",
-													"format": "date-time"
-												},
-												"loginAttempts": {
-													"type": "number",
-													"format": "double"
 												},
 												"verified": {
 													"type": "boolean"
 												},
-												"password": {
-													"type": "string"
-												},
 												"email": {
-													"type": "string"
-												},
-												"updated_at": {
-													"type": "string",
-													"format": "date-time"
-												},
-												"created_at": {
-													"type": "string",
-													"format": "date-time"
-												},
-												"id": {
 													"type": "string"
 												},
 												"username": {
 													"type": "string"
+												},
+												"id": {
+													"type": "string"
 												}
 											},
 											"required": [
-												"refreshTokenId",
-												"userProfileId",
-												"userCodeId",
-												"blockedUntil",
-												"loginAttempts",
-												"verified",
-												"password",
-												"email",
-												"updated_at",
+												"userProfile",
 												"created_at",
-												"id",
-												"username"
+												"verified",
+												"email",
+												"username",
+												"id"
 											],
 											"type": "object"
+										},
+										{
+											"type": "string",
+											"enum": [
+												"USER_NOT_FOUND"
+											]
 										}
 									]
 								}
@@ -342,7 +273,7 @@
 						}
 					}
 				},
-				"description": "Verify if exists an user with the email in the system",
+				"description": "Get data from an user of the system",
 				"tags": [
 					"User"
 				],
@@ -651,7 +582,39 @@
 				"operationId": "LikePost",
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"commentId": {
+											"type": "string"
+										},
+										"postId": {
+											"type": "string"
+										},
+										"userProfileId": {
+											"type": "string"
+										},
+										"created_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"commentId",
+										"postId",
+										"userProfileId",
+										"created_at",
+										"id"
+									],
+									"type": "object"
+								}
+							}
+						}
 					}
 				},
 				"description": "Like or unlike a post of an user",
@@ -688,7 +651,39 @@
 				"operationId": "LikeComment",
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"commentId": {
+											"type": "string"
+										},
+										"postId": {
+											"type": "string"
+										},
+										"userProfileId": {
+											"type": "string"
+										},
+										"created_at": {
+											"type": "string",
+											"format": "date-time"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"commentId",
+										"postId",
+										"userProfileId",
+										"created_at",
+										"id"
+									],
+									"type": "object"
+								}
+							}
+						}
 					}
 				},
 				"description": "Like or unlike a comment of an user",
