@@ -14,11 +14,10 @@ export class LikeService {
 		const userHasLikedPost = await this.likeRepository.userHasLikedPost({ postId, userProfileId })
 		if (isLiked) {
 			if (userHasLikedPost) return
-			await this.likeRepository.create({ postId, userProfileId })
-			return
+			return await this.likeRepository.create({ postId, userProfileId })
 		}
 		if (!userHasLikedPost) return
-		await this.likeRepository.delete({ id: userHasLikedPost.id })
+		return await this.likeRepository.delete({ id: userHasLikedPost.id })
 	}
 
 	public async likeComment({
@@ -27,10 +26,9 @@ export class LikeService {
 		const userHasLikedPost = await this.likeRepository.userHasLikedComment({ commentId, userProfileId })
 		if (isLiked) {
 			if (userHasLikedPost) return
-			await this.likeRepository.create({ commentId, userProfileId })
-			return
+			return await this.likeRepository.create({ commentId, userProfileId })
 		}
 		if (!userHasLikedPost) return
-		await this.likeRepository.delete({ id: userHasLikedPost.id })
+		return await this.likeRepository.delete({ id: userHasLikedPost.id })
 	}
 }
