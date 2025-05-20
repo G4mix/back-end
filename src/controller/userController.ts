@@ -27,7 +27,7 @@ export class UserController extends Controller {
 	}
 
 	/**
-	 * Verify if exists an user with the email in the system
+	 * Get data from an user of the system
 	 *
 	 */
 	@SuccessResponse(200)
