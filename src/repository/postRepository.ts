@@ -147,13 +147,15 @@ export class PostRepository {
 		since,
 		page,
 		quantity,
-		userProfileId: authorId
+		authorId,
+		userProfileId
 	}: {
 		tab: 'following' | 'recommendations' | 'highlights';
 		since: string;
 		page: number;
 		quantity: number;
-		userProfileId?: string;
+		authorId?: string;
+		userProfileId: string;
 	}) {
 		const where = {
 			authorId,
@@ -187,23 +189,22 @@ export class PostRepository {
 		])
 	
 		const postIds = postsData.map(post => post.id)
-	
 		let userLikes: { postId: null | string }[] = []
 		let userViews: { postId: string }[] = []
 	
-		if (authorId) {
+		if (userProfileId) {
 			[userLikes, userViews] = await this.pg.$transaction([
 				this.pg.like.findMany({
 					where: {
 						postId: { in: postIds },
-						userProfileId: authorId
+						userProfileId
 					},
 					select: { postId: true }
 				}),
 				this.pg.view.findMany({
 					where: {
 						postId: { in: postIds },
-						userProfileId: authorId
+						userProfileId
 					},
 					select: { postId: true }
 				})
@@ -212,7 +213,7 @@ export class PostRepository {
 	
 		const likedPostIds = new Set(userLikes.map(like => like.postId))
 		const viewedPostIds = new Set(userViews.map(view => view.postId))
-	
+
 		const formatted = postsData.map(post => {
 			const count = post._count
 			delete (post as any)._count

@@ -337,11 +337,12 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
 
             async function PostController_findAllPosts(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
                     tab: {"in":"query","name":"tab","required":true,"dataType":"union","subSchemas":[{"dataType":"enum","enums":["following"]},{"dataType":"enum","enums":["recommendations"]},{"dataType":"enum","enums":["highlights"]}]},
                     since: {"in":"query","name":"since","required":true,"dataType":"string"},
                     page: {"in":"query","name":"page","required":true,"dataType":"double"},
                     quantity: {"in":"query","name":"quantity","required":true,"dataType":"double"},
-                    userProfileId: {"in":"query","name":"userProfileId","dataType":"string"},
+                    authorId: {"in":"query","name":"authorId","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

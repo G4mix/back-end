@@ -136,14 +136,15 @@ export class PostService {
 		return await this.postRepository.update({ postId, title, content, links, tags, images: uploadedImages, userProfileId })
 	}
 
-	public async findAllPosts({ tab, since, page, quantity, userProfileId }: {
+	public async findAllPosts({ tab, since, page, quantity, authorId, userProfileId }: {
 		tab: 'following' | 'recommendations' | 'highlights';
 		since: string;
 		page: number;
 		quantity: number;
-		userProfileId?: string;
+		authorId?: string;
+		userProfileId: string;
 	}) {
-		return await this.postRepository.findAll({ tab, since, page, quantity, userProfileId })
+		return await this.postRepository.findAll({ tab, since, page, quantity, authorId, userProfileId })
 	}
 
 	public async findPostById({ postId: id, userProfileId }: { postId: string; userProfileId: string; }) {

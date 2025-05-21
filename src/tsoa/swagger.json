@@ -502,7 +502,7 @@
 					},
 					{
 						"in": "query",
-						"name": "userProfileId",
+						"name": "authorId",
 						"required": false,
 						"schema": {
 							"type": "string"

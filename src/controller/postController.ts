@@ -74,11 +74,12 @@ export class PostController extends Controller {
 	@Get()
 	@Security('jwt', [])
 	public async findAllPosts(
+		@Request() req: TsoaRequest,
 		@Query() tab: 'following' | 'recommendations' | 'highlights',
 		@Query() since: string,
 		@Query() page: number,
 		@Query() quantity: number,
-		@Query() userProfileId?: string
+		@Query() authorId?: string
 	) {
 		return ControllerUtils.handleResponse(
 			await this.postService.findAllPosts({
@@ -86,7 +87,8 @@ export class PostController extends Controller {
 				since,
 				page,
 				quantity,
-				userProfileId
+				authorId,
+				userProfileId: req.user.userProfileId
 			}), this
 		)
 	}
