@@ -27,6 +27,17 @@ export class UserController extends Controller {
 	}
 
 	/**
+	 * Verify if exists an user with the email in the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Get('/{id}')
+	@Security('jwt', [])
+	public async findById(@Path() id: string) {
+		return await this.userService.findById({ id })
+	}
+
+	/**
 	 * Get data from an user of the system
 	 *
 	 */
@@ -34,7 +45,7 @@ export class UserController extends Controller {
 	@Get('/data')
 	@Security('jwt', [])
 	public async findByToken(@Request() req: TsoaRequest) {
-		return await this.userService.findByToken({ id: req.user.sub })
+		return await this.userService.findById({ id: req.user.sub })
 	}
 
 	/**
