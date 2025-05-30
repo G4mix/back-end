@@ -28,7 +28,7 @@ export class UserService {
 		return count > 0 ? { exists: true } : 'USER_NOT_FOUND'
 	}
 
-	public async update(data: { id: string; username?: string; email?: string; password?: string; icon?: Express.Multer.File | string; verified?: boolean; }) {
+	public async update(data: { id: string; username?: string; email?: string; password?: string; autobiography?: string; links: string[]; icon?: Express.Multer.File | string; verified?: boolean; }) {
 		if (data.email) {
 			if (await this.userRepository.findByEmail({ email: data.email })) return 'USER_ALREADY_EXISTS'
 			data.verified = false

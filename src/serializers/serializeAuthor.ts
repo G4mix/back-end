@@ -1,12 +1,14 @@
-import { User, UserProfile } from '@prisma/client'
+import { Link, User, UserProfile } from '@prisma/client'
 
-type AuthorWithUser = UserProfile & { user: User | null }
+type AuthorWithUser = UserProfile & { links: Link[]; user: User | null }
 
 export const serializeAuthor = (author: AuthorWithUser) => {
 	return {
 		id: author.id,
 		icon: author.icon,
 		displayName: author.displayName,
+		autobiography: author.autobiography,
+		links: author.links,
 		user: author.user && {
 			id: author.user.id,
 			username: author.user.username,

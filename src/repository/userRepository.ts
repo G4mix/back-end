@@ -43,7 +43,7 @@ export class UserRepository {
 					username: 'desc',
 				},
 				include: {
-					userProfile: true,
+					userProfile: { include: { links: true } },
 				}
 			}),
 		])
@@ -72,7 +72,7 @@ export class UserRepository {
 		return this.pg.user.findUnique({
 			where: { id },
 			include: {
-				userProfile: true,
+				userProfile: { include: { links: true } },
 				userCode: true
 			}
 		})
@@ -88,7 +88,7 @@ export class UserRepository {
 		return this.pg.user.findUnique({
 			where: { email },
 			include: {
-				userProfile: true,
+				userProfile: { include: { links: true } },
 				userCode: true
 			}
 		})
@@ -103,7 +103,7 @@ export class UserRepository {
 				userCode: typeof code === 'string' ? { update: { where: { user: { id } }, data: { code } } } : undefined,
 				refreshToken: typeof token === 'string' ? { upsert: { create: { token }, update: { token } } } : undefined
 			},
-			include: { userProfile: true, userCode: true }
+			include: { userProfile: { include: { links: true } }, userCode: true }
 		})
 	}
 
@@ -122,7 +122,7 @@ export class UserRepository {
 					}
 				}
 			},
-			include: { userProfile: true, userCode: true }
+			include: { userProfile: { include: { links: true } }, userCode: true }
 		})
 	}
 
@@ -138,7 +138,7 @@ export class UserRepository {
 				provider_email: { provider, email },
 			},
 			include: {
-				user: { include: { userProfile: true } }
+				user: { include: { userProfile: { include: { links: true } } } }
 			}
 		})
 	}
@@ -151,7 +151,7 @@ export class UserRepository {
 				email
 			},
 			include: {
-				user: { include: { userProfile: true } }
+				user: { include: { userProfile: { include: { links: true } } } }
 			}
 		})
 	}

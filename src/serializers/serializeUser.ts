@@ -1,6 +1,6 @@
-import { User, UserProfile } from '@prisma/client'
+import { Link, User, UserProfile } from '@prisma/client'
 
-type UserWithProfile = User & { userProfile: UserProfile }
+type UserWithProfile = User & { userProfile: UserProfile & { links: Link[]; } }
 
 export const serializeUser = (user: UserWithProfile) => {
 	return {
@@ -12,7 +12,9 @@ export const serializeUser = (user: UserWithProfile) => {
 		userProfile: {
 			id: user.userProfile.id,
 			icon: user.userProfile.icon,
-			displayName: user.userProfile.displayName
+			displayName: user.userProfile.displayName,
+			autobiography: user.userProfile.autobiography,
+			links: user.userProfile.links
 		}
 	}
 }

@@ -72,11 +72,13 @@ export class UserController extends Controller {
 		@Request() req: TsoaRequest,
 		@FormField() username?: string,
 		@FormField() email?: string,
+		@FormField() autobiography?: string,
+		@FormField() links?: string,
 		@FormField() password?: string,
 		@UploadedFile() icon?: Express.Multer.File
 	) {
-		const data: { id: string; username?: string; password?: string; icon?: Express.Multer.File; email?: string; } = {
-			id: req.user.sub, username, password, icon
+		const data: { id: string; username?: string; password?: string; icon?: Express.Multer.File; email?: string; autobiography?: string; links: string[]; } = {
+			id: req.user.sub, username, password, icon, autobiography, links: links ? JSON.parse(links) : undefined
 		}
 		if (email) data['email'] = email.toLowerCase()
 		const res = await this.userService.update(data)
