@@ -72,7 +72,6 @@ export class UserService {
 			if (userbackgroundImageRes.fileUrl) data['backgroundImage'] = userbackgroundImageRes.fileUrl
 			else data['backgroundImage'] = undefined
 		}
-		console.log(data)
 		return serializeUser(await this.userRepository.update(data))
 	}
 
