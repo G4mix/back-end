@@ -53,7 +53,6 @@ export class UserService {
 				key: `user-${data.id}/icon${SUPPORTED_IMAGES[data.icon.mimetype as keyof typeof SUPPORTED_IMAGES]}`,
 				file: data.icon.buffer
 			})
-			console.log({userIconRes})
 			if (typeof userIconRes !== 'object') return 'PICTURE_UPDATE_FAIL'
 			if (userIconRes.fileUrl) data['icon'] = userIconRes.fileUrl
 			else data['icon'] = undefined
@@ -67,7 +66,6 @@ export class UserService {
 				key: `user-${data.id}/backgroundImage${SUPPORTED_IMAGES[data.backgroundImage.mimetype as keyof typeof SUPPORTED_IMAGES]}`,
 				file: data.backgroundImage.buffer
 			})
-			console.log({userbackgroundImageRes})
 			if (typeof userbackgroundImageRes !== 'object') return 'PICTURE_UPDATE_FAIL'
 			if (userbackgroundImageRes.fileUrl) data['backgroundImage'] = userbackgroundImageRes.fileUrl
 			else data['backgroundImage'] = undefined

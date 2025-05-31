@@ -172,8 +172,21 @@
 									"email": {
 										"type": "string"
 									},
+									"displayName": {
+										"type": "string"
+									},
+									"autobiography": {
+										"type": "string"
+									},
+									"links": {
+										"type": "string"
+									},
 									"password": {
 										"type": "string"
+									},
+									"backgroundImage": {
+										"type": "string",
+										"format": "binary"
 									},
 									"icon": {
 										"type": "string",
@@ -204,6 +217,131 @@
 				"parameters": []
 			}
 		},
+		"/api/v1/user/{id}": {
+			"get": {
+				"operationId": "FindById",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"userProfile": {
+													"properties": {
+														"links": {
+															"items": {
+																"properties": {
+																	"postId": {
+																		"type": "string"
+																	},
+																	"url": {
+																		"type": "string"
+																	},
+																	"userProfileId": {
+																		"type": "string"
+																	},
+																	"id": {
+																		"type": "string"
+																	}
+																},
+																"required": [
+																	"postId",
+																	"url",
+																	"userProfileId",
+																	"id"
+																],
+																"type": "object"
+															},
+															"type": "array"
+														},
+														"backgroundImage": {
+															"type": "string"
+														},
+														"autobiography": {
+															"type": "string"
+														},
+														"displayName": {
+															"type": "string"
+														},
+														"icon": {
+															"type": "string"
+														},
+														"id": {
+															"type": "string"
+														}
+													},
+													"required": [
+														"links",
+														"backgroundImage",
+														"autobiography",
+														"displayName",
+														"icon",
+														"id"
+													],
+													"type": "object"
+												},
+												"created_at": {
+													"type": "string"
+												},
+												"verified": {
+													"type": "boolean"
+												},
+												"email": {
+													"type": "string"
+												},
+												"username": {
+													"type": "string"
+												},
+												"id": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"userProfile",
+												"created_at",
+												"verified",
+												"email",
+												"username",
+												"id"
+											],
+											"type": "object"
+										},
+										{
+											"type": "string",
+											"enum": [
+												"USER_NOT_FOUND"
+											]
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Get user by id",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/v1/user/data": {
 			"get": {
 				"operationId": "FindByToken",
@@ -218,6 +356,38 @@
 											"properties": {
 												"userProfile": {
 													"properties": {
+														"links": {
+															"items": {
+																"properties": {
+																	"postId": {
+																		"type": "string"
+																	},
+																	"url": {
+																		"type": "string"
+																	},
+																	"userProfileId": {
+																		"type": "string"
+																	},
+																	"id": {
+																		"type": "string"
+																	}
+																},
+																"required": [
+																	"postId",
+																	"url",
+																	"userProfileId",
+																	"id"
+																],
+																"type": "object"
+															},
+															"type": "array"
+														},
+														"backgroundImage": {
+															"type": "string"
+														},
+														"autobiography": {
+															"type": "string"
+														},
 														"displayName": {
 															"type": "string"
 														},
@@ -229,6 +399,9 @@
 														}
 													},
 													"required": [
+														"links",
+														"backgroundImage",
+														"autobiography",
 														"displayName",
 														"icon",
 														"id"
@@ -728,13 +901,13 @@
 										"parentCommentId": {
 											"type": "string"
 										},
-										"postId": {
-											"type": "string"
-										},
 										"authorId": {
 											"type": "string"
 										},
 										"content": {
+											"type": "string"
+										},
+										"postId": {
 											"type": "string"
 										},
 										"updated_at": {
@@ -805,6 +978,38 @@
 													],
 													"type": "object"
 												},
+												"links": {
+													"items": {
+														"properties": {
+															"postId": {
+																"type": "string"
+															},
+															"url": {
+																"type": "string"
+															},
+															"userProfileId": {
+																"type": "string"
+															},
+															"id": {
+																"type": "string"
+															}
+														},
+														"required": [
+															"postId",
+															"url",
+															"userProfileId",
+															"id"
+														],
+														"type": "object"
+													},
+													"type": "array"
+												},
+												"backgroundImage": {
+													"type": "string"
+												},
+												"autobiography": {
+													"type": "string"
+												},
 												"displayName": {
 													"type": "string"
 												},
@@ -817,6 +1022,9 @@
 											},
 											"required": [
 												"user",
+												"links",
+												"backgroundImage",
+												"autobiography",
 												"displayName",
 												"icon",
 												"id"
@@ -826,9 +1034,9 @@
 									},
 									"required": [
 										"parentCommentId",
-										"postId",
 										"authorId",
 										"content",
+										"postId",
 										"updated_at",
 										"created_at",
 										"id",
@@ -905,13 +1113,13 @@
 													"parentCommentId": {
 														"type": "string"
 													},
-													"postId": {
-														"type": "string"
-													},
 													"authorId": {
 														"type": "string"
 													},
 													"content": {
+														"type": "string"
+													},
+													"postId": {
 														"type": "string"
 													},
 													"updated_at": {
@@ -982,6 +1190,38 @@
 																],
 																"type": "object"
 															},
+															"links": {
+																"items": {
+																	"properties": {
+																		"postId": {
+																			"type": "string"
+																		},
+																		"url": {
+																			"type": "string"
+																		},
+																		"userProfileId": {
+																			"type": "string"
+																		},
+																		"id": {
+																			"type": "string"
+																		}
+																	},
+																	"required": [
+																		"postId",
+																		"url",
+																		"userProfileId",
+																		"id"
+																	],
+																	"type": "object"
+																},
+																"type": "array"
+															},
+															"backgroundImage": {
+																"type": "string"
+															},
+															"autobiography": {
+																"type": "string"
+															},
 															"displayName": {
 																"type": "string"
 															},
@@ -994,6 +1234,9 @@
 														},
 														"required": [
 															"user",
+															"links",
+															"backgroundImage",
+															"autobiography",
 															"displayName",
 															"icon",
 															"id"
@@ -1003,9 +1246,9 @@
 												},
 												"required": [
 													"parentCommentId",
-													"postId",
 													"authorId",
 													"content",
+													"postId",
 													"updated_at",
 													"created_at",
 													"id",
@@ -1153,6 +1396,32 @@
 															"allOf": [
 																{
 																	"properties": {
+																		"links": {
+																			"items": {
+																				"properties": {
+																					"postId": {
+																						"type": "string"
+																					},
+																					"url": {
+																						"type": "string"
+																					},
+																					"userProfileId": {
+																						"type": "string"
+																					},
+																					"id": {
+																						"type": "string"
+																					}
+																				},
+																				"required": [
+																					"postId",
+																					"url",
+																					"userProfileId",
+																					"id"
+																				],
+																				"type": "object"
+																			},
+																			"type": "array"
+																		},
 																		"user": {
 																			"properties": {
 																				"refreshTokenId": {
@@ -1214,6 +1483,7 @@
 																		}
 																	},
 																	"required": [
+																		"links",
 																		"user"
 																	],
 																	"type": "object"
@@ -1228,6 +1498,12 @@
 																			"type": "string",
 																			"format": "date-time"
 																		},
+																		"backgroundImage": {
+																			"type": "string"
+																		},
+																		"autobiography": {
+																			"type": "string"
+																		},
 																		"icon": {
 																			"type": "string"
 																		},
@@ -1241,6 +1517,8 @@
 																	"required": [
 																		"updated_at",
 																		"created_at",
+																		"backgroundImage",
+																		"autobiography",
 																		"icon",
 																		"displayName",
 																		"id"
@@ -1274,13 +1552,13 @@
 														"parentCommentId": {
 															"type": "string"
 														},
-														"postId": {
-															"type": "string"
-														},
 														"authorId": {
 															"type": "string"
 														},
 														"content": {
+															"type": "string"
+														},
+														"postId": {
 															"type": "string"
 														},
 														"updated_at": {
@@ -1297,9 +1575,9 @@
 													},
 													"required": [
 														"parentCommentId",
-														"postId",
 														"authorId",
 														"content",
+														"postId",
 														"updated_at",
 														"created_at",
 														"id"
@@ -1313,13 +1591,13 @@
 												"parentCommentId": {
 													"type": "string"
 												},
-												"postId": {
-													"type": "string"
-												},
 												"authorId": {
 													"type": "string"
 												},
 												"content": {
+													"type": "string"
+												},
+												"postId": {
 													"type": "string"
 												},
 												"updated_at": {
@@ -1412,6 +1690,38 @@
 															],
 															"type": "object"
 														},
+														"links": {
+															"items": {
+																"properties": {
+																	"postId": {
+																		"type": "string"
+																	},
+																	"url": {
+																		"type": "string"
+																	},
+																	"userProfileId": {
+																		"type": "string"
+																	},
+																	"id": {
+																		"type": "string"
+																	}
+																},
+																"required": [
+																	"postId",
+																	"url",
+																	"userProfileId",
+																	"id"
+																],
+																"type": "object"
+															},
+															"type": "array"
+														},
+														"backgroundImage": {
+															"type": "string"
+														},
+														"autobiography": {
+															"type": "string"
+														},
 														"displayName": {
 															"type": "string"
 														},
@@ -1424,6 +1734,9 @@
 													},
 													"required": [
 														"user",
+														"links",
+														"backgroundImage",
+														"autobiography",
 														"displayName",
 														"icon",
 														"id"
@@ -1433,9 +1746,9 @@
 											},
 											"required": [
 												"parentCommentId",
-												"postId",
 												"authorId",
 												"content",
+												"postId",
 												"updated_at",
 												"created_at",
 												"id",

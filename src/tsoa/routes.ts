@@ -95,6 +95,42 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/v1/user/:id',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(UserController)),
+            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.findById)),
+
+            async function UserController_findById(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<UserController>(UserController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'findById',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/v1/user/data',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(UserController)),
@@ -168,7 +204,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.patch('/api/v1/user',
             authenticateMiddleware([{"jwt":[]}]),
-            upload.fields([{"name":"icon","maxCount":1,"multiple":false}]),
+            upload.fields([{"name":"backgroundImage","maxCount":1,"multiple":false},{"name":"icon","maxCount":1,"multiple":false}]),
             ...(fetchMiddlewares<RequestHandler>(UserController)),
             ...(fetchMiddlewares<RequestHandler>(UserController.prototype.update)),
 
@@ -177,7 +213,11 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
                     username: {"in":"formData","name":"username","dataType":"string"},
                     email: {"in":"formData","name":"email","dataType":"string"},
+                    displayName: {"in":"formData","name":"displayName","dataType":"string"},
+                    autobiography: {"in":"formData","name":"autobiography","dataType":"string"},
+                    links: {"in":"formData","name":"links","dataType":"string"},
                     password: {"in":"formData","name":"password","dataType":"string"},
+                    backgroundImage: {"in":"formData","name":"backgroundImage","dataType":"file"},
                     icon: {"in":"formData","name":"icon","dataType":"file"},
             };
 
