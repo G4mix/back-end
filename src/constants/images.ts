@@ -1,4 +1,5 @@
 export const SUPPORTED_IMAGES = {
+	'image/jpg': '.jpg',
 	'image/jpeg': '.jpg',
 	'image/png': '.png'
 }
