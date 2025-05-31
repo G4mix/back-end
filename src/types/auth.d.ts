@@ -10,6 +10,7 @@ export type UpdateInput = Id & Partial<{
     username: string;
     email: string;
     password: string;
+    displayName: string;
     autobiography: string;
     verified: boolean;
     loginAttempts: number;

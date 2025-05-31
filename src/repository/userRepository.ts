@@ -94,7 +94,7 @@ export class UserRepository {
 		})
 	}
 
-	public async update({ id, icon, backgroundImage, autobiography, links, token, code, ...data }: Partial<UpdateInput> & { token?: string; }) {
+	public async update({ id, icon, backgroundImage, autobiography, displayName, links, token, code, ...data }: Partial<UpdateInput> & { token?: string; }) {
 		return this.pg.user.update({
 			where: { id },
 			data: {
@@ -103,6 +103,7 @@ export class UserRepository {
 					update: {
 						data: {
 							autobiography,
+							displayName,
 							icon: typeof icon === 'string' ? icon : undefined,
 							backgroundImage: typeof backgroundImage === 'string' ? backgroundImage : undefined,
 							links: links ? { deleteMany: { url: { notIn: links } }, createMany: { data: links.map(url => ({ url })), skipDuplicates: true } } : undefined
