@@ -67,10 +67,10 @@ export class UserService {
 				file: data.backgroundImage.buffer
 			})
 			if (typeof userbackgroundImageRes !== 'object') return 'PICTURE_UPDATE_FAIL'
-			if (userbackgroundImageRes.fileUrl) data['icon'] = userbackgroundImageRes.fileUrl
+			if (userbackgroundImageRes.fileUrl) data['backgroundImage'] = userbackgroundImageRes.fileUrl
 			else data['backgroundImage'] = undefined
 		}
-	
+		console.log(data)
 		return serializeUser(await this.userRepository.update(data))
 	}
 
