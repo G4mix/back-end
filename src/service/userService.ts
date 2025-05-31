@@ -28,7 +28,17 @@ export class UserService {
 		return count > 0 ? { exists: true } : 'USER_NOT_FOUND'
 	}
 
-	public async update(data: { id: string; username?: string; email?: string; password?: string; autobiography?: string; links: string[]; icon?: Express.Multer.File | string; verified?: boolean; }) {
+	public async update(data: {
+		id: string;
+		username?: string;
+		email?: string;
+		password?: string;
+		autobiography?: string;
+		links: string[];
+		icon?: Express.Multer.File | string;
+		backgroundImage?: Express.Multer.File | string;
+		verified?: boolean;
+	}) {
 		if (data.email) {
 			if (await this.userRepository.findByEmail({ email: data.email })) return 'USER_ALREADY_EXISTS'
 			data.verified = false
@@ -46,6 +56,20 @@ export class UserService {
 			if (userIconRes.fileUrl) data['icon'] = userIconRes.fileUrl
 			else data['icon'] = undefined
 		}
+	
+		if (data.backgroundImage && typeof data.backgroundImage !== 'string') {
+			if (!Object.keys(SUPPORTED_IMAGES).includes(data.backgroundImage.mimetype)) return 'INVALID_IMAGE_FORMAT'
+			if (data.backgroundImage.size > MAX_SIZE) return 'EXCEEDED_MAX_SIZE'
+			const userbackgroundImageRes = await this.s3Service.uploadFile({
+				bucketName: env.PUBLIC_BUCKET_NAME,
+				key: `user-${data.id}/backgroundImage${SUPPORTED_IMAGES[data.backgroundImage.mimetype as keyof typeof SUPPORTED_IMAGES]}`,
+				file: data.backgroundImage.buffer
+			})
+			if (typeof userbackgroundImageRes !== 'object') return 'PICTURE_UPDATE_FAIL'
+			if (userbackgroundImageRes.fileUrl) data['icon'] = userbackgroundImageRes.fileUrl
+			else data['backgroundImage'] = undefined
+		}
+	
 		return serializeUser(await this.userRepository.update(data))
 	}
 
