@@ -33,6 +33,7 @@ export class UserService {
 		username?: string;
 		email?: string;
 		password?: string;
+		displayName?: string;
 		autobiography?: string;
 		links: string[];
 		icon?: Express.Multer.File | string;
