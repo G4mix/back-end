@@ -10,9 +10,12 @@ export type UpdateInput = Id & Partial<{
     username: string;
     email: string;
     password: string;
+    autobiography: string;
     verified: boolean;
     loginAttempts: number;
     blockedUntil: Date | null;
+    links: string[];
     icon?: Express.Multer.File | string;
+    backgroundImage?: Express.Multer.File | string;
     code?: string;
 }>

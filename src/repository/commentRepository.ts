@@ -12,7 +12,7 @@ export class CommentRepository {
 		const comment = await this.pg.comment.create({
 			data: { postId, parentCommentId: commentId, authorId: userProfileId, content },
 			include: {
-				author: { include: { user: true } },
+				author: { include: { user: true, links: true } },
 				_count: {
 					select: {
 						likes: true,
@@ -41,7 +41,7 @@ export class CommentRepository {
 		const comment = await this.pg.comment.findUnique({
 			where: { id: commentId },
 			include: {
-				author: { include: { user: true } },
+				author: { include: { user: true, links: true } },
 				likes: {
 					where: {
 						commentId, userProfileId
@@ -96,7 +96,7 @@ export class CommentRepository {
 				where,
 				orderBy: { created_at: 'desc' },
 				include: {
-					author: { include: { user: true } },
+					author: { include: { user: true, links: true } },
 					_count: {
 						select: {
 							likes: true,

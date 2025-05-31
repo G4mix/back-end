@@ -14,6 +14,7 @@ export const serializeUser = (user: UserWithProfile) => {
 			icon: user.userProfile.icon,
 			displayName: user.userProfile.displayName,
 			autobiography: user.userProfile.autobiography,
+			backgroundImage: user.userProfile.backgroundImage,
 			links: user.userProfile.links
 		}
 	}

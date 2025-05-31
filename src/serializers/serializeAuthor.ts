@@ -8,6 +8,7 @@ export const serializeAuthor = (author: AuthorWithUser) => {
 		icon: author.icon,
 		displayName: author.displayName,
 		autobiography: author.autobiography,
+		backgroundImage: author.backgroundImage,
 		links: author.links,
 		user: author.user && {
 			id: author.user.id,

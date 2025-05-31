@@ -49,16 +49,16 @@ export class UserRepository {
 		])
 		const pages = Math.ceil(total / quantity)
 		const nextPage = page + 1
-		
+
 		let users: any[] = []
-		
+
 		data.map(user => {
 			users = [
 				...users,
 				serializeUser(user)
 			]
 		})
-		
+
 		return {
 			page,
 			nextPage: nextPage >= pages ? null : nextPage,
@@ -94,12 +94,21 @@ export class UserRepository {
 		})
 	}
 
-	public async update({ id, icon, token, code, ...data }: Partial<UpdateInput> & { token?: string; }) {
+	public async update({ id, icon, backgroundImage, autobiography, links, token, code, ...data }: Partial<UpdateInput> & { token?: string; }) {
 		return this.pg.user.update({
 			where: { id },
 			data: {
 				...data,
-				userProfile: typeof icon === 'string' ? { update: { data: { icon } } } : undefined,
+				userProfile: {
+					update: {
+						data: {
+							autobiography,
+							icon: typeof icon === 'string' ? icon : undefined,
+							backgroundImage: typeof backgroundImage === 'string' ? backgroundImage : undefined,
+							links: links ? { deleteMany: { url: { notIn: links } }, createMany: { data: links.map(url => ({ url })), skipDuplicates: true } } : undefined
+						}
+					}
+				},
 				userCode: typeof code === 'string' ? { update: { where: { user: { id } }, data: { code } } } : undefined,
 				refreshToken: typeof token === 'string' ? { upsert: { create: { token }, update: { token } } } : undefined
 			},

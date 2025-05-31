@@ -62,10 +62,11 @@ model UserOAuth {
 }
 
 model UserProfile {
-  id            String  @id @default(uuid())
-  displayName   String? @db.VarChar(300)
-  icon          String? @db.VarChar(2048)
-  autobiography String?
+  id              String  @id @default(uuid())
+  displayName     String? @db.VarChar(300)
+  icon            String? @db.VarChar(2048)
+  autobiography   String? @db.VarChar(500)
+  backgroundImage String? @db.VarChar(2048)
 
   user    User?
   comment Comment[]
