@@ -47,7 +47,7 @@ function signinWithWrongPassword() {
 
 function signinWithSuccess() {
 	it('signinWithSuccess > verify email 200', async () => {
-		// 1. usuário de teste com email não verificado
+		// 1. usuário de teste com email não verificado, simulação de verificação de email
 		const testUser = await getTestUser({ 
 			loginAttempts: 5, 
 			blockedUntil: new Date(new Date().getTime() - 31 * 60 * 1000), 

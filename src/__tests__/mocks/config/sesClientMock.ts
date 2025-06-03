@@ -15,7 +15,6 @@ export class SESClientMock {
 			verify: undefined
 		}
 
-		console.log('Mock retornando: ', types[this._type])
 		return types[this._type]
 	}
 

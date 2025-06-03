@@ -57,8 +57,6 @@ export class SESService {
 			if (!checked['VerificationAttributes']) return 'NOT_FOUNDED_DATA'
 			if (Object.keys(checked['VerificationAttributes']).length === 0) return { status: 'NotStarted' as EmailStatus }
 
-			console.log('Keys do objeto retornado:', Object.keys(checked));
-			console.log('Tipo de VerificationAttributes:', typeof checked['VerificationAttributes']);
 			return { status: checked['VerificationAttributes']![email]!['VerificationStatus']! }
 		} catch (err) {
 			return 'ERROR_WHILE_CHECKING_EMAIL'
