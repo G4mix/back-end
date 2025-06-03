@@ -6,6 +6,7 @@ const { authHeaders, testUser: { email, password } } = setup
 describe('> [app] POST /auth/signin', () => {
 	signinWhenUserNotExists()
 	signinWithWrongPassword()
+	signinWithSuccess()
 })
 
 function signinWhenUserNotExists() {
@@ -14,6 +15,7 @@ function signinWhenUserNotExists() {
 		await handleMessage({ response, message: 'USER_NOT_FOUND' })
 	})
 }
+
 function signinWithWrongPassword() {
 	const possibleErrors: ApiMessage[] = [
 		'WRONG_PASSWORD_ONCE',
@@ -42,15 +44,54 @@ function signinWithWrongPassword() {
 	// 	await handleMessage({ response, message: 'ERROR_WHILE_SENDING_EMAIL' })
 	// })
 }
-// to do: Cabelão arruma ae, cria
-// function signinWithSuccess() {
-// 	it('signinWithSuccess > 200', async () => {
-// 		await getTestUser({ loginAttempts: 5, blockedUntil: new Date(new Date().getTime() - 31 * 60 * 1000) })
-//     setup.sesClientMock.setType('verify').setType('status')
-// 		const response = await fetchAPI('/auth/signin', 'POST', authHeaders, { email, password })
-// 		expect(response.status).toBe(200)
-// 	})
-// }
+
+function signinWithSuccess() {
+	it('signinWithSuccess > verify email 200', async () => {
+		// 1. usuário de teste com email não verificado
+		const testUser = await getTestUser({ 
+			loginAttempts: 5, 
+			blockedUntil: new Date(new Date().getTime() - 31 * 60 * 1000), 
+			verified: false,
+			userProfile: {
+				id: 'test-profile-id',
+				displayName: null,
+				icon: null,
+				created_at: new Date(),
+				updated_at: new Date()
+			}
+		})
+
+		// 2. Configurar mock do SES para simular email verificado
+		setup['testUser']['email'] = testUser.email
+		setup.sesClientMock.setType('status').setStatus('Success')
+
+		jest.spyOn(setup.pg.user, 'update')
+			// @ts-ignore: Mock não retorna Prisma_UserClient
+			.mockImplementation(({ where, data }) => {
+				// Aplica updates e retorna usuário com "verified" como true
+				const updatedUser = {
+					...testUser,
+					...data,
+					updated_at: new Date(),
+					userProfile: testUser.userProfile,
+					refreshToken: null,
+					oauthAccounts: []
+				}
+				return Promise.resolve(updatedUser as any)
+			})
+		
+		// 4. login
+		const response = await fetchAPI('/auth/signin', 'POST', authHeaders, { 
+			email: testUser.email, 
+			password 
+		})
+
+		const responseData = await response.json() as { user: typeof testUser }
+		expect(response.status).toBe(200)
+		expect(responseData.user.verified).toBe(true)
+		expect(responseData.user.userProfile).toBeDefined()
+	})
+}
 // function signinWithSuccess2() {
 // 	it('signinWithSuccess2 > 200', async () => {
 // 		const ipAddress = setup.ipAddress

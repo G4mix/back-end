@@ -14,6 +14,8 @@ export class SESClientMock {
 			status: { VerificationAttributes: { [setup['testUser']['email']]: { VerificationStatus: this._status } } },
 			verify: undefined
 		}
+
+		console.log('Mock retornando: ', types[this._type])
 		return types[this._type]
 	}
 

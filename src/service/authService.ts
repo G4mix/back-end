@@ -48,8 +48,11 @@ export class AuthService {
 	}
 
 	public async signin({ email, password }: { email: string; password: string; }) {
+		console.log('INICIAR LOGIN PARA: ', email)
 		let user = await this.userRepository.findByEmail({ email })
+		console.log('USER: ', user)
 		if (!user) return 'USER_NOT_FOUND'
+		console.log('Email verificado?', user.verified)
 		if (!user.verified) {
 			user = await this.verifyUserEmail(user)
 		}
@@ -221,10 +224,25 @@ export class AuthService {
 	}
 	
 	private async verifyUserEmail(user: User & { userProfile: { id: string; created_at: Date; updated_at: Date; icon: string | null; displayName: string | null; } }) {
+		// Debug logs for verification flow
+		console.log('Starting email verification for:', user.email);
 		const res = await this.sesService.checkEmailStatus(user.email)
+		console.log('Email status check result:', res);
+		console.log('Status da verificação:', await this.sesService.checkEmailStatus(user.email));
+		
 		if (typeof res === 'object' && res.status === 'Success') {
-			user = await this.userRepository.update({ id: user.id, verified: true })
+			console.log('Verification successful, updating user...');
+			const userProfile = user.userProfile;
+			const updatedUser = await this.userRepository.update({ id: user.id, verified: true })
+
+			user = {
+				...updatedUser,
+				userProfile: userProfile
+			}
+			console.log('User after verification update:', user);
 			await this.sesService.sendEmail({ template: 'SignUp', receiver: user.email })
+		} else {
+			console.log('Verification failed or not successful. Response:', res);
 		}
 
 		return user;
