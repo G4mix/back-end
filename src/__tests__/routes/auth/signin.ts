@@ -7,6 +7,7 @@ describe('> [app] POST /auth/signin', () => {
 	signinWhenUserNotExists()
 	signinWithWrongPassword()
 	signinWithSuccess()
+	signinSecurityTests()
 })
 
 function signinWhenUserNotExists() {
@@ -52,6 +53,56 @@ function signinWithWrongPassword() {
 	// 	const response = await fetchSigninWithWrongPassword()
 	// 	await handleMessage({ response, message: 'ERROR_WHILE_SENDING_EMAIL' })
 	// })
+}
+
+function signinSecurityTests() {
+	describe('> [app] Security Tests POST /auth/signin', () => {
+		it('signinAndSqlInjectionInEmail > EMAIL_INVALID', async () => {
+			const sqlInjectionAttempts = [
+				"' OR '1'='1'",
+				"'; DROP TABLE users; --",
+				"' OR 1=1; --",
+				"admin' --",
+				"' UNION SELECT * FROM users; --"
+			]
+
+			for (const attempt of sqlInjectionAttempts) {
+				const response = await fetchAPI('/auth/signin', 'POST', authHeaders, {
+					email: attempt,
+					password: password
+				})
+
+				expect(response.status).not.toBe(200)
+				if (response.headers.get('content-type')?.includes('application/json')) {
+					const responseData = await response.json() as { message: string }
+					console.log('Response data:', responseData)
+				}
+				
+			}
+		})
+
+		it('signinAndSqlInjectionInPassword', async () => {
+			const testUser = await getTestUser()
+			const sqlInjectionAttempts = [
+				"' OR '1'='1",
+                "'; DROP TABLE users; --",
+                "' OR 1=1; --"
+			]
+
+			for (const attempt of sqlInjectionAttempts) {
+				const response = await fetchAPI('/auth/signin', 'POST', authHeaders, {
+					email: testUser.email,
+					password: attempt
+				})
+
+				expect(response.status).not.toBe(200)
+				if (response.headers.get('content-type')?.includes('application/json')) {
+					const responseData = await response.json() as { message: string }
+					console.log('Response data:', responseData)
+				}
+			}
+		})
+	})
 }
 
 function signinWithSuccess() {
