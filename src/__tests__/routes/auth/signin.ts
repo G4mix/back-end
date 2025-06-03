@@ -14,6 +14,15 @@ function signinWhenUserNotExists() {
 		const response = await fetchAPI('/auth/signin', 'POST', authHeaders, { email: 'aba', password })
 		await handleMessage({ response, message: 'USER_NOT_FOUND' })
 	})
+
+	it('signinWhenEmailFormatIsInvalid > EMAIL_FORMAT_INVALID', async () => {
+		const response = await fetchAPI('/auth/signin', 'POST', authHeaders, { email: 'aba@1234', password})
+		const responseData = await response.json() as { message: string }
+		console.log('Response data:', responseData)
+
+		expect(response.status).toBe(400)
+		expect(responseData.message).toBe('EMAIL_FORMAT_INVALID')
+	})
 }
 
 function signinWithWrongPassword() {

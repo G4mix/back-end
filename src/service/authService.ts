@@ -232,8 +232,6 @@ export class AuthService {
 			}
 			
 			await this.sesService.sendEmail({ template: 'SignUp', receiver: user.email })
-		} else {
-			console.log('Verification failed or not successful. Response:', res);
 		}
 
 		return user;
