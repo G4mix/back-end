@@ -68,15 +68,59 @@ model UserProfile {
   autobiography   String? @db.VarChar(500)
   backgroundImage String? @db.VarChar(2048)
 
-  user    User?
-  comment Comment[]
-  posts   Post[]
-  viewed  View[]
-  liked   Like[]
-  links   Link[]
+  user      User?
+  comment   Comment[]
+  posts     Post[]
+  viewed    View[]
+  liked     Like[]
+  links     Link[]
+  teams     UserTeam[]
+  following Follow[]   @relation("UserFollows")
+  followers Follow[]   @relation("FollowingUser")
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+model Team {
+  id   String @id @default(uuid())
+  name String
+
+  followers Follow[]   @relation("FollowingTeam")
+  members   UserTeam[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model UserTeam {
+  userId String
+  teamId String
+
+  user UserProfile @relation(fields: [userId], references: [id])
+  team Team        @relation(fields: [teamId], references: [id])
+
+  @@id([userId, teamId])
+  @@index([teamId])
+}
+
+model Follow {
+  id String @id @default(uuid())
+
+  followerUserId  String
+  followingUserId String?
+  followingTeamId String?
+
+  followerUser  UserProfile  @relation("UserFollows", fields: [followerUserId], references: [id])
+  followingUser UserProfile? @relation("FollowingUser", fields: [followingUserId], references: [id])
+  followingTeam Team?        @relation("FollowingTeam", fields: [followingTeamId], references: [id])
+
+  created_at DateTime @default(now())
+
+  @@unique([followerUserId, followingUserId])
+  @@unique([followerUserId, followingTeamId])
+  @@index([followingUserId])
+  @@index([followingTeamId])
 }
 
 model Post {

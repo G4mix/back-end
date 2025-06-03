@@ -231,6 +231,14 @@
 											"properties": {
 												"userProfile": {
 													"properties": {
+														"followingCount": {
+															"type": "number",
+															"format": "double"
+														},
+														"followersCount": {
+															"type": "number",
+															"format": "double"
+														},
 														"links": {
 															"items": {
 																"properties": {
@@ -274,6 +282,8 @@
 														}
 													},
 													"required": [
+														"followingCount",
+														"followersCount",
 														"links",
 														"backgroundImage",
 														"autobiography",
@@ -356,6 +366,14 @@
 											"properties": {
 												"userProfile": {
 													"properties": {
+														"followingCount": {
+															"type": "number",
+															"format": "double"
+														},
+														"followersCount": {
+															"type": "number",
+															"format": "double"
+														},
 														"links": {
 															"items": {
 																"properties": {
@@ -399,6 +417,8 @@
 														}
 													},
 													"required": [
+														"followingCount",
+														"followersCount",
 														"links",
 														"backgroundImage",
 														"autobiography",
@@ -2167,6 +2187,181 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/v1/follow": {
+			"post": {
+				"operationId": "Follow",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"followerUserId": {
+													"type": "string"
+												},
+												"followingUserId": {
+													"type": "string"
+												},
+												"followingTeamId": {
+													"type": "string"
+												},
+												"created_at": {
+													"type": "string",
+													"format": "date-time"
+												},
+												"id": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"followerUserId",
+												"followingUserId",
+												"followingTeamId",
+												"created_at",
+												"id"
+											],
+											"type": "object"
+										},
+										{
+											"type": "string",
+											"enum": [
+												"YOU_CANT_FOLLOW_BOTH_OR_NONE",
+												"YOU_CANT_FOLLOW_YOURSELF",
+												"ALREADY_FOLLOWING"
+											]
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Follow an user of the system",
+				"tags": [
+					"Follow"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "followingTeamId",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "followingUserId",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"get": {
+				"operationId": "FindAll",
+				"responses": {
+					"204": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"items": {},
+											"type": "array"
+										},
+										{
+											"properties": {
+												"data": {
+													"items": {},
+													"type": "array"
+												},
+												"total": {
+													"type": "number",
+													"format": "double"
+												},
+												"pages": {
+													"type": "number",
+													"format": "double"
+												},
+												"nextPage": {
+													"type": "number",
+													"format": "double"
+												},
+												"page": {
+													"type": "number",
+													"format": "double"
+												}
+											},
+											"required": [
+												"data",
+												"total",
+												"pages",
+												"nextPage",
+												"page"
+											],
+											"type": "object"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all follows of an user of the system",
+				"tags": [
+					"Follow"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "page",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "quantity",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "followType",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"followers:user",
+								"followers:team",
+								"following"
+							]
+						}
+					}
+				]
 			}
 		},
 		"/api/v1/view": {

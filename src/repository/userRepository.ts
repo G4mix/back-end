@@ -43,7 +43,17 @@ export class UserRepository {
 					username: 'desc',
 				},
 				include: {
-					userProfile: { include: { links: true } },
+					userProfile: {
+						include: {
+							links: true,
+							_count: {
+								select: {
+									following: true,
+									followers: true
+								}
+							}
+						}
+					}
 				}
 			}),
 		])
@@ -72,7 +82,17 @@ export class UserRepository {
 		return this.pg.user.findUnique({
 			where: { id },
 			include: {
-				userProfile: { include: { links: true } },
+				userProfile: {
+					include: {
+						links: true,
+						_count: {
+							select: {
+								following: true,
+								followers: true
+							}
+						}
+					}
+				},
 				userCode: true
 			}
 		})
@@ -88,7 +108,17 @@ export class UserRepository {
 		return this.pg.user.findUnique({
 			where: { email },
 			include: {
-				userProfile: { include: { links: true } },
+				userProfile: {
+					include: {
+						links: true,
+						_count: {
+							select: {
+								following: true,
+								followers: true
+							}
+						}
+					}
+				},
 				userCode: true
 			}
 		})
@@ -113,7 +143,20 @@ export class UserRepository {
 				userCode: typeof code === 'string' ? { update: { where: { user: { id } }, data: { code } } } : undefined,
 				refreshToken: typeof token === 'string' ? { upsert: { create: { token }, update: { token } } } : undefined
 			},
-			include: { userProfile: { include: { links: true } }, userCode: true }
+			include: {
+				userProfile: {
+					include: {
+						links: true,
+						_count: {
+							select: {
+								following: true,
+								followers: true
+							}
+						}
+					}
+				},
+				userCode: true
+			}
 		})
 	}
 
@@ -132,7 +175,20 @@ export class UserRepository {
 					}
 				}
 			},
-			include: { userProfile: { include: { links: true } }, userCode: true }
+			include: {
+				userProfile: {
+					include: {
+						links: true,
+						_count: {
+							select: {
+								following: true,
+								followers: true
+							}
+						}
+					}
+				},
+				userCode: true
+			}
 		})
 	}
 
@@ -148,7 +204,21 @@ export class UserRepository {
 				provider_email: { provider, email },
 			},
 			include: {
-				user: { include: { userProfile: { include: { links: true } } } }
+				user: {
+					include: {
+						userProfile: {
+							include: {
+								links: true,
+								_count: {
+									select: {
+										following: true,
+										followers: true
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		})
 	}
