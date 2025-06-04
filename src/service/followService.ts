@@ -8,6 +8,10 @@ export class FollowService {
 		private followRepository: FollowRepository
 	) {}
 
+	public async unfollow({ userId, followingTeamId, followingUserId }: { userId: string; followingTeamId?: string; followingUserId?: string; }) {
+		return await this.followRepository.unfollow({ followerUserId: userId, followingTeamId, followingUserId })
+	}
+
 	public async follow({ userId, followingTeamId, followingUserId }: { userId: string; followingTeamId?: string; followingUserId?: string; }) {
 		return await this.followRepository.follow({ followerUserId: userId, followingTeamId, followingUserId })
 	}

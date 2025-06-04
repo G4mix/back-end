@@ -47,7 +47,33 @@ export class FollowRepository {
 		return follow
 	}
 
+	public async unfollow({
+		followerUserId,
+		followingUserId,
+		followingTeamId,
+	}: {
+		followerUserId: string;
+		followingUserId?: string;
+		followingTeamId?: string;
+	}) {
+		if ((!followingUserId && !followingTeamId) || (followingUserId && followingTeamId)) {
+			return 'YOU_MUST_UNFOLLOW_EITHER_USER_OR_TEAM'
+		}
 
+		if (followingUserId && followingUserId === followerUserId) {
+			return 'YOU_CANT_UNFOLLOW_YOURSELF'
+		}
+
+		const where = followingUserId
+			? { followerUserId_followingUserId: { followerUserId, followingUserId } }
+			: { followerUserId_followingTeamId: { followerUserId, followingTeamId: followingTeamId! } }
+
+		try {
+			return await this.pg.follow.delete({ where })
+		} catch (error) {
+			return 'FOLLOW_NOT_FOUND'
+		}
+	}
 	public async findAll({
 		page,
 		quantity,

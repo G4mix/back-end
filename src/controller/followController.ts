@@ -12,6 +12,17 @@ export class FollowController extends Controller {
 	}
 
 	/**
+	 * Unfollow an user of the system
+	 *
+	 */
+	@SuccessResponse(200)
+	@Post()
+	@Security('jwt', [])
+	public async unfollow(@Request() req: TsoaRequest, @Query() followingTeamId?: string, @Query() followingUserId?: string) {
+		return await this.followService.unfollow({ userId: req.user.sub, followingTeamId, followingUserId })
+	}
+	
+	/**
 	 * Follow an user of the system
 	 *
 	 */
