@@ -2,7 +2,7 @@ import { inject, injectable, singleton } from 'tsyringe'
 import { PrismaClient } from '@prisma/client'
 import { AuthInput, UpdateInput } from 'auth'
 import { Id } from 'general'
-import { serializeUser } from '@serializers'
+import { serializeUser, UserWithProfile } from '@serializers'
 import { generateRandomCode } from '@utils'
 
 @injectable()
@@ -78,13 +78,19 @@ export class UserRepository {
 		}
 	}
 
-	public async findByUserProfileId({ id }: Id) {
-		return this.pg.user.findUnique({
+	public async findByUserProfileId({ id, userId }: Id & { userId: string; }) {
+		const data = await this.pg.user.findUnique({
 			where: { userProfileId: id },
 			include: {
 				userProfile: {
 					include: {
 						links: true,
+						followers: userId !== id && {
+							where: {
+								followerUserId: userId,
+								followingUserId: id
+							}
+						},
 						_count: {
 							select: {
 								following: true,
@@ -96,6 +102,13 @@ export class UserRepository {
 				userCode: true
 			}
 		})
+		if (!data) return data
+		const user: UserWithProfile = data
+		if (data.userProfile.followers) {
+			user.userProfile.isFollowing = data.userProfile.followers.length !== 0
+			delete (user.userProfile as any).followers
+		}
+		return user
 	}
 
 	public async findById({ id }: Id) {

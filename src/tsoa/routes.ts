@@ -100,9 +100,9 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
         app.get('/api/v1/user/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(UserController)),
-            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.findById)),
+            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.findByUserProfileId)),
 
-            async function UserController_findById(request: ExRequest, response: ExResponse, next: any) {
+            async function UserController_findByUserProfileId(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
             };
@@ -121,7 +121,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
                 }
 
               await templateService.apiHandler({
-                methodName: 'findById',
+                methodName: 'findByUserProfileId',
                 controller,
                 response,
                 next,
@@ -1012,6 +1012,7 @@ export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof mult
             async function FollowController_follow(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                    wantFollow: {"in":"query","name":"wantFollow","required":true,"dataType":"boolean"},
                     followingTeamId: {"in":"query","name":"followingTeamId","dataType":"string"},
                     followingUserId: {"in":"query","name":"followingUserId","dataType":"string"},
             };

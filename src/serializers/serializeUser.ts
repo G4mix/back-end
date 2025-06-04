@@ -1,8 +1,9 @@
 import { Link, User, UserProfile } from '@prisma/client'
 
-type UserWithProfile = User & {
+export type UserWithProfile = User & {
 	userProfile: UserProfile & {
 		links: Link[];
+		isFollowing?: boolean;
 		_count: {
 			following: number;
 			followers: number;
@@ -23,6 +24,7 @@ export const serializeUser = (user: UserWithProfile) => {
 			displayName: user.userProfile.displayName,
 			autobiography: user.userProfile.autobiography,
 			backgroundImage: user.userProfile.backgroundImage,
+			isFollowing: user.userProfile.isFollowing,
 			links: user.userProfile.links,
 			followersCount: user.userProfile._count.followers,
 			followingCount: user.userProfile._count.following

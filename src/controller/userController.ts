@@ -33,8 +33,8 @@ export class UserController extends Controller {
 	@SuccessResponse(200)
 	@Get('/{id}')
 	@Security('jwt', [])
-	public async findByUserProfileId(@Path() id: string) {
-		return await this.userService.findByUserProfileId({ id })
+	public async findByUserProfileId(@Request() req: TsoaRequest, @Path() id: string) {
+		return await this.userService.findByUserProfileId({ id, userId: req.user.sub })
 	}
 
 	/**
