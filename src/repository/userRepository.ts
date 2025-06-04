@@ -78,6 +78,26 @@ export class UserRepository {
 		}
 	}
 
+	public async findByUserProfileId({ id }: Id) {
+		return this.pg.user.findUnique({
+			where: { userProfileId: id },
+			include: {
+				userProfile: {
+					include: {
+						links: true,
+						_count: {
+							select: {
+								following: true,
+								followers: true
+							}
+						}
+					}
+				},
+				userCode: true
+			}
+		})
+	}
+
 	public async findById({ id }: Id) {
 		return this.pg.user.findUnique({
 			where: { id },

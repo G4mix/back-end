@@ -18,6 +18,11 @@ export class UserService {
 		return await this.userRepository.findAll({ search, page, quantity, userId })
 	}
 
+	public async findByUserProfileId({ id }: { id: string; }) {
+		const user = await this.userRepository.findByUserProfileId({ id })
+		return user ? serializeUser(user) : 'USER_NOT_FOUND'
+	}
+
 	public async findById({ id }: { id: string; }) {
 		const user = await this.userRepository.findById({ id })
 		return user ? serializeUser(user) : 'USER_NOT_FOUND'
