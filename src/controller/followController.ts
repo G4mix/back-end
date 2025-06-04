@@ -10,17 +10,6 @@ export class FollowController extends Controller {
 	constructor(private followService: FollowService) {
 		super()
 	}
-
-	/**
-	 * Unfollow an user of the system
-	 *
-	 */
-	@SuccessResponse(200)
-	@Post()
-	@Security('jwt', [])
-	public async unfollow(@Request() req: TsoaRequest, @Query() followingTeamId?: string, @Query() followingUserId?: string) {
-		return await this.followService.unfollow({ userId: req.user.sub, followingTeamId, followingUserId })
-	}
 	
 	/**
 	 * Follow an user of the system
@@ -29,8 +18,10 @@ export class FollowController extends Controller {
 	@SuccessResponse(200)
 	@Post()
 	@Security('jwt', [])
-	public async follow(@Request() req: TsoaRequest, @Query() followingTeamId?: string, @Query() followingUserId?: string) {
-		return await this.followService.follow({ userId: req.user.sub, followingTeamId, followingUserId })
+	public async follow(@Request() req: TsoaRequest, @Query() wantFollow: boolean, @Query() followingTeamId?: string, @Query() followingUserId?: string) {
+		return wantFollow
+			? await this.followService.follow({ userId: req.user.sub, followingTeamId, followingUserId })
+			: await this.followService.unfollow({ userId: req.user.sub, followingTeamId, followingUserId })
 	}
 
 	/**
