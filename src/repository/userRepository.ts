@@ -169,7 +169,7 @@ export class UserRepository {
 							displayName,
 							icon: typeof icon === 'string' ? icon : undefined,
 							backgroundImage: typeof backgroundImage === 'string' ? backgroundImage : undefined,
-							links: links ? { deleteMany: { url: { notIn: links } }, createMany: { data: links.map(url => ({ url })), skipDuplicates: true } } : undefined
+							links: links ? { deleteMany: { }, createMany: { data: links.map(url => ({ url })), skipDuplicates: true } } : undefined
 						}
 					}
 				},
