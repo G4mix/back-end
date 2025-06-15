@@ -23,7 +23,7 @@ export class UserController extends Controller {
 	@Get()
 	@Security('jwt', [])
 	public async findAll(@Request() req: TsoaRequest, @Query() search: string, @Query() page: number, @Query() quantity: number) {
-		return await this.userService.findAll({ search: search.toLocaleLowerCase(), userId: req.user.sub, page, quantity })
+		return await this.userService.findAll({ search: search, userId: req.user.sub, page, quantity })
 	}
 
 	/**
