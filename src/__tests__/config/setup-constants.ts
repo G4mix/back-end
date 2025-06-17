@@ -23,6 +23,30 @@ type Setup = {
 		username: string;
 		icon: Blob;
 	};
+	OAuthUser: {
+		user: {
+			email: string;
+			username: string;
+			password: string;
+		},
+		provider: string;
+		email: string;
+	},
+	socialLoginRequests: {
+		google: {
+			getUserData: jest.Mock;
+			revokeToken: jest.Mock;
+		},
+		github: {
+			getUserData: jest.Mock;
+			getUserPrimaryEmail: jest.Mock;
+			revokeToken: jest.Mock;
+		},
+		linkedin: {
+			getUser: jest.Mock;
+			revokeToken: jest.Mock;
+		}
+	},
 	authHeaders: RequestInit['headers'];
 	ipAddress: string;
 }
@@ -41,6 +65,29 @@ export const setup: Setup = {
 		password: 'Password12345!',
 		username: `newTestUser_${uniqueId}`,
 		icon: new Blob([new Uint8Array(1)], { type: 'image/png' })
+	},
+	OAuthUser: {
+		user: {
+			email: `testando_oauth_${uniqueId}@gmail.com`,
+			username: `example_oauth_user_${uniqueId}`,
+			password: 'Password123'
+		},
+		provider: 'google'
+	},
+	socialLoginRequests: {
+		google: {
+            getUserData: jest.fn(),
+            revokeToken: jest.fn()     
+        },
+        github: {
+            getUserData: jest.fn(),
+            getUserPrimaryEmail: jest.fn(),
+            revokeToken: jest.fn()
+        },
+        linkedin: {
+            getUser: jest.fn(),
+            revokeToken: jest.fn()
+        }
 	},
 	ipAddress: '::1',
 } as any

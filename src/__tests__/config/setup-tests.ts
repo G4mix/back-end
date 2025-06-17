@@ -27,6 +27,7 @@ afterAll(async () => {
 beforeEach(async () => {
 	if (!setup['app'].isRunning()) setup['app'].start()
 	setup['pg']['users'] = []
+	setup['pg']['userOAuths'] = []
 	setup['sesClientMock'].setType('send').setThrowError(false).setStatus('Success')
 	setup['s3ClientMock'].setType('send').setThrowError(false).setFileUrl('https://localhost:8081/image.png')
 })

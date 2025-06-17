@@ -11,7 +11,9 @@ export type URL =
 	`/comment/${string}` |
 	`/comment/post/${string}` |
 	'/view' |
-  '/docs'
+  	'/docs' |
+	`/auth/link-new-oauth-provider/${string}` |
+	`/auth/social-login/${string}`
 
 export type Body = Partial<User> | string | FormData
 export type Method = 'POST' | 'GET' | 'DELETE' | 'PATCH' | 'PUT'

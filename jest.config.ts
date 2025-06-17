@@ -6,7 +6,10 @@ const jestConfig: JestConfigWithTsJest = {
 	testEnvironment: 'node',
 	moduleDirectories: ['node_modules', '<rootDir>/src', '<rootDir>/src/__tests__'],
 	modulePaths: [compilerOptions.baseUrl],
-	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
+	moduleNameMapper: { 
+		...pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
+		'^@/prisma/client$': '<rootDir>/src/__tests__/mocks/config/prisma.ts'
+	},
 	testRegex: 'src/.*\\.(test|spec)\\.[jt]s$',
 	transform: {
 		'^.+\\.ts?$': 'ts-jest',
