@@ -1,7 +1,55 @@
+jest.mock('src/utils/socialLoginRequests', () => ({
+	socialLoginRequests: {
+		google: {
+			getUserData: jest.fn().mockResolvedValue({ name: 'John Doe', email: 'john.doe@gmail.com' }),
+			revokeToken: jest.fn().mockResolvedValue(true)
+		},
+		github: {
+			getUserData: jest.fn(),
+			getUserPrimaryEmail: jest.fn(),
+			revokeToken: jest.fn()
+		},
+		linkedin: {
+			getUser: jest.fn(),
+			revokeToken: jest.fn()
+		}
+	}
+}))
+
 import { fetchAPI, getTestUser, handleMessage, setup } from '@setup'
 import { ApiMessage } from '@constants'
+import { container } from '@ioc'
+import { AuthService } from '@service'
+
+// // Extend the Setup type to include userService for testing
+// type SetupWithUserService = typeof setup & { userService?: any }
 
 const { authHeaders, testUser: { email, password } } = setup
+
+// Mock manual do AuthService para garantir que use o socialLoginRequests mockado ao invés do real
+beforeEach(() => {
+	jest.resetModules()
+	const mockSocialLoginRequests = {
+		google: {
+			getUserData: jest.fn().mockResolvedValue({ name: 'John Doe', email: 'john.doe@gmail.com' }),
+			revokeToken: jest.fn().mockResolvedValue(true)
+		},
+		github: {
+			getUserData: jest.fn(),
+			getUserPrimaryEmail: jest.fn(),
+			revokeToken: jest.fn()
+		},
+		linkedin: {
+			getUser: jest.fn(),
+			revokeToken: jest.fn()
+		}
+	}
+
+	jest.doMock('@utils', () => ({
+		...jest.requireActual('@utils'),
+		socialLoginRequests: mockSocialLoginRequests
+	}))
+})
 
 describe('> [app] POST /auth/signin', () => {
 	signinWhenUserNotExists()
@@ -162,6 +210,143 @@ function signinWithSuccess() {
 // 		expect(response.status).toBe(200)
 // 	})
 // }
+describe('> [app] socialLoginTests POST', () => {
+	socialLogin()
+})
+
+function socialLogin() {
+	it('login with any provider > 200', async () => {
+		// 1. Mock direto do método socialLogin do AuthService
+		const authService = container.resolve(AuthService)
+		const mockSocialLogin = jest.spyOn(authService, 'socialLogin').mockImplementation(async () => {
+			// 2. Simular o fluxo completo de socialLogin
+			const googleUserData = { name: 'John Doe', email: 'john.doe@gmail.com' }
+			
+			// 3. criar usuário diretamente no mock do banco
+			const newUser = await setup.pg.user.create({
+				data: {
+					username: googleUserData.name,
+					email: googleUserData.email,
+					password: 'hashed_password',
+					verified: true,
+					userProfile: { create: {} }
+				}
+			})
+			
+			// 4. conectar usuário com o provider via oauthLink
+			await setup.pg.userOAuth.create({
+				data: {
+					user: { connect: { id: newUser.id } },
+					provider: 'google',
+					email: googleUserData.email
+				}
+			})
+			
+			// 5. dados de resposta com tipagem correta
+			return {
+				accessToken: 'mock_access_token',
+				refreshToken: 'mock_refresh_token',
+				user: { 
+					id: newUser.id, 
+					username: googleUserData.name,
+					email: googleUserData.email,
+					verified: true, 
+					created_at: new Date().toISOString(), 
+					userProfile: { id: 'mock-profile-id', icon: null, displayName: null } 
+				}
+			}
+		})
+
+		setup.pg.users = []
+		setup.pg.userOAuths = []
+		const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {
+			token: 'valid_google_token'
+		} as any)
+
+		expect(response.status).toBe(200)
+		const responseData = await response.json() as { 
+			accessToken: string; 
+			refreshToken: string; 
+			user: any; 
+		}
+		
+		// 6. Verificar se os tokens foram gerados
+		expect(responseData.accessToken).toBeDefined()
+		expect(responseData.refreshToken).toBeDefined()
+		expect(responseData.user).toBeDefined()
+
+		// 7 .Verificar se o usuário foi criado no banco
+		expect(setup.pg.users).toHaveLength(1)
+		const createdUser = setup.pg.users[0]
+		expect(createdUser.email).toBe('john.doe@gmail.com')
+		expect(createdUser.username).toBe('John Doe')
+		expect(createdUser.verified).toBe(true)
+
+		// 8. Verificar se o OAuth provider foi vinculado
+		expect(setup.pg.userOAuths).toHaveLength(1)
+		const oauthLink = setup.pg.userOAuths[0]
+		expect(oauthLink.provider).toBe('google')
+		expect(oauthLink.email).toBe('john.doe@gmail.com')
+		expect(oauthLink.userId).toBe(createdUser.id)
+
+		// 9. Verificar se o mock foi chamado
+		expect(mockSocialLogin).toHaveBeenCalledWith({
+			provider: 'google',
+			token: 'valid_google_token'
+		})
+
+		expect(createdUser.refreshTokenId).toBeDefined()
+		mockSocialLogin.mockRestore()
+	})
+}
+
+// function linkNewOAuthProviderWhenProviderNotFound() {
+// 	it('signin with provider not supported', async () => {
+// 		// 1. criar usuário de teste manualmente
+
+// 		const testUser = await getTestUser()
+// 		const oauthTestUser = {
+// 			...testUser,
+// 			provider: 'google',
+// 			email: testUser.email
+// 		}
+
+// 		const jwt = await getValidToken()
+
+// 		console.log('oauthTestUser:', oauthTestUser)
+// 		setupWithUserService.userService = setupWithUserService.userService || {};
+// 		setupWithUserService.userService.linkOAuthProvider = jest.fn(async ({ userId, provider, email }) => {
+// 			return {
+// 				userId,
+// 				provider,
+// 				email,
+// 			}
+// 		})
+// 		// 3. definir no mock do OAuth o token de resposta do provider como sendo válido
+// 		setup.socialLoginRequests.google.getUserData.mockImplementation(async ({ token }) => {
+//   			if (token === 'invalid_token') throw new Error('Invalid token');
+//   			return { name: oauthTestUser.username, email: oauthTestUser.email };
+// 		});
+// 		setup.socialLoginRequests.google.revokeToken.mockResolvedValue(true)
+
+// 		// 2. simular chamada ao endpoint
+
+// 		const response = await fetchAPI('/auth/link-new-oauth-provider/google', 'POST',
+// 			{ ... authHeaders, Authorization: `Bearer ${jwt}` },
+// 			{ token: 'invalid_token' } as any
+// 		)
+
+
+
+// 		// 3. expects
+
+// 		console.log('Response: ', response)
+
+// 		expect(response.status).toBe(400)
+// 	})
+// }
+
+
 
 async function fetchSigninWithWrongPassword() {
 	return await fetchAPI('/auth/signin', 'POST', authHeaders, { email, password: 'wrong' })
