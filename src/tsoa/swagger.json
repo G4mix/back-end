@@ -265,6 +265,9 @@
 															},
 															"type": "array"
 														},
+														"isFollowing": {
+															"type": "boolean"
+														},
 														"backgroundImage": {
 															"type": "string"
 														},
@@ -285,6 +288,7 @@
 														"followingCount",
 														"followersCount",
 														"links",
+														"isFollowing",
 														"backgroundImage",
 														"autobiography",
 														"displayName",
@@ -400,6 +404,9 @@
 															},
 															"type": "array"
 														},
+														"isFollowing": {
+															"type": "boolean"
+														},
 														"backgroundImage": {
 															"type": "string"
 														},
@@ -420,6 +427,7 @@
 														"followingCount",
 														"followersCount",
 														"links",
+														"isFollowing",
 														"backgroundImage",
 														"autobiography",
 														"displayName",

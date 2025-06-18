@@ -1,5 +1,5 @@
 import { inject, injectable, singleton } from 'tsyringe'
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { AuthInput, UpdateInput } from 'auth'
 import { Id } from 'general'
 import { serializeUser, UserWithProfile } from '@serializers'
@@ -8,9 +8,19 @@ import { generateRandomCode } from '@utils'
 @injectable()
 @singleton()
 export class UserRepository {
-	constructor(@inject('PostgresqlClient') private pg: PrismaClient) { }
+	constructor(@inject('PostgresqlClient') private pg: PrismaClient) {}
 
-	public async findAll({ userId, search, page, quantity }: { search: string; userId: string; page: number; quantity: number; }) {
+	public async findAll({
+		userId,
+		search,
+		page,
+		quantity,
+	}: {
+    search: string
+    userId: string
+    page: number
+    quantity: number
+  }) {
 		const where = {
 			id: {
 				not: userId,
@@ -18,17 +28,19 @@ export class UserRepository {
 			OR: [
 				{
 					username: {
-						contains: search
+						contains: search,
+						mode: Prisma.QueryMode.insensitive,
 					},
 				},
 				{
 					userProfile: {
 						displayName: {
-							contains: search
-						}
-					}
+							contains: search,
+							mode: Prisma.QueryMode.insensitive,
+						},
+					},
 				},
-			]
+			],
 		}
 
 		const [total, data] = await this.pg.$transaction([
@@ -49,12 +61,12 @@ export class UserRepository {
 							_count: {
 								select: {
 									following: true,
-									followers: true
-								}
-							}
-						}
-					}
-				}
+									followers: true,
+								},
+							},
+						},
+					},
+				},
 			}),
 		])
 		const pages = Math.ceil(total / quantity)
@@ -62,11 +74,8 @@ export class UserRepository {
 
 		let users: any[] = []
 
-		data.map(user => {
-			users = [
-				...users,
-				serializeUser(user)
-			]
+		data.map((user) => {
+			users = [...users, serializeUser(user)]
 		})
 
 		return {
@@ -74,11 +83,11 @@ export class UserRepository {
 			nextPage: nextPage >= pages ? null : nextPage,
 			pages,
 			total,
-			data: users
+			data: users,
 		}
 	}
 
-	public async findByUserProfileId({ id, userId }: Id & { userId: string; }) {
+	public async findByUserProfileId({ id, userId }: Id & { userId: string }) {
 		const data = await this.pg.user.findUnique({
 			where: { userProfileId: id },
 			include: {
@@ -88,19 +97,19 @@ export class UserRepository {
 						followers: userId !== id && {
 							where: {
 								followerUserId: userId,
-								followingUserId: id
-							}
+								followingUserId: id,
+							},
 						},
 						_count: {
 							select: {
 								following: true,
-								followers: true
-							}
-						}
-					}
+								followers: true,
+							},
+						},
+					},
 				},
-				userCode: true
-			}
+				userCode: true,
+			},
 		})
 		if (!data) return data
 		const user: UserWithProfile = data
@@ -121,23 +130,23 @@ export class UserRepository {
 						_count: {
 							select: {
 								following: true,
-								followers: true
-							}
-						}
-					}
+								followers: true,
+							},
+						},
+					},
 				},
-				userCode: true
-			}
+				userCode: true,
+			},
 		})
 	}
 
-	public async count({ email }: { email: string; }) {
+	public async count({ email }: { email: string }) {
 		return this.pg.user.count({
-			where: { email }
+			where: { email },
 		})
 	}
 
-	public async findByEmail({ email }: { email: string; }) {
+	public async findByEmail({ email }: { email: string }) {
 		return this.pg.user.findUnique({
 			where: { email },
 			include: {
@@ -147,17 +156,27 @@ export class UserRepository {
 						_count: {
 							select: {
 								following: true,
-								followers: true
-							}
-						}
-					}
+								followers: true,
+							},
+						},
+					},
 				},
-				userCode: true
-			}
+				userCode: true,
+			},
 		})
 	}
 
-	public async update({ id, icon, backgroundImage, autobiography, displayName, links, token, code, ...data }: Partial<UpdateInput> & { token?: string; }) {
+	public async update({
+		id,
+		icon,
+		backgroundImage,
+		autobiography,
+		displayName,
+		links,
+		token,
+		code,
+		...data
+	}: Partial<UpdateInput> & { token?: string }) {
 		return this.pg.user.update({
 			where: { id },
 			data: {
@@ -168,13 +187,30 @@ export class UserRepository {
 							autobiography,
 							displayName,
 							icon: typeof icon === 'string' ? icon : undefined,
-							backgroundImage: typeof backgroundImage === 'string' ? backgroundImage : undefined,
-							links: links ? { deleteMany: { }, createMany: { data: links.map(url => ({ url })), skipDuplicates: true } } : undefined
-						}
-					}
+							backgroundImage:
+								typeof backgroundImage === 'string'
+									? backgroundImage
+									: undefined,
+							links: links
+								? {
+									deleteMany: {},
+									createMany: {
+										data: links.map((url) => ({ url })),
+										skipDuplicates: true,
+									},
+								}
+								: undefined,
+						},
+					},
 				},
-				userCode: typeof code === 'string' ? { update: { where: { user: { id } }, data: { code } } } : undefined,
-				refreshToken: typeof token === 'string' ? { upsert: { create: { token }, update: { token } } } : undefined
+				userCode:
+					typeof code === 'string'
+						? { update: { where: { user: { id } }, data: { code } } }
+						: undefined,
+				refreshToken:
+					typeof token === 'string'
+						? { upsert: { create: { token }, update: { token } } }
+						: undefined,
 			},
 			include: {
 				userProfile: {
@@ -183,13 +219,13 @@ export class UserRepository {
 						_count: {
 							select: {
 								following: true,
-								followers: true
-							}
-						}
-					}
+								followers: true,
+							},
+						},
+					},
 				},
-				userCode: true
-			}
+				userCode: true,
+			},
 		})
 	}
 
@@ -200,13 +236,13 @@ export class UserRepository {
 				password,
 				username,
 				userProfile: {
-					create: {}
+					create: {},
 				},
 				userCode: {
 					create: {
-						code: generateRandomCode()
-					}
-				}
+						code: generateRandomCode(),
+					},
+				},
 			},
 			include: {
 				userProfile: {
@@ -215,23 +251,29 @@ export class UserRepository {
 						_count: {
 							select: {
 								following: true,
-								followers: true
-							}
-						}
-					}
+								followers: true,
+							},
+						},
+					},
 				},
-				userCode: true
-			}
+				userCode: true,
+			},
 		})
 	}
 
 	public async delete({ id }: Id) {
 		return this.pg.user.delete({
-			where: { id }
+			where: { id },
 		})
 	}
 
-	async findOAuthUser({ provider, email }: { provider: string; email: string }) {
+	async findOAuthUser({
+		provider,
+		email,
+	}: {
+    provider: string
+    email: string
+  }) {
 		return this.pg.userOAuth.findUnique({
 			where: {
 				provider_email: { provider, email },
@@ -245,27 +287,35 @@ export class UserRepository {
 								_count: {
 									select: {
 										following: true,
-										followers: true
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+										followers: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		})
 	}
 
-	async linkOAuthProvider({ userId, provider, email }: { userId: string; provider: string; email: string }) {
+	async linkOAuthProvider({
+		userId,
+		provider,
+		email,
+	}: {
+    userId: string
+    provider: string
+    email: string
+  }) {
 		return this.pg.userOAuth.create({
 			data: {
 				user: { connect: { id: userId } },
 				provider,
-				email
+				email,
 			},
 			include: {
-				user: { include: { userProfile: { include: { links: true } } } }
-			}
+				user: { include: { userProfile: { include: { links: true } } } },
+			},
 		})
 	}
 }
