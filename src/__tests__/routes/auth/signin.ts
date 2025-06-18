@@ -298,6 +298,32 @@ function socialLogin() {
 		expect(createdUser.refreshTokenId).toBeDefined()
 		mockSocialLogin.mockRestore()
 	})
+
+	it('execute socialLogin and provider returns null user data > USER_NOT_FOUND 404', async () => {
+		const authService = container.resolve(AuthService)
+		const mockSocialLogin = jest.spyOn(authService, 'socialLogin').mockImplementation(async () => {
+			return 'USER_NOT_FOUND'
+		})
+
+		const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {
+			token: 'valid_but_empty_token'
+		} as any)
+
+		expect(response.status).toBe(404) // USER_NOT_FOUND mapeia para 404
+		const responseData = await response.json() as { message: string }
+		expect(responseData.message).toBe('USER_NOT_FOUND')
+
+		// Verificar que o mock foi chamado
+		expect(mockSocialLogin).toHaveBeenCalledWith({
+			provider: 'google',
+			token: 'valid_but_empty_token'
+		})
+
+		// Verificar que nenhum acesso ao banco ocorreu
+		expect(setup.pg.users).toHaveLength(0)
+		expect(setup.pg.userOAuths).toHaveLength(0)
+		mockSocialLogin.mockRestore()
+	})
 }
 
 // function linkNewOAuthProviderWhenProviderNotFound() {
