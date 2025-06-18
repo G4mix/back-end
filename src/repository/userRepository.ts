@@ -188,9 +188,9 @@ export class UserRepository {
 							displayName,
 							icon: typeof icon === 'string' ? icon : undefined,
 							backgroundImage:
-                typeof backgroundImage === 'string'
-                	? backgroundImage
-                	: undefined,
+								typeof backgroundImage === 'string'
+									? backgroundImage
+									: undefined,
 							links: links
 								? {
 									deleteMany: {},
@@ -204,13 +204,13 @@ export class UserRepository {
 					},
 				},
 				userCode:
-          typeof code === 'string'
-          	? { update: { where: { user: { id } }, data: { code } } }
-          	: undefined,
+					typeof code === 'string'
+						? { update: { where: { user: { id } }, data: { code } } }
+						: undefined,
 				refreshToken:
-          typeof token === 'string'
-          	? { upsert: { create: { token }, update: { token } } }
-          	: undefined,
+					typeof token === 'string'
+						? { upsert: { create: { token }, update: { token } } }
+						: undefined,
 			},
 			include: {
 				userProfile: {
