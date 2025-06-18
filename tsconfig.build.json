@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "typeRoots": ["src/types"],
+  },
+  "exclude": ["node_modules", "src/__tests__"]
+}

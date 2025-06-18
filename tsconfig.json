@@ -38,7 +38,7 @@
       "@mocks": ["src/__tests__/mocks/index.ts"],
       "@tsoa-build/*": ["src/tsoa/*"]
     },
-    "typeRoots": ["src/types"],
+    "typeRoots": ["src/types", "node_modules/@types"],
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -46,6 +46,6 @@
     "skipLibCheck": true,
     "useUnknownInCatchVariables": true
   },
-  "exclude": ["node_modules", "src/__tests__"],
+  "exclude": ["node_modules"],
   "include": ["src/**/*.ts"]
 }
