@@ -5,8 +5,8 @@ const jestConfig: JestConfigWithTsJest = {
 	preset: 'ts-jest',
 	testEnvironment: 'node',
 	moduleDirectories: ['node_modules', '<rootDir>/src'],
-	modulePaths: [compilerOptions.baseUrl],
-	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
+	modulePaths: [compilerOptions.baseUrl || 'src'],
+	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths || {}, { prefix: '<rootDir>/' }),
 	testRegex: 'src/.*\\.(test|spec)\\.[jt]s$',
 	transform: {
 		'^.+\\.ts?$': 'ts-jest',
