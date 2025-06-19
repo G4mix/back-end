@@ -325,7 +325,7 @@ function socialLogin() {
 		mockSocialLogin.mockRestore()
 	})
 
-	it('execute socialLogin and provider API fails (network error) > USER_NOT_FOUND 500', async () => {
+	it('execute socialLogin and provider API fails (network error) > INTERNAL_SERVER_ERROR 500', async () => {
 		const authService = container.resolve(AuthService)
 		const mockSocialLogin = jest.spyOn(authService, 'socialLogin').mockImplementation(async () => {
 			throw new Error('OAuth API Error')
@@ -338,7 +338,7 @@ function socialLogin() {
 		expect(response.status).toBe(500)
 		console.log('response: ', response)
 		const responseData = await response.json() as { message: string }
-		expect(responseData.message).toBe('USER_NOT_FOUND')
+		expect(responseData.message).toBe('INTERNAL_SERVER_ERROR')
 
 		expect(mockSocialLogin).toHaveBeenCalledWith({
 			provider: 'google',

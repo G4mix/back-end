@@ -11,6 +11,7 @@ import { singleton } from 'tsyringe'
 import { env } from '@config'
 import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
+import { errorHandler } from '@middlewares'
 
 @singleton()
 export class App {
@@ -63,5 +64,6 @@ export class App {
 			return res.send(swaggerUi.generateHTML(await import('@tsoa-build/swagger.json')))
 		})
 		RegisterRoutes(App.instance)
+		App.instance.use(errorHandler)
 	}
 }

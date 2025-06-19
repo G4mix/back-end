@@ -73,9 +73,14 @@ export class AuthController extends Controller {
 	@SuccessResponse(200)
 	@Post('/social-login/{provider}')
 	public async socialLogin(@Path() provider: 'google' | 'linkedin' | 'github', @Body() body: { token: string; }) {
-		const res = await this.authService.socialLogin({ provider, token: body.token })
-		if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
-		return res
+		try {
+			const res = await this.authService.socialLogin({ provider, token: body.token })
+			if (typeof res === 'string') return ControllerUtils.handleResponse(res, this)
+			return res
+		} catch (error) {
+			this.setStatus(500)
+			return { message: 'INTERNAL_SERVER_ERROR' }
+		}
 	}
 
 	/**
