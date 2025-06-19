@@ -350,6 +350,8 @@ function socialLogin() {
 		expect(setup.pg.userOAuths).toHaveLength(0)
 		mockSocialLogin.mockRestore()
 	})
+
+	it('should return PROVIDER_NOT_LINKED when user exists but OAuth is not linked > PROVIDER_NOT_LINKED')
 }
 
 // function linkNewOAuthProviderWhenProviderNotFound() {
