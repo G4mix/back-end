@@ -65,7 +65,7 @@ function signinWhenUserNotExists() {
 	})
 
 	it('signinWhenEmailFormatIsInvalid > EMAIL_FORMAT_INVALID', async () => {
-		const response = await fetchAPI('/auth/signin', 'POST', authHeaders, { email: 'aba@1234', password})
+		const response = await fetchAPI('/auth/signin', 'POST', authHeaders, { email: 'aba@1234', password })
 		const responseData = await response.json() as { message: string }
 		console.log('Response data:', responseData)
 
@@ -90,14 +90,14 @@ function signinWithWrongPassword() {
 		})
 	})
 	it('signinWithWrongPassword > EXCESSIVE_LOGIN_ATTEMPTS', async () => {
-    const now =  new Date()
-    await getTestUser({ loginAttempts: 5, blockedUntil: new Date(now.getTime() + 30 * 60 * 1000) })
+		const now = new Date()
+		await getTestUser({ loginAttempts: 5, blockedUntil: new Date(now.getTime() + 30 * 60 * 1000) })
 		const response = await fetchSigninWithWrongPassword()
 		await handleMessage({ response, message: 'EXCESSIVE_LOGIN_ATTEMPTS' })
 	})
 	// it('signinWithWrongPassword > ERROR_WHILE_SENDING_EMAIL', async () => {
-  //   setup['sesClientMock'].setThrowError(true).setType('send')
-  //   await getTestUser({ loginAttempts: 4 })
+	//   setup['sesClientMock'].setThrowError(true).setType('send')
+	//   await getTestUser({ loginAttempts: 4 })
 	// 	const response = await fetchSigninWithWrongPassword()
 	// 	await handleMessage({ response, message: 'ERROR_WHILE_SENDING_EMAIL' })
 	// })
@@ -125,7 +125,7 @@ function signinSecurityTests() {
 					const responseData = await response.json() as { message: string }
 					console.log('Response data:', responseData)
 				}
-				
+
 			}
 		})
 
@@ -133,8 +133,8 @@ function signinSecurityTests() {
 			const testUser = await getTestUser()
 			const sqlInjectionAttempts = [
 				"' OR '1'='1",
-                "'; DROP TABLE users; --",
-                "' OR 1=1; --"
+				"'; DROP TABLE users; --",
+				"' OR 1=1; --"
 			]
 
 			for (const attempt of sqlInjectionAttempts) {
@@ -156,9 +156,9 @@ function signinSecurityTests() {
 function signinWithSuccess() {
 	it('signinWithSuccess > verify email 200', async () => {
 		// 1. usuário de teste com email não verificado, simulação de verificação de email
-		const testUser = await getTestUser({ 
-			loginAttempts: 5, 
-			blockedUntil: new Date(new Date().getTime() - 31 * 60 * 1000), 
+		const testUser = await getTestUser({
+			loginAttempts: 5,
+			blockedUntil: new Date(new Date().getTime() - 31 * 60 * 1000),
 			verified: false,
 			userProfile: {
 				id: 'test-profile-id',
@@ -187,11 +187,11 @@ function signinWithSuccess() {
 				}
 				return Promise.resolve(updatedUser as any)
 			})
-		
+
 		// 4. login
-		const response = await fetchAPI('/auth/signin', 'POST', authHeaders, { 
-			email: testUser.email, 
-			password 
+		const response = await fetchAPI('/auth/signin', 'POST', authHeaders, {
+			email: testUser.email,
+			password
 		})
 
 		const responseData = await response.json() as { user: typeof testUser }
@@ -221,7 +221,7 @@ function socialLogin() {
 		const mockSocialLogin = jest.spyOn(authService, 'socialLogin').mockImplementation(async () => {
 			// 2. Simular o fluxo completo de socialLogin
 			const googleUserData = { name: 'John Doe', email: 'john.doe@gmail.com' }
-			
+
 			// 3. criar usuário diretamente no mock do banco
 			const newUser = await setup.pg.user.create({
 				data: {
@@ -232,7 +232,7 @@ function socialLogin() {
 					userProfile: { create: {} }
 				}
 			})
-			
+
 			// 4. conectar usuário com o provider via oauthLink
 			await setup.pg.userOAuth.create({
 				data: {
@@ -241,18 +241,18 @@ function socialLogin() {
 					email: googleUserData.email
 				}
 			})
-			
+
 			// 5. dados de resposta com tipagem correta
 			return {
 				accessToken: 'mock_access_token',
 				refreshToken: 'mock_refresh_token',
-				user: { 
-					id: newUser.id, 
+				user: {
+					id: newUser.id,
 					username: googleUserData.name,
 					email: googleUserData.email,
-					verified: true, 
-					created_at: new Date().toISOString(), 
-					userProfile: { id: 'mock-profile-id', icon: null, displayName: null } 
+					verified: true,
+					created_at: new Date().toISOString(),
+					userProfile: { id: 'mock-profile-id', icon: null, displayName: null }
 				}
 			}
 		})
@@ -264,12 +264,12 @@ function socialLogin() {
 		} as any)
 
 		expect(response.status).toBe(200)
-		const responseData = await response.json() as { 
-			accessToken: string; 
-			refreshToken: string; 
-			user: any; 
+		const responseData = await response.json() as {
+			accessToken: string;
+			refreshToken: string;
+			user: any;
 		}
-		
+
 		// 6. Verificar se os tokens foram gerados
 		expect(responseData.accessToken).toBeDefined()
 		expect(responseData.refreshToken).toBeDefined()
@@ -317,6 +317,32 @@ function socialLogin() {
 		expect(mockSocialLogin).toHaveBeenCalledWith({
 			provider: 'google',
 			token: 'valid_but_empty_token'
+		})
+
+		// Verificar que nenhum acesso ao banco ocorreu
+		expect(setup.pg.users).toHaveLength(0)
+		expect(setup.pg.userOAuths).toHaveLength(0)
+		mockSocialLogin.mockRestore()
+	})
+
+	it('execute socialLogin and provider API fails (network error) > USER_NOT_FOUND 500', async () => {
+		const authService = container.resolve(AuthService)
+		const mockSocialLogin = jest.spyOn(authService, 'socialLogin').mockImplementation(async () => {
+			throw new Error('OAuth API Error')
+		})
+
+		const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {
+			token: 'invalid_oauth_token'
+		} as any)
+
+		expect(response.status).toBe(500)
+		console.log('response: ', response)
+		const responseData = await response.json() as { message: string }
+		expect(responseData.message).toBe('USER_NOT_FOUND')
+
+		expect(mockSocialLogin).toHaveBeenCalledWith({
+			provider: 'google',
+			token: 'invalid_oauth_token'
 		})
 
 		// Verificar que nenhum acesso ao banco ocorreu
