@@ -1,7 +1,5 @@
-import type { PostgresqlClientMock } from '@mocks'
+import type { PostgresqlClientMock, S3ClientMock, SESClientMock, UserRepositoryMock } from '@mocks'
 import type { TestApp } from '../app.test';
-import { SESClientMock } from '../mocks/config/sesClientMock';
-import { S3ClientMock } from '../mocks/config/s3ClientMock';
 
 function generateUniqueId() {
 	return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -11,6 +9,7 @@ type Setup = {
 	pg: PostgresqlClientMock;
 	sesClientMock: SESClientMock;
 	s3ClientMock: S3ClientMock;
+	userRepositoryMock: UserRepositoryMock;
 	app: TestApp;
 	testUser: {
 		email: string;

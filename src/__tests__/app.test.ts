@@ -3,6 +3,7 @@ import './config/setup-tests'
 import './routes/docs'
 import './routes/auth/signup'
 import './routes/auth/signin'
+import './routes/auth/socialLogin'
 
 import './routes/user/delete'
 import './routes/user/update'
