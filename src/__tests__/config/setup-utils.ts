@@ -37,9 +37,17 @@ const updateUser = async (data: Partial<UserWithUserProfile>) => {
 	return setup.pg['users'][0]
 }
 
-export const getFormData = (anyData: { [x: string]: string | Blob | boolean }) => {
+export const getFormData = (anyData: { [x: string]: string | Blob | boolean | Express.Multer.File }) => {
 	const data = new FormData()
-	for (const key of Object.keys(anyData)) data.append(key, anyData[key as keyof typeof anyData] as any)
+	for (const key of Object.keys(anyData)) {
+		const value = anyData[key as keyof typeof anyData]
+		if (value && typeof value === 'object' && 'buffer' in value) {
+			// Se for um Multer.File, cria um Blob com o buffer
+			data.append(key, new Blob([value.buffer], { type: value.mimetype }))
+		} else {
+			data.append(key, value as any)
+		}
+	}
 	return data
 }
 

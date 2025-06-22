@@ -88,6 +88,7 @@ export class UserRepositoryMock extends UserRepository {
     }
 
     public async create(userData: Partial<User>): Promise<UserWithUserProfile> {
+        console.log('dados recebidos via create: ', userData)
         const newUser = {
             id: randomUUID(),
             email: userData.email ?? 'mock-email',
@@ -102,7 +103,7 @@ export class UserRepositoryMock extends UserRepository {
             updated_at: new Date()
         }
 
-        this.users.push(newUser)
+        this.users.push(newUser as any)
         return {
             ...newUser,
             userProfile: {
@@ -112,16 +113,17 @@ export class UserRepositoryMock extends UserRepository {
                 displayName: null,
                 icon: null
             }
-        }
+        } as any
     }
 
-    public async linkOAuthProvider(data: { userId: string; provider: string; email: string }): Promise<UserOAuthWithUser> {
+    public async linkOAuthProvider(data: { userId: string; provider: string }): Promise<UserOAuthWithUser> {
         const user = this.users.find(user => user.id === data.userId)!
+        console.log('user: ', user)
         const oauthLink = {
             id: randomUUID(),
             userId: data.userId,
             provider: data.provider,
-            email: data.email,
+            email: user.email, // isso busca pelo user ao invés do data porque linkOAuthProvider retorna apenas userId e provider
             created_at: new Date()
         }
 
