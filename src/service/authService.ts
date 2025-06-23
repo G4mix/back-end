@@ -302,7 +302,8 @@ export class AuthService {
 				const user = await github.getUserData({ token })
 				const primaryEmail = await github.getUserPrimaryEmail({ token })
 				await github.revokeToken({ token })
-				return { name: user.name, email: primaryEmail || null }
+				console.log(user)
+				return { name: user.name || user.username, email: primaryEmail || null }
 			},
 			'linkedin': async () => {
 				const user = await linkedin.getUser({ token })
