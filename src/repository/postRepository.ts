@@ -26,17 +26,20 @@ export class PostRepository {
 				content,
 				links: links && {
 					createMany: {
-						data: links.map(link => ({ url: link }))
+						data: links.map(link => ({ url: link })),
+						skipDuplicates: true
 					}
 				},
 				tags: tags && {
 					createMany: {
-						data: tags.map(tag => ({ name: tag }))
+						data: tags.map(tag => ({ name: tag })),
+						skipDuplicates: true
 					}
 				},
 				images: images && {
 					createMany: {
-						data: images
+						data: images,
+						skipDuplicates: true
 					}
 				},
 				event: event ? { create: event } : undefined
@@ -85,21 +88,24 @@ export class PostRepository {
 				title,
 				content,
 				links: links && {
-					deleteMany: { url:{ notIn: links } },
+					deleteMany: { url: { notIn: links } },
 					createMany: {
-						data: links.map(link => ({ url: link }))
+						data: links.map(link => ({ url: link })),
+						skipDuplicates: true
 					}
 				},
 				tags: tags && {
 					deleteMany: { name: { notIn: tags } },
 					createMany: {
-						data: tags.map(tag => ({ name: tag }))
+						data: tags.map(tag => ({ name: tag })),
+						skipDuplicates: true
 					}
 				},
 				images: images && {
 					deleteMany: { src: { notIn: images.map(img => img.src) } },
 					createMany: {
-						data: images
+						data: images,
+						skipDuplicates: true
 					}
 				},
 				event: event ? { upsert: { create: event, update: event } } : undefined
