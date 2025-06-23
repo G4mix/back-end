@@ -4,6 +4,7 @@ import { UserRepository } from '@repository'
 import { AuthService } from '@service'
 import { fetchAPI, setup } from '@setup'
 import { DependencyContainer, Lifecycle } from 'tsyringe'
+const { socialLoginRequests } = require('@utils')
 
 const { authHeaders } = setup
 let testContainer: DependencyContainer
@@ -30,6 +31,10 @@ function socialLogin() {
 		setup.userRepositoryMock.users = []
 		setup.userRepositoryMock.userOAuths = []
 
+        const getSocialLoginData = jest.spyOn(socialLoginRequests.google, 'getUserData').mockResolvedValue({
+            email: 'mock-email',
+            username: 'mock-username'
+        })
 		// console.log('RESOLVENDO REPOSITORY: ', container.resolve(UserRepository).constructor.name)
 		const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {
 			token: 'valid_google_token'
@@ -41,7 +46,6 @@ function socialLogin() {
 			refreshToken: string;
 			user: any;
 		}
-		
 
 		// 6. Verificar se os tokens foram gerados
 		console.log('responseData: ', responseData)
@@ -66,9 +70,7 @@ function socialLogin() {
 		expect(oauthLink.userId).toBe(createdUser.id)
 
 		// 9. Verificar se o mock foi chamado
-		console.log(setup.socialLoginRequests.google.getUserData)
-		expect(setup.socialLoginRequests.google.getUserData).toHaveBeenCalledWith({
-			provider: 'google',
+		expect(getSocialLoginData).toHaveBeenCalledWith({
 			token: 'valid_google_token'
 		})
 
