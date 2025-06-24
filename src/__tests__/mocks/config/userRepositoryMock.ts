@@ -88,7 +88,6 @@ export class UserRepositoryMock extends UserRepository {
     }
 
     public async create(userData: Partial<User>): Promise<UserWithUserProfile> {
-        console.log('dados recebidos via create: ', userData)
         const newUser = {
             id: randomUUID(),
             email: userData.email ?? 'mock-email',
@@ -118,7 +117,6 @@ export class UserRepositoryMock extends UserRepository {
 
     public async linkOAuthProvider(data: { userId: string; provider: string }): Promise<UserOAuthWithUser> {
         const user = this.users.find(user => user.id === data.userId)!
-        console.log('user: ', user)
         const oauthLink = {
             id: randomUUID(),
             userId: data.userId,

@@ -1,7 +1,6 @@
 import { container } from '@ioc'
 import { socialLoginRequestsMock, UserRepositoryMock } from '@mocks'
 import { UserRepository } from '@repository'
-import { AuthService } from '@service'
 import { fetchAPI, setup } from '@setup'
 import { DependencyContainer, Lifecycle } from 'tsyringe'
 const { socialLoginRequests } = require('@utils')
@@ -31,7 +30,8 @@ function socialLogin() {
 		setup.userRepositoryMock.users = []
 		setup.userRepositoryMock.userOAuths = []
 
-        const getSocialLoginData = jest.spyOn(socialLoginRequests.google, 'getUserData').mockResolvedValue({
+        // mock forçado do socialLoginRequests, uma vez que para acoplá-lo ao setup de testes, seria necessária uma refatoração no código de produção
+        const mockSocialLogin = await jest.spyOn(socialLoginRequests.google, 'getUserData').mockResolvedValue({
             email: 'mock-email',
             username: 'mock-username'
         })
@@ -48,13 +48,11 @@ function socialLogin() {
 		}
 
 		// 6. Verificar se os tokens foram gerados
-		console.log('responseData: ', responseData)
 		expect(responseData.accessToken).toBeDefined()
 		expect(responseData.refreshToken).toBeDefined()
 		expect(responseData.user).toBeDefined()
 
 		// 7 .Verificar se o usuário foi criado no banco
-        console.log('setup.userRepositoryMock.users: ', setup.userRepositoryMock.users)
 		expect(setup.userRepositoryMock.users).toHaveLength(1)
 		const createdUser = setup.userRepositoryMock.users[0]
 		expect(createdUser.email).toBe('mock-email')
@@ -62,7 +60,6 @@ function socialLogin() {
 		expect(createdUser.verified).toBe(true)
 
 		// 8. Verificar se o OAuth provider foi vinculado
-		console.log('setup.userRepositoryMock.userOAuths: ', setup.userRepositoryMock.userOAuths)
 		expect(setup.userRepositoryMock.userOAuths).toHaveLength(1)
 		const oauthLink = setup.userRepositoryMock.userOAuths[0]
 		expect(oauthLink.provider).toBe('google')
@@ -70,7 +67,7 @@ function socialLogin() {
 		expect(oauthLink.userId).toBe(createdUser.id)
 
 		// 9. Verificar se o mock foi chamado
-		expect(getSocialLoginData).toHaveBeenCalledWith({
+		expect(mockSocialLogin).toHaveBeenCalledWith({
 			token: 'valid_google_token'
 		})
 
@@ -78,13 +75,14 @@ function socialLogin() {
 	})
 
 	it('execute socialLogin and provider returns null user data > USER_NOT_FOUND 404', async () => {
-		const authService = container.resolve(AuthService)
-		const mockSocialLogin = jest.spyOn(authService, 'socialLogin').mockImplementation(async () => {
-			return 'USER_NOT_FOUND'
-		})
+        setup.userRepositoryMock.users = []
+		setup.userRepositoryMock.userOAuths = []
 
+        // mock forçado do socialLoginRequests, uma vez que para acoplá-lo ao setup de testes, seria necessária uma refatoração no código de produção
+        const mockSocialLogin = jest.spyOn(socialLoginRequests.google, 'getUserData').mockResolvedValue(null)
+		
 		const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {
-			token: 'valid_but_empty_token'
+			token: 'valid_token'
 		} as any)
 
 		expect(response.status).toBe(404) // USER_NOT_FOUND mapeia para 404
@@ -93,39 +91,40 @@ function socialLogin() {
 
 		// Verificar que o mock foi chamado
 		expect(mockSocialLogin).toHaveBeenCalledWith({
-			provider: 'google',
-			token: 'valid_but_empty_token'
+			token: 'valid_token'
 		})
 
 		// Verificar que nenhum acesso ao banco ocorreu
-		expect(setup.pg.users).toHaveLength(0)
-		expect(setup.pg.userOAuths).toHaveLength(0)
+		expect(setup.userRepositoryMock.users).toHaveLength(0)
+		expect(setup.userRepositoryMock.userOAuths).toHaveLength(0)
 		mockSocialLogin.mockRestore()
 	})
 
 	it('execute socialLogin and provider API fails (network error) > INTERNAL_SERVER_ERROR 500', async () => {
-		const authService = container.resolve(AuthService)
-		const mockSocialLogin = jest.spyOn(authService, 'socialLogin').mockImplementation(async () => {
-			throw new Error('OAuth API Error')
-		})
+		setup.userRepositoryMock.users = []
+		setup.userRepositoryMock.userOAuths = []
+
+        // mock forçado do socialLoginRequests, uma vez que para acoplá-lo ao setup de testes, seria necessária uma refatoração no código de produção
+        const mockSocialLogin = await jest.spyOn(socialLoginRequests.google, 'getUserData').mockRejectedValue(new Error('OAuth API Error'))
+		
 
 		const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {
 			token: 'invalid_oauth_token'
 		} as any)
 
+        console.log('response: ', response)
+        console.log('socialLogin: ', mockSocialLogin.mock.results[0].value)
 		expect(response.status).toBe(500)
-		// console.log('response: ', response)
 		const responseData = await response.json() as { message: string }
 		expect(responseData.message).toBe('INTERNAL_SERVER_ERROR')
 
 		expect(mockSocialLogin).toHaveBeenCalledWith({
-			provider: 'google',
 			token: 'invalid_oauth_token'
 		})
 
 		// Verificar que nenhum acesso ao banco ocorreu
-		expect(setup.pg.users).toHaveLength(0)
-		expect(setup.pg.userOAuths).toHaveLength(0)
+		expect(setup.userRepositoryMock.users).toHaveLength(0)
+		expect(setup.userRepositoryMock.userOAuths).toHaveLength(0)
 		mockSocialLogin.mockRestore()
 	})
 

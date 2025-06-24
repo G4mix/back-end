@@ -153,8 +153,10 @@ export class AuthService {
 		try {
 			userData = await executeSocialLogin()
 		} catch (err) {
-			userData = null
+			console.error('Erro ao consultar API do OAuth:', err)
+			return 'INTERNAL_SERVER_ERROR'
 		}
+		
 		if (!userData) return 'USER_NOT_FOUND'
 
 		const user = await this.userRepository.findById({ id: userId })
