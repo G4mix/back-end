@@ -80,7 +80,6 @@ function socialLogin() {
 
         // mock forçado do socialLoginRequests, uma vez que para acoplá-lo ao setup de testes, seria necessária uma refatoração no código de produção
         const mockSocialLogin = jest.spyOn(socialLoginRequests.google, 'getUserData').mockResolvedValue(null)
-		
 		const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {
 			token: 'valid_token'
 		} as any)
@@ -106,14 +105,13 @@ function socialLogin() {
 
         // mock forçado do socialLoginRequests, uma vez que para acoplá-lo ao setup de testes, seria necessária uma refatoração no código de produção
         const mockSocialLogin = await jest.spyOn(socialLoginRequests.google, 'getUserData').mockRejectedValue(new Error('OAuth API Error'))
-		
+		console.log(mockSocialLogin.mock.results)
 
 		const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {
 			token: 'invalid_oauth_token'
 		} as any)
+        console.log(response)
 
-        console.log('response: ', response)
-        console.log('socialLogin: ', mockSocialLogin.mock.results[0].value)
 		expect(response.status).toBe(500)
 		const responseData = await response.json() as { message: string }
 		expect(responseData.message).toBe('INTERNAL_SERVER_ERROR')
@@ -127,6 +125,43 @@ function socialLogin() {
 		expect(setup.userRepositoryMock.userOAuths).toHaveLength(0)
 		mockSocialLogin.mockRestore()
 	})
+
+    it('should return 422 when token is missing > 422', async () => {
+        const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {} as any)
+
+        expect(response.status).toBe(422)
+        const responseData = await response.json() as { message: string}
+        expect(responseData.message).toBe('INVALID_TOKEN')
+    })
+
+    it('should return 409 when user exists but OAuth is not linked > PROVIDER_NOT_LINKED', async () => {
+        // buscar usuário que não tem OAuth vinculado
+        setup.userRepositoryMock.findOAuthUser({ provider: 'google', email: 'mock-email' })
+        // console.log(setup.userRepositoryMock.findOAuthUser({ provider: 'google', email: 'mock-email' }))
+       
+        // criar um usuário
+        setup.userRepositoryMock.create({
+            email: 'mock-email',
+            username: 'mock-username',
+            password: 'mock-password'
+        })
+
+        jest.spyOn(socialLoginRequests.google, 'getUserData').mockResolvedValue({
+            name: 'mock-username',
+            email: 'mock-email'
+          });
+
+       setup.userRepositoryMock.findByEmail({ email: 'mock-email'})
+    //    console.log(setup.userRepositoryMock.findByEmail({ email: 'mock-email' }))
+
+       const response = await fetchAPI('/auth/social-login/google', 'POST', authHeaders, {
+        token: 'valid_google_token'
+      } as any)
+    
+      expect(response.status).toBe(409)
+      const responseData = await response.json() as { message: string}
+      expect(responseData.message).toBe('PROVIDER_NOT_LINKED')
+    })
 
 	// it('should return PROVIDER_NOT_LINKED when user exists but OAuth is not linked > PROVIDER_NOT_LINKED')
 }
