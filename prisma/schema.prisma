@@ -69,14 +69,16 @@ model UserProfile {
   backgroundImage String? @db.VarChar(2048)
 
   user      User?
+  chats     UserInChat[]
+  interests Interested[]
   comment   Comment[]
-  posts     Post[]
+  ideas     Idea[]
   viewed    View[]
   liked     Like[]
   links     Link[]
   teams     UserTeam[]
-  following Follow[]   @relation("UserFollows")
-  followers Follow[]   @relation("FollowingUser")
+  following Follow[]     @relation("UserFollows")
+  followers Follow[]     @relation("FollowingUser")
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -123,7 +125,7 @@ model Follow {
   @@index([followingTeamId])
 }
 
-model Post {
+model Idea {
   id      String  @id @default(uuid())
   title   String? @db.VarChar(70)
   content String? @db.VarChar(700)
@@ -131,32 +133,20 @@ model Post {
   authorId String
   author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  eventId String? @unique
-  event   Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  comments Comment[]
-  views    View[]
-  likes    Like[]
-  images   Image[]
-  links    Link[]
-  tags     Tag[]
+  chat       Chat?
+  interested Interested[]
+  jobs       Job[]
+  comments   Comment[]
+  views      View[]
+  likes      Like[]
+  images     Image[]
+  links      Link[]
+  tags       Tag[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   @@index([authorId])
-}
-
-model Event {
-  id          String          @id @default(uuid())
-  subject     String          @db.VarChar(255)
-  description String?         @db.VarChar(255)
-  location    String?         @db.VarChar(1000)
-  startDate   DateTime
-  endDate     DateTime
-  frequency   EventFrequency?
-
-  post Post?
 }
 
 model Image {
@@ -166,32 +156,77 @@ model Image {
   width  Int
   height Int
 
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
 
-  @@index([postId])
+  @@index([ideaId])
+}
+
+model Chat {
+  id String @id @default(uuid())
+
+  ideaId String @unique
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  users UserInChat[]
+
+  @@index([ideaId])
+}
+
+model UserInChat {
+  userId String
+  chatId String
+
+  user UserProfile @relation(fields: [userId], references: [id])
+  chat Chat        @relation(fields: [chatId], references: [id])
+
+  @@id([userId, chatId])
+  @@index([chatId])
+}
+
+model Interested {
+  id       String  @id @default(uuid())
+  approved Boolean
+
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  userProfileId String      @unique
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  @@index([ideaId])
+}
+
+model Job {
+  id   String @id @default(uuid())
+  name String @db.VarChar(100)
+
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  @@index([ideaId])
 }
 
 model Tag {
   id   String @id @default(uuid())
   name String @db.VarChar(50)
 
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
 
-  @@index([postId])
+  @@index([ideaId])
 }
 
 model Link {
   id  String @id @default(uuid())
   url String @db.VarChar(700)
 
-  postId        String?
-  post          Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ideaId        String?
+  idea          Idea?        @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   userProfileId String?
   UserProfile   UserProfile? @relation(fields: [userProfileId], references: [id])
 
-  @@index([postId])
+  @@index([ideaId])
   @@index([userProfileId])
 }
 
@@ -204,8 +239,8 @@ model Comment {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
 
   parentCommentId String?
   parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
@@ -215,7 +250,7 @@ model Comment {
   author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@index([id])
-  @@index([postId])
+  @@index([ideaId])
   @@index([authorId])
   @@index([parentCommentId])
 }
@@ -224,14 +259,14 @@ model View {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
 
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ideaId String
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
 
   userProfileId String
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
-  @@unique([userProfileId, postId])
-  @@index([postId])
+  @@unique([userProfileId, ideaId])
+  @@index([ideaId])
   @@index([userProfileId])
 }
 
@@ -239,8 +274,8 @@ model Like {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
 
-  postId String?
-  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ideaId String?
+  idea   Idea?   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
 
   commentId String?
   comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
@@ -248,9 +283,9 @@ model Like {
   userProfileId String
   userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
-  @@unique([userProfileId, postId])
+  @@unique([userProfileId, ideaId])
   @@unique([userProfileId, commentId])
-  @@index([postId])
+  @@index([ideaId])
   @@index([commentId])
   @@index([userProfileId])
 }
