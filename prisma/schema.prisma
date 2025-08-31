@@ -15,6 +15,11 @@ enum EventFrequency {
   YEARLY
 }
 
+enum ProjectVisibility {
+  PUBLIC
+  PRIVATE
+}
+
 model User {
   id            String    @id @default(uuid())
   username      String    @db.VarChar(50)
@@ -76,59 +81,63 @@ model UserProfile {
   viewed    View[]
   liked     Like[]
   links     Link[]
-  teams     UserTeam[]
-  following Follow[]     @relation("UserFollows")
-  followers Follow[]     @relation("FollowingUser")
+  companies UserCompany[]
+  following Follow[]      @relation("UserFollows")
+  followers Follow[]      @relation("FollowingUser")
+  messages  Message[]
+  userSkills           UserSkill[]
+  experiences          Experience[]
+  projectMemberships   ProjectMember[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
 
-model Team {
+model Company {
   id   String @id @default(uuid())
   name String
 
-  followers Follow[]   @relation("FollowingTeam")
-  members   UserTeam[]
+  followers Follow[]      @relation("FollowingCompany")
+  members   UserCompany[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
 
-model UserTeam {
-  userId String
-  teamId String
+model UserCompany {
+  userId    String
+  companyId String
 
-  user UserProfile @relation(fields: [userId], references: [id])
-  team Team        @relation(fields: [teamId], references: [id])
+  user    UserProfile @relation(fields: [userId], references: [id])
+  company Company     @relation(fields: [companyId], references: [id])
 
-  @@id([userId, teamId])
-  @@index([teamId])
+  @@id([userId, companyId])
+  @@index([companyId])
 }
 
 model Follow {
   id String @id @default(uuid())
 
-  followerUserId  String
-  followingUserId String?
-  followingTeamId String?
+  followerUserId     String
+  followingUserId    String?
+  followingCompanyId String?
 
-  followerUser  UserProfile  @relation("UserFollows", fields: [followerUserId], references: [id])
-  followingUser UserProfile? @relation("FollowingUser", fields: [followingUserId], references: [id])
-  followingTeam Team?        @relation("FollowingTeam", fields: [followingTeamId], references: [id])
+  followerUser     UserProfile  @relation("UserFollows", fields: [followerUserId], references: [id])
+  followingUser    UserProfile? @relation("FollowingUser", fields: [followingUserId], references: [id])
+  followingCompany Company?     @relation("FollowingCompany", fields: [followingCompanyId], references: [id])
 
   created_at DateTime @default(now())
 
   @@unique([followerUserId, followingUserId])
-  @@unique([followerUserId, followingTeamId])
+  @@unique([followerUserId, followingCompanyId])
   @@index([followingUserId])
-  @@index([followingTeamId])
+  @@index([followingCompanyId])
 }
 
 model Idea {
-  id      String  @id @default(uuid())
-  title   String? @db.VarChar(70)
-  content String? @db.VarChar(700)
+  id          String  @id @default(uuid())
+  title       String? @db.VarChar(70)
+  description String? @db.VarChar(700)
 
   authorId String
   author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -147,6 +156,7 @@ model Idea {
   updated_at DateTime @updatedAt
 
   @@index([authorId])
+  Project Project[]
 }
 
 model Image {
@@ -156,19 +166,119 @@ model Image {
   width  Int
   height Int
 
+  // relações opcionais: uma imagem pode pertencer a uma Idea ou a um Project
+  ideaId    String?
+  idea      Idea?    @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([ideaId])
+  @@index([projectId])
+}
+
+model Job {
+  id   String @id @default(uuid())
+  name String @db.VarChar(100)
+
   ideaId String
   idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  // skills que esse job prioriza
+  skills JobSkill[]
 
   @@index([ideaId])
 }
 
-model Chat {
-  id String @id @default(uuid())
+model Skill {
+  id   String @id @default(uuid())
+  name String @db.VarChar(100) @unique
+
+  jobs       JobSkill[]
+  userSkills UserSkill[]
+}
+
+model UserSkill {
+  userProfileId String
+  skillId       String
+
+  userProfile UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  skill       Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  level Int?
+
+  @@id([userProfileId, skillId])
+  @@index([skillId])
+}
+
+model Experience {
+  id          String   @id @default(uuid())
+  title       String   @db.VarChar(200) // nome do cargo
+  company     String?  @db.VarChar(200)
+  description String?  @db.VarChar(1000)
+  startDate   DateTime
+  endDate     DateTime?
+
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([userProfileId])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(1000)
+  visibility  ProjectVisibility @default(PUBLIC)
 
   ideaId String @unique
   idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
 
-  users UserInChat[]
+  members ProjectMember[]
+  images  Image[]   // imagens onde image.projectId = this.id
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([ideaId])
+}
+
+model ProjectMember {
+  userProfileId String
+  projectId     String
+
+  userProfile UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  role String? @db.VarChar(100) // ex: "Lead Frontend", "Designer", etc.
+
+  @@id([userProfileId, projectId])
+  @@index([projectId])
+}
+
+
+model JobSkill {
+  jobId   String
+  skillId String
+
+  job   Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([jobId, skillId])
+  @@index([skillId])
+}
+
+model Chat {
+  id       String @id @default(uuid())
+
+  ideaId String @unique
+  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  users    UserInChat[]
+  messages Message[]
 
   @@index([ideaId])
 }
@@ -184,26 +294,32 @@ model UserInChat {
   @@index([chatId])
 }
 
-model Interested {
-  id       String  @id @default(uuid())
-  approved Boolean
+model Message {
+  id        String   @id @default(uuid())
+  content   String   @db.VarChar(2000)
+  createdAt DateTime @default(now())
 
-  ideaId String
-  idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  chatId String
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
-  userProfileId String      @unique
-  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  senderId String
+  sender   UserProfile @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
-  @@index([ideaId])
+  @@index([chatId])
+  @@index([senderId])
 }
 
-model Job {
-  id   String @id @default(uuid())
-  name String @db.VarChar(100)
+model Interested {
+  id       String   @id @default(uuid())
+  approved Boolean?
 
   ideaId String
   idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
 
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([userProfileId, ideaId])
   @@index([ideaId])
 }
 
