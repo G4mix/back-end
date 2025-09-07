@@ -104,15 +104,25 @@ export class GetCommentsController extends Controller {
 			})
 
 			// Retrieve comments from database
-			const { comments, total } = await this.commentRepository.findAll(queryParams)
+			const { comments, total } = await this.commentRepository.findByIdea(queryParams)
 			
 			const totalPages = Math.ceil(total / (queryParams.limit || 10))
 
 			const response = {
-				comments: comments.map(comment => ({
-					...comment,
+				comments: comments.map((comment: any) => ({
+					id: comment.id,
+					content: comment.content,
+					ideaId: comment.ideaId,
+					parentCommentId: comment.parentCommentId,
+					authorId: comment.authorId,
+					author: {
+						id: comment.author.id,
+						displayName: comment.author.displayName,
+						icon: comment.author.icon
+					},
 					created_at: comment.created_at.toISOString(),
-					updated_at: comment.updated_at.toISOString()
+					updated_at: comment.updated_at.toISOString(),
+					_count: comment._count
 				})),
 				pagination: {
 					page: queryParams.page || 1,

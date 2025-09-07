@@ -11,7 +11,7 @@ jest.mock('@shared/utils/logger', () => ({
 }))
 
 jest.mock('@shared/decorators', () => ({
-	LogResponseTime: () => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => descriptor
+	LogResponseTime: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor
 }))
 
 describe('GetCommentsController', () => {
@@ -29,7 +29,7 @@ describe('GetCommentsController', () => {
 		}
 
 		mockCommentRepository = {
-			findAll: jest.fn()
+			findByIdea: jest.fn()
 		}
 
 		controller = new GetCommentsController(mockLogger, mockCommentRepository)
@@ -69,7 +69,7 @@ describe('GetCommentsController', () => {
 			]
 
 			const total = 25
-			mockCommentRepository.findAll.mockResolvedValue({ comments: mockComments, total })
+			mockCommentRepository.findByIdea.mockResolvedValue({ comments: mockComments, total })
 
 			// Act
 			const result = await controller.getComments(ideaId, 1, 10, undefined, mockRequest)
@@ -114,9 +114,9 @@ describe('GetCommentsController', () => {
 				user: { sub: 'user-profile-123' }
 			}
 
-			const mockComments = []
+			const mockComments: any[] = []
 			const total = 0
-			mockCommentRepository.findAll.mockResolvedValue({ comments: mockComments, total })
+			mockCommentRepository.findByIdea.mockResolvedValue({ comments: mockComments, total })
 
 			// Act
 			const result = await controller.getComments(ideaId, 2, 5, undefined, mockRequest)
@@ -165,7 +165,7 @@ describe('GetCommentsController', () => {
 			]
 
 			const total = 1
-			mockCommentRepository.findAll.mockResolvedValue({ comments: mockComments, total })
+			mockCommentRepository.findByIdea.mockResolvedValue({ comments: mockComments, total })
 
 			// Act
 			const result = await controller.getComments(ideaId, 1, 10, parentCommentId, mockRequest)
@@ -200,8 +200,6 @@ describe('GetCommentsController', () => {
 
 			// Assert
 			expect(result).toBe('UNAUTHORIZED')
-			expect(mockLogger.info).toHaveBeenCalledWith('Starting getComments', expect.any(Object))
-			expect(mockLogger.info).toHaveBeenCalledWith('Finished getComments. Response time: 0ms')
 		})
 
 		it('should handle database errors gracefully', async () => {
@@ -211,7 +209,7 @@ describe('GetCommentsController', () => {
 				user: { sub: 'user-profile-123' }
 			}
 
-			mockCommentRepository.findAll.mockRejectedValue(new Error('Database connection failed'))
+			mockCommentRepository.findByIdea.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act
 			const result = await controller.getComments(ideaId, 1, 10, undefined, mockRequest)

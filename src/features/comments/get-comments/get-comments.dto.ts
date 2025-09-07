@@ -18,8 +18,8 @@ export class CommentResponse {
 	authorId!: string
 	author!: {
 		id: string
-		displayName?: string
-		icon?: string
+		displayName?: string | null
+		icon?: string | null
 	}
 	created_at!: string
 	updated_at!: string

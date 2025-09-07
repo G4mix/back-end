@@ -662,10 +662,12 @@
 					"author": {
 						"properties": {
 							"icon": {
-								"type": "string"
+								"type": "string",
+								"nullable": true
 							},
 							"displayName": {
-								"type": "string"
+								"type": "string",
+								"nullable": true
 							},
 							"id": {
 								"type": "string"

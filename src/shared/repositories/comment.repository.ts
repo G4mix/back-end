@@ -49,37 +49,37 @@ export class CommentRepository {
 		})
 	}
 
-	// public async findAll(params: { ideaId: string; page: number; limit: number; parentCommentId?: string }) {
-	// 	const { ideaId, page, limit, parentCommentId } = params
-	// 	const skip = (page - 1) * limit
+	public async findByIdea(params: { ideaId: string; page: number; limit: number; parentCommentId?: string }) {
+		const { ideaId, page, limit, parentCommentId } = params
+		const skip = (page - 1) * limit
 
-	// 	const where: any = { ideaId }
-	// 	if (parentCommentId) {
-	// 		where.parentCommentId = parentCommentId
-	// 	} else {
-	// 		where.parentCommentId = null
-	// 	}
+		const where: any = { ideaId }
+		if (parentCommentId) {
+			where.parentCommentId = parentCommentId
+		} else {
+			where.parentCommentId = null
+		}
 
-	// 	const comments = await this.pg.comment.findMany({
-	// 		where,
-	// 		skip,
-	// 		take: limit,
-	// 		orderBy: { created_at: 'desc' },
-	// 		include: {
-	// 			author: { include: { user: true, links: true } },
-	// 			_count: {
-	// 				select: {
-	// 					likes: true,
-	// 					replies: true
-	// 				}
-	// 			}
-	// 		}
-	// 	})
+		const comments = await this.pg.comment.findMany({
+			where,
+			skip,
+			take: limit,
+			orderBy: { created_at: 'desc' },
+			include: {
+				author: { include: { user: true, links: true } },
+				_count: {
+					select: {
+						likes: true,
+						replies: true
+					}
+				}
+			}
+		})
 
-	// 	const total = await this.pg.comment.count({ where })
+		const total = await this.pg.comment.count({ where })
 
-	// 	return { comments, total }
-	// }
+		return { comments, total }
+	}
 
 	public async findCommentById({
 		commentId,

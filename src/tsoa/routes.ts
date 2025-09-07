@@ -225,7 +225,7 @@ const models: TsoaRoute.Models = {
             "ideaId": {"dataType":"string","required":true},
             "parentCommentId": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
             "authorId": {"dataType":"string","required":true},
-            "author": {"dataType":"nestedObjectLiteral","nestedProperties":{"icon":{"dataType":"string"},"displayName":{"dataType":"string"},"id":{"dataType":"string","required":true}},"required":true},
+            "author": {"dataType":"nestedObjectLiteral","nestedProperties":{"icon":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"displayName":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"id":{"dataType":"string","required":true}},"required":true},
             "created_at": {"dataType":"string","required":true},
             "updated_at": {"dataType":"string","required":true},
             "_count": {"dataType":"nestedObjectLiteral","nestedProperties":{"replies":{"dataType":"double","required":true},"likes":{"dataType":"double","required":true}}},
