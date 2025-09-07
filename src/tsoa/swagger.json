@@ -7,26 +7,991 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"AuthInput": {
+			"RecordViewResponse": {
+				"properties": {
+					"viewed": {
+						"type": "boolean"
+					},
+					"viewCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"viewed",
+					"viewCount",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RecordViewInput": {
+				"properties": {
+					"ideaId": {
+						"type": "string"
+					},
+					"commentId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"ideaId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateUserOutput": {
+				"properties": {
+					"user": {
+						"properties": {
+							"updated_at": {
+								"type": "string"
+							},
+							"created_at": {
+								"type": "string"
+							},
+							"userProfile": {
+								"properties": {
+									"followersCount": {
+										"type": "number",
+										"format": "double"
+									},
+									"followingCount": {
+										"type": "number",
+										"format": "double"
+									},
+									"links": {
+										"items": {
+											"properties": {
+												"url": {
+													"type": "string"
+												},
+												"id": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"url",
+												"id"
+											],
+											"type": "object"
+										},
+										"type": "array"
+									},
+									"backgroundImage": {
+										"type": "string",
+										"nullable": true
+									},
+									"icon": {
+										"type": "string",
+										"nullable": true
+									},
+									"autobiography": {
+										"type": "string",
+										"nullable": true
+									},
+									"displayName": {
+										"type": "string",
+										"nullable": true
+									},
+									"id": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"followersCount",
+									"followingCount",
+									"links",
+									"backgroundImage",
+									"icon",
+									"autobiography",
+									"displayName",
+									"id"
+								],
+								"type": "object",
+								"nullable": true
+							},
+							"verified": {
+								"type": "boolean"
+							},
+							"email": {
+								"type": "string"
+							},
+							"username": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"updated_at",
+							"created_at",
+							"userProfile",
+							"verified",
+							"email",
+							"username",
+							"id"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"user"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Express.Multer.File": {
+				"description": "Object containing file metadata and access information.",
+				"properties": {
+					"fieldname": {
+						"type": "string",
+						"description": "Name of the form field associated with this file."
+					},
+					"originalname": {
+						"type": "string",
+						"description": "Name of the file on the uploader's computer."
+					},
+					"encoding": {
+						"type": "string",
+						"description": "Value of the `Content-Transfer-Encoding` header for this file.",
+						"deprecated": true
+					},
+					"mimetype": {
+						"type": "string",
+						"description": "Value of the `Content-Type` header for this file."
+					},
+					"size": {
+						"type": "number",
+						"format": "double",
+						"description": "Size of the file in bytes."
+					},
+					"stream": {
+						"type": "string",
+						"format": "byte",
+						"description": "A readable stream of this file. Only available to the `_handleFile`\ncallback for custom `StorageEngine`s."
+					},
+					"destination": {
+						"type": "string",
+						"description": "`DiskStorage` only: Directory to which this file has been uploaded."
+					},
+					"filename": {
+						"type": "string",
+						"description": "`DiskStorage` only: Name of this file within `destination`."
+					},
+					"path": {
+						"type": "string",
+						"description": "`DiskStorage` only: Full path to the uploaded file."
+					},
+					"buffer": {
+						"type": "string",
+						"format": "byte",
+						"description": "`MemoryStorage` only: A Buffer containing the entire file."
+					}
+				},
+				"required": [
+					"fieldname",
+					"originalname",
+					"encoding",
+					"mimetype",
+					"size",
+					"stream",
+					"destination",
+					"filename",
+					"path",
+					"buffer"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateUserInput": {
 				"properties": {
 					"username": {
+						"type": "string"
+					},
+					"email": {
 						"type": "string"
 					},
 					"password": {
 						"type": "string"
 					},
+					"displayName": {
+						"type": "string"
+					},
+					"autobiography": {
+						"type": "string"
+					},
+					"links": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"icon": {
+						"$ref": "#/components/schemas/Express.Multer.File"
+					},
+					"backgroundImage": {
+						"$ref": "#/components/schemas/Express.Multer.File"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ToggleLikeResponse": {
+				"properties": {
+					"liked": {
+						"type": "boolean"
+					},
+					"likeCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"liked",
+					"likeCount",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ToggleLikeInput": {
+				"properties": {
+					"ideaId": {
+						"type": "string"
+					},
+					"commentId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"ideaId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateIdeaResponse": {
+				"properties": {
+					"idea": {
+						"properties": {
+							"updated_at": {
+								"type": "string"
+							},
+							"created_at": {
+								"type": "string"
+							},
+							"authorId": {
+								"type": "string"
+							},
+							"description": {
+								"type": "string",
+								"nullable": true
+							},
+							"title": {
+								"type": "string",
+								"nullable": true
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"updated_at",
+							"created_at",
+							"authorId",
+							"description",
+							"title",
+							"id"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"idea"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateIdeaInput": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IdeaResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string",
+						"nullable": true
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"authorId": {
+						"type": "string"
+					},
+					"author": {
+						"properties": {
+							"icon": {
+								"type": "string",
+								"nullable": true
+							},
+							"displayName": {
+								"type": "string",
+								"nullable": true
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"id"
+						],
+						"type": "object"
+					},
+					"created_at": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					},
+					"_count": {
+						"properties": {
+							"comments": {
+								"type": "number",
+								"format": "double"
+							},
+							"views": {
+								"type": "number",
+								"format": "double"
+							},
+							"likes": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"comments",
+							"views",
+							"likes"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"id",
+					"title",
+					"description",
+					"authorId",
+					"author",
+					"created_at",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GetIdeasResponse": {
+				"properties": {
+					"ideas": {
+						"items": {
+							"$ref": "#/components/schemas/IdeaResponse"
+						},
+						"type": "array"
+					},
+					"pagination": {
+						"properties": {
+							"hasPrev": {
+								"type": "boolean"
+							},
+							"hasNext": {
+								"type": "boolean"
+							},
+							"totalPages": {
+								"type": "number",
+								"format": "double"
+							},
+							"total": {
+								"type": "number",
+								"format": "double"
+							},
+							"limit": {
+								"type": "number",
+								"format": "double"
+							},
+							"page": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"hasPrev",
+							"hasNext",
+							"totalPages",
+							"total",
+							"limit",
+							"page"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"ideas",
+					"pagination"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GetIdeaByIdResponse": {
+				"properties": {
+					"idea": {
+						"properties": {
+							"_count": {
+								"properties": {
+									"comments": {
+										"type": "number",
+										"format": "double"
+									},
+									"views": {
+										"type": "number",
+										"format": "double"
+									},
+									"likes": {
+										"type": "number",
+										"format": "double"
+									}
+								},
+								"required": [
+									"comments",
+									"views",
+									"likes"
+								],
+								"type": "object"
+							},
+							"updated_at": {
+								"type": "string"
+							},
+							"created_at": {
+								"type": "string"
+							},
+							"author": {
+								"properties": {
+									"icon": {
+										"type": "string",
+										"nullable": true
+									},
+									"displayName": {
+										"type": "string",
+										"nullable": true
+									},
+									"id": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"id"
+								],
+								"type": "object"
+							},
+							"authorId": {
+								"type": "string"
+							},
+							"description": {
+								"type": "string",
+								"nullable": true
+							},
+							"title": {
+								"type": "string",
+								"nullable": true
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"updated_at",
+							"created_at",
+							"author",
+							"authorId",
+							"description",
+							"title",
+							"id"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"idea"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateIdeaResponse": {
+				"properties": {
+					"idea": {
+						"properties": {
+							"updated_at": {
+								"type": "string"
+							},
+							"created_at": {
+								"type": "string"
+							},
+							"authorId": {
+								"type": "string"
+							},
+							"description": {
+								"type": "string",
+								"nullable": true
+							},
+							"title": {
+								"type": "string",
+								"nullable": true
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"updated_at",
+							"created_at",
+							"authorId",
+							"description",
+							"title",
+							"id"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"idea"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateIdeaInput": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"title",
+					"description"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ToggleFollowResponse": {
+				"properties": {
+					"following": {
+						"type": "boolean"
+					},
+					"followerCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"following",
+					"followerCount",
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ToggleFollowInput": {
+				"properties": {
+					"followingId": {
+						"type": "string"
+					},
+					"followingType": {
+						"type": "string",
+						"enum": [
+							"user",
+							"company"
+						]
+					}
+				},
+				"required": [
+					"followingId",
+					"followingType"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CommentResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"ideaId": {
+						"type": "string"
+					},
+					"parentCommentId": {
+						"type": "string",
+						"nullable": true
+					},
+					"authorId": {
+						"type": "string"
+					},
+					"author": {
+						"properties": {
+							"icon": {
+								"type": "string"
+							},
+							"displayName": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"id"
+						],
+						"type": "object"
+					},
+					"created_at": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					},
+					"_count": {
+						"properties": {
+							"replies": {
+								"type": "number",
+								"format": "double"
+							},
+							"likes": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"replies",
+							"likes"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"id",
+					"content",
+					"ideaId",
+					"authorId",
+					"author",
+					"created_at",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GetCommentsResponse": {
+				"properties": {
+					"comments": {
+						"items": {
+							"$ref": "#/components/schemas/CommentResponse"
+						},
+						"type": "array"
+					},
+					"pagination": {
+						"properties": {
+							"hasPrev": {
+								"type": "boolean"
+							},
+							"hasNext": {
+								"type": "boolean"
+							},
+							"totalPages": {
+								"type": "number",
+								"format": "double"
+							},
+							"total": {
+								"type": "number",
+								"format": "double"
+							},
+							"limit": {
+								"type": "number",
+								"format": "double"
+							},
+							"page": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"hasPrev",
+							"hasNext",
+							"totalPages",
+							"total",
+							"limit",
+							"page"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"comments",
+					"pagination"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateCommentResponse": {
+				"properties": {
+					"comment": {
+						"properties": {
+							"_count": {
+								"properties": {
+									"replies": {
+										"type": "number",
+										"format": "double"
+									},
+									"likes": {
+										"type": "number",
+										"format": "double"
+									}
+								},
+								"required": [
+									"replies",
+									"likes"
+								],
+								"type": "object"
+							},
+							"updated_at": {
+								"type": "string"
+							},
+							"created_at": {
+								"type": "string"
+							},
+							"author": {
+								"properties": {
+									"icon": {
+										"type": "string"
+									},
+									"displayName": {
+										"type": "string"
+									},
+									"id": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"id"
+								],
+								"type": "object"
+							},
+							"authorId": {
+								"type": "string"
+							},
+							"parentCommentId": {
+								"type": "string",
+								"nullable": true
+							},
+							"ideaId": {
+								"type": "string"
+							},
+							"content": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"updated_at",
+							"created_at",
+							"author",
+							"authorId",
+							"ideaId",
+							"content",
+							"id"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"comment"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateCommentInput": {
+				"properties": {
+					"ideaId": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"parentCommentId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"ideaId",
+					"content"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SigninOutput": {
+				"properties": {
+					"accessToken": {
+						"type": "string"
+					},
+					"refreshToken": {
+						"type": "string"
+					},
+					"user": {
+						"properties": {
+							"updated_at": {
+								"type": "string"
+							},
+							"created_at": {
+								"type": "string"
+							},
+							"userProfile": {
+								"properties": {
+									"followersCount": {
+										"type": "number",
+										"format": "double"
+									},
+									"followingCount": {
+										"type": "number",
+										"format": "double"
+									},
+									"links": {
+										"items": {
+											"properties": {
+												"url": {
+													"type": "string"
+												},
+												"id": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"url",
+												"id"
+											],
+											"type": "object"
+										},
+										"type": "array"
+									},
+									"backgroundImage": {
+										"type": "string",
+										"nullable": true
+									},
+									"icon": {
+										"type": "string",
+										"nullable": true
+									},
+									"autobiography": {
+										"type": "string",
+										"nullable": true
+									},
+									"displayName": {
+										"type": "string",
+										"nullable": true
+									},
+									"id": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"followersCount",
+									"followingCount",
+									"links",
+									"backgroundImage",
+									"icon",
+									"autobiography",
+									"displayName",
+									"id"
+								],
+								"type": "object",
+								"nullable": true
+							},
+							"verified": {
+								"type": "boolean"
+							},
+							"email": {
+								"type": "string"
+							},
+							"username": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"updated_at",
+							"created_at",
+							"userProfile",
+							"verified",
+							"email",
+							"username",
+							"id"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"accessToken",
+					"refreshToken",
+					"user"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateUserInput": {
+				"properties": {
+					"username": {
+						"type": "string"
+					},
 					"email": {
+						"type": "string"
+					},
+					"password": {
 						"type": "string"
 					}
 				},
 				"required": [
 					"username",
-					"password",
-					"email"
+					"email",
+					"password"
 				],
-				"type": "object"
+				"type": "object",
+				"additionalProperties": false
 			},
-			"Pick_AuthInput.email-or-password_": {
+			"SigninInput": {
 				"properties": {
 					"email": {
 						"type": "string"
@@ -40,7 +1005,7 @@
 					"password"
 				],
 				"type": "object",
-				"description": "From T, pick a set of properties whose keys are in the union K"
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {
@@ -55,103 +1020,31 @@
 		"contact": {}
 	},
 	"paths": {
-		"/api/v1/user": {
-			"get": {
-				"operationId": "FindAll",
+		"/api/v1/views/record": {
+			"post": {
+				"operationId": "RecordView",
 				"responses": {
 					"200": {
-						"description": "",
+						"description": "View recorded successfully",
 						"content": {
 							"application/json": {
 								"schema": {
-									"properties": {
-										"data": {
-											"items": {},
-											"type": "array"
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/RecordViewResponse"
 										},
-										"total": {
-											"type": "number",
-											"format": "double"
-										},
-										"pages": {
-											"type": "number",
-											"format": "double"
-										},
-										"nextPage": {
-											"type": "number",
-											"format": "double"
-										},
-										"page": {
-											"type": "number",
-											"format": "double"
+										{
+											"type": "string"
 										}
-									},
-									"required": [
-										"data",
-										"total",
-										"pages",
-										"nextPage",
-										"page"
-									],
-									"type": "object"
+									]
 								}
 							}
 						}
 					}
 				},
-				"description": "Verify if exists an user with the email in the system",
+				"description": "Record a view for idea or comment\r\n\r\nThis endpoint allows authenticated users to record a view for ideas or comments.\r\nViews are tracked to provide analytics and engagement metrics. The system\r\nprevents duplicate views from the same user within a certain time period.\r\n\r\nView Recording Process:\r\n- Validates user authentication\r\n- Checks if user has already viewed the content recently\r\n- Records new view if not duplicate\r\n- Updates view count for the content\r\n- Returns current view status and count",
 				"tags": [
-					"User"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "search",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "page",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "quantity",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			},
-			"patch": {
-				"operationId": "Update",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Update the user in the system",
-				"tags": [
-					"User"
+					"Views"
 				],
 				"security": [
 					{
@@ -160,174 +1053,34 @@
 				],
 				"parameters": [],
 				"requestBody": {
-					"required": false,
+					"description": "- Object containing ideaId and optional commentId",
+					"required": true,
 					"content": {
-						"multipart/form-data": {
+						"application/json": {
 							"schema": {
-								"type": "object",
-								"properties": {
-									"username": {
-										"type": "string"
-									},
-									"email": {
-										"type": "string"
-									},
-									"displayName": {
-										"type": "string"
-									},
-									"autobiography": {
-										"type": "string"
-									},
-									"links": {
-										"type": "string"
-									},
-									"password": {
-										"type": "string"
-									},
-									"backgroundImage": {
-										"type": "string",
-										"format": "binary"
-									},
-									"icon": {
-										"type": "string",
-										"format": "binary"
-									}
-								}
+								"$ref": "#/components/schemas/RecordViewInput",
+								"description": "- Object containing ideaId and optional commentId"
 							}
 						}
 					}
 				}
-			},
-			"delete": {
-				"operationId": "Delete",
-				"responses": {
-					"204": {
-						"description": ""
-					}
-				},
-				"description": "Delete the user of the system",
-				"tags": [
-					"User"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": []
 			}
 		},
-		"/api/v1/user/{id}": {
-			"get": {
-				"operationId": "FindByUserProfileId",
+		"/api/v1/users/{userId}": {
+			"put": {
+				"operationId": "UpdateUser",
 				"responses": {
 					"200": {
-						"description": "",
+						"description": "User updated successfully",
 						"content": {
 							"application/json": {
 								"schema": {
 									"anyOf": [
 										{
-											"properties": {
-												"userProfile": {
-													"properties": {
-														"followingCount": {
-															"type": "number",
-															"format": "double"
-														},
-														"followersCount": {
-															"type": "number",
-															"format": "double"
-														},
-														"links": {
-															"items": {
-																"properties": {
-																	"postId": {
-																		"type": "string"
-																	},
-																	"url": {
-																		"type": "string"
-																	},
-																	"userProfileId": {
-																		"type": "string"
-																	},
-																	"id": {
-																		"type": "string"
-																	}
-																},
-																"required": [
-																	"postId",
-																	"url",
-																	"userProfileId",
-																	"id"
-																],
-																"type": "object"
-															},
-															"type": "array"
-														},
-														"isFollowing": {
-															"type": "boolean"
-														},
-														"backgroundImage": {
-															"type": "string"
-														},
-														"autobiography": {
-															"type": "string"
-														},
-														"displayName": {
-															"type": "string"
-														},
-														"icon": {
-															"type": "string"
-														},
-														"id": {
-															"type": "string"
-														}
-													},
-													"required": [
-														"followingCount",
-														"followersCount",
-														"links",
-														"isFollowing",
-														"backgroundImage",
-														"autobiography",
-														"displayName",
-														"icon",
-														"id"
-													],
-													"type": "object"
-												},
-												"created_at": {
-													"type": "string"
-												},
-												"verified": {
-													"type": "boolean"
-												},
-												"email": {
-													"type": "string"
-												},
-												"username": {
-													"type": "string"
-												},
-												"id": {
-													"type": "string"
-												}
-											},
-											"required": [
-												"userProfile",
-												"created_at",
-												"verified",
-												"email",
-												"username",
-												"id"
-											],
-											"type": "object"
+											"$ref": "#/components/schemas/UpdateUserOutput"
 										},
 										{
-											"type": "string",
-											"enum": [
-												"USER_NOT_FOUND"
-											]
+											"type": "string"
 										}
 									]
 								}
@@ -335,9 +1088,108 @@
 						}
 					}
 				},
-				"description": "Get user by id",
+				"description": "Update authenticated user's profile information\n\nThis endpoint allows authenticated users to update their profile information\nincluding basic details and profile images. It supports partial updates,\nfile uploads for profile images, and comprehensive validation.\n\nUpdate Features:\n- Update basic profile information (displayName, autobiography)\n- Upload and manage profile icon (with size and type validation)\n- Upload and manage background image\n- Automatic file cleanup for replaced images\n- Secure file storage via S3Gateway\n- Comprehensive input validation",
 				"tags": [
-					"User"
+					"User Management"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "- User update data including profile fields and optional files",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateUserInput",
+								"description": "- User update data including profile fields and optional files"
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "GetUserById",
+				"responses": {
+					"200": {
+						"description": "User retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"user": {},
+												"message": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"message"
+											],
+											"type": "object"
+										},
+										{
+											"properties": {
+												"message": {},
+												"user": {}
+											},
+											"required": [
+												"user"
+											],
+											"type": "object"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieve specific user by ID with complete profile information\r\n\r\nThis endpoint retrieves detailed information about a specific user by their ID.\r\nIt returns complete user data including profile information, links, and\r\nfollower/following counts. Useful for user profiles, user details pages,\r\nand user lookup functionality.\r\n\r\nFeatures:\r\n- Complete user profile information\r\n- Social links and connections data\r\n- Follower and following counts\r\n- Serialized user data format\r\n- Proper error handling for non-existent users",
+				"tags": [
+					"User Management"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "- Unique identifier of the user to retrieve",
+						"in": "path",
+						"name": "userId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"delete": {
+				"operationId": "DeleteUser",
+				"responses": {
+					"200": {
+						"description": "User deleted successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Permanently delete authenticated user's account and associated data\r\n\r\nThis endpoint allows authenticated users to permanently delete their account\r\nand all associated data. It performs comprehensive cleanup including user\r\nfiles, database records, and external service data. This action is irreversible.\r\n\r\nDeletion Process:\r\n- Validates user authentication and ownership\r\n- Retrieves user file information (profile images, etc.)\r\n- Deletes user files from cloud storage (S3)\r\n- Removes all user data from database\r\n- Cleans up related records and associations\r\n- Comprehensive error handling and rollback\r\n\r\nSecurity Features:\r\n- JWT token validation required\r\n- User can only delete their own account\r\n- Comprehensive data cleanup\r\n- Secure file deletion from cloud storage",
+				"tags": [
+					"User Management"
 				],
 				"security": [
 					{
@@ -346,6 +1198,273 @@
 				],
 				"parameters": [
 					{
+						"description": "- ID of the user account to delete (must match authenticated user)",
+						"in": "path",
+						"name": "userId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/users": {
+			"get": {
+				"operationId": "GetUsers",
+				"responses": {
+					"200": {
+						"description": "Users retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"pagination": {
+											"properties": {
+												"total": {
+													"type": "number",
+													"format": "double"
+												},
+												"limit": {
+													"type": "number",
+													"format": "double"
+												},
+												"page": {
+													"type": "number",
+													"format": "double"
+												}
+											},
+											"required": [
+												"total",
+												"limit",
+												"page"
+											],
+											"type": "object"
+										},
+										"users": {
+											"items": {},
+											"type": "array"
+										}
+									},
+									"required": [
+										"pagination",
+										"users"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieve paginated list of users with search functionality\r\n\r\nThis endpoint provides a paginated list of all users in the system with\r\noptional search functionality. It's useful for user discovery, admin\r\nmanagement, and general user browsing features.\r\n\r\nFeatures:\r\n- Pagination with configurable page size\r\n- Search functionality across user fields\r\n- Serialized user data with profile information\r\n- Comprehensive pagination metadata\r\n- Performance optimized queries",
+				"tags": [
+					"User Management"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "- Page number for pagination (default: 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 1,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "- Number of users per page (default: 10)",
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "- Optional search term to filter users",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/likes/toggle": {
+			"post": {
+				"operationId": "ToggleLike",
+				"responses": {
+					"200": {
+						"description": "Like toggled successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/ToggleLikeResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Toggle like on idea or comment\r\n\r\nThis endpoint allows authenticated users to like or unlike ideas and comments.\r\nIf the user hasn't liked the content before, it will create a like. If they\r\nhave already liked it, it will remove the like (toggle behavior).\r\n\r\nLike Toggle Process:\r\n- Validates user authentication\r\n- Checks if user has already liked the content\r\n- Creates like if not exists, removes if exists\r\n- Updates like count for the content\r\n- Returns current like status and count",
+				"tags": [
+					"Likes"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "- Object containing ideaId and optional commentId",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ToggleLikeInput",
+								"description": "- Object containing ideaId and optional commentId"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/ideas/{id}": {
+			"put": {
+				"operationId": "UpdateIdea",
+				"responses": {
+					"200": {
+						"description": "Idea updated successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/UpdateIdeaResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Update an existing idea\r\n\r\nThis endpoint allows authenticated users to update their own ideas.\r\nOnly the author of the idea can update it.",
+				"tags": [
+					"Ideas"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The unique identifier of the idea to update.",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "The request body containing the updated idea details.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateIdeaInput",
+								"description": "The request body containing the updated idea details."
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"operationId": "GetIdeaById",
+				"responses": {
+					"200": {
+						"description": "Idea retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/GetIdeaByIdResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Get a specific idea by ID\r\n\r\nThis endpoint allows authenticated users to retrieve a specific idea by its ID.\r\nThe response includes the idea details, author information, and engagement metrics.",
+				"tags": [
+					"Ideas"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The unique identifier of the idea to retrieve.",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"delete": {
+				"operationId": "DeleteIdea",
+				"responses": {
+					"200": {
+						"description": "Idea deleted successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete an existing idea\r\n\r\nThis endpoint allows authenticated users to delete their own ideas.\r\nOnly the author of the idea can delete it. This action is irreversible.",
+				"tags": [
+					"Ideas"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "The unique identifier of the idea to delete.",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -356,117 +1475,21 @@
 				]
 			}
 		},
-		"/api/v1/user/data": {
+		"/api/v1/ideas": {
 			"get": {
-				"operationId": "FindByToken",
+				"operationId": "GetIdeas",
 				"responses": {
 					"200": {
-						"description": "",
+						"description": "Ideas retrieved successfully",
 						"content": {
 							"application/json": {
 								"schema": {
 									"anyOf": [
 										{
-											"properties": {
-												"userProfile": {
-													"properties": {
-														"followingCount": {
-															"type": "number",
-															"format": "double"
-														},
-														"followersCount": {
-															"type": "number",
-															"format": "double"
-														},
-														"links": {
-															"items": {
-																"properties": {
-																	"postId": {
-																		"type": "string"
-																	},
-																	"url": {
-																		"type": "string"
-																	},
-																	"userProfileId": {
-																		"type": "string"
-																	},
-																	"id": {
-																		"type": "string"
-																	}
-																},
-																"required": [
-																	"postId",
-																	"url",
-																	"userProfileId",
-																	"id"
-																],
-																"type": "object"
-															},
-															"type": "array"
-														},
-														"isFollowing": {
-															"type": "boolean"
-														},
-														"backgroundImage": {
-															"type": "string"
-														},
-														"autobiography": {
-															"type": "string"
-														},
-														"displayName": {
-															"type": "string"
-														},
-														"icon": {
-															"type": "string"
-														},
-														"id": {
-															"type": "string"
-														}
-													},
-													"required": [
-														"followingCount",
-														"followersCount",
-														"links",
-														"isFollowing",
-														"backgroundImage",
-														"autobiography",
-														"displayName",
-														"icon",
-														"id"
-													],
-													"type": "object"
-												},
-												"created_at": {
-													"type": "string"
-												},
-												"verified": {
-													"type": "boolean"
-												},
-												"email": {
-													"type": "string"
-												},
-												"username": {
-													"type": "string"
-												},
-												"id": {
-													"type": "string"
-												}
-											},
-											"required": [
-												"userProfile",
-												"created_at",
-												"verified",
-												"email",
-												"username",
-												"id"
-											],
-											"type": "object"
+											"$ref": "#/components/schemas/GetIdeasResponse"
 										},
 										{
-											"type": "string",
-											"enum": [
-												"USER_NOT_FOUND"
-											]
+											"type": "string"
 										}
 									]
 								}
@@ -474,121 +1497,9 @@
 						}
 					}
 				},
-				"description": "Get data from an user of the system",
+				"description": "Get list of ideas with filtering and pagination\r\n\r\nThis endpoint allows authenticated users to retrieve a paginated list of ideas\r\nwith various filtering options. Users can search by title/description, filter\r\nby author, tags, and sort by different criteria.\r\n\r\nIdeas Retrieval Process:\r\n- Validates query parameters (pagination, filters, sorting)\r\n- Applies search filters if provided\r\n- Retrieves ideas from database with pagination\r\n- Includes author information and engagement metrics\r\n- Returns paginated results with metadata",
 				"tags": [
-					"User"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": []
-			}
-		},
-		"/api/v1/user/exists/{email}": {
-			"get": {
-				"operationId": "Get",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Verify if exists an user with the email in the system",
-				"tags": [
-					"User"
-				],
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "email",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/v1/post": {
-			"post": {
-				"operationId": "CreatePost",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Create a post in the system",
-				"tags": [
-					"Post"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [],
-				"requestBody": {
-					"required": false,
-					"content": {
-						"multipart/form-data": {
-							"schema": {
-								"type": "object",
-								"properties": {
-									"title": {
-										"type": "string"
-									},
-									"content": {
-										"type": "string"
-									},
-									"links": {
-										"type": "string"
-									},
-									"event": {
-										"type": "string"
-									},
-									"tags": {
-										"type": "string"
-									},
-									"images": {
-										"items": {
-											"type": "string",
-											"format": "binary"
-										},
-										"type": "array"
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"patch": {
-				"operationId": "UpdatePost",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Update a post in the system",
-				"tags": [
-					"Post"
+					"Ideas"
 				],
 				"security": [
 					{
@@ -598,107 +1509,10 @@
 				"parameters": [
 					{
 						"in": "query",
-						"name": "postId",
-						"required": true,
+						"name": "search",
+						"required": false,
 						"schema": {
 							"type": "string"
-						}
-					}
-				],
-				"requestBody": {
-					"required": false,
-					"content": {
-						"multipart/form-data": {
-							"schema": {
-								"type": "object",
-								"properties": {
-									"title": {
-										"type": "string"
-									},
-									"content": {
-										"type": "string"
-									},
-									"links": {
-										"type": "string"
-									},
-									"event": {
-										"type": "string"
-									},
-									"tags": {
-										"type": "string"
-									},
-									"images": {
-										"items": {
-											"type": "string",
-											"format": "binary"
-										},
-										"type": "array"
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"get": {
-				"operationId": "FindAllPosts",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Find all posts of an user",
-				"tags": [
-					"Post"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "tab",
-						"required": true,
-						"schema": {
-							"type": "string",
-							"enum": [
-								"following",
-								"recommendations",
-								"highlights"
-							]
-						}
-					},
-					{
-						"in": "query",
-						"name": "since",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "page",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "quantity",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
 						}
 					},
 					{
@@ -708,1085 +1522,74 @@
 						"schema": {
 							"type": "string"
 						}
-					}
-				]
-			},
-			"delete": {
-				"operationId": "DeletePost",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Delete a post of an user",
-				"tags": [
-					"Post"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "postId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/v1/post/{postId}": {
-			"get": {
-				"operationId": "FindPostById",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Find a post of an user",
-				"tags": [
-					"Post"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "postId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/v1/like/post": {
-			"get": {
-				"operationId": "LikePost",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"commentId": {
-											"type": "string"
-										},
-										"postId": {
-											"type": "string"
-										},
-										"userProfileId": {
-											"type": "string"
-										},
-										"created_at": {
-											"type": "string",
-											"format": "date-time"
-										},
-										"id": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"commentId",
-										"postId",
-										"userProfileId",
-										"created_at",
-										"id"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"description": "Like or unlike a post of an user",
-				"tags": [
-					"Like"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "isLiked",
-						"required": true,
-						"schema": {
-							"type": "boolean"
-						}
 					},
 					{
 						"in": "query",
-						"name": "postId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/v1/like/comment": {
-			"get": {
-				"operationId": "LikeComment",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"commentId": {
-											"type": "string"
-										},
-										"postId": {
-											"type": "string"
-										},
-										"userProfileId": {
-											"type": "string"
-										},
-										"created_at": {
-											"type": "string",
-											"format": "date-time"
-										},
-										"id": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"commentId",
-										"postId",
-										"userProfileId",
-										"created_at",
-										"id"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"description": "Like or unlike a comment of an user",
-				"tags": [
-					"Like"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "isLiked",
-						"required": true,
-						"schema": {
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "commentId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/v1/comment": {
-			"post": {
-				"operationId": "CommentPost",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"parentCommentId": {
-											"type": "string"
-										},
-										"authorId": {
-											"type": "string"
-										},
-										"content": {
-											"type": "string"
-										},
-										"postId": {
-											"type": "string"
-										},
-										"updated_at": {
-											"type": "string",
-											"format": "date-time"
-										},
-										"created_at": {
-											"type": "string",
-											"format": "date-time"
-										},
-										"id": {
-											"type": "string"
-										},
-										"_count": {
-											"properties": {
-												"replies": {
-													"type": "number",
-													"format": "double"
-												},
-												"likes": {
-													"type": "number",
-													"format": "double"
-												}
-											},
-											"required": [
-												"replies",
-												"likes"
-											],
-											"type": "object"
-										},
-										"repliesCount": {
-											"type": "number",
-											"format": "double"
-										},
-										"likesCount": {
-											"type": "number",
-											"format": "double"
-										},
-										"isLiked": {
-											"type": "boolean"
-										},
-										"author": {
-											"properties": {
-												"user": {
-													"properties": {
-														"created_at": {
-															"type": "string"
-														},
-														"verified": {
-															"type": "boolean"
-														},
-														"email": {
-															"type": "string"
-														},
-														"username": {
-															"type": "string"
-														},
-														"id": {
-															"type": "string"
-														}
-													},
-													"required": [
-														"created_at",
-														"verified",
-														"email",
-														"username",
-														"id"
-													],
-													"type": "object"
-												},
-												"links": {
-													"items": {
-														"properties": {
-															"postId": {
-																"type": "string"
-															},
-															"url": {
-																"type": "string"
-															},
-															"userProfileId": {
-																"type": "string"
-															},
-															"id": {
-																"type": "string"
-															}
-														},
-														"required": [
-															"postId",
-															"url",
-															"userProfileId",
-															"id"
-														],
-														"type": "object"
-													},
-													"type": "array"
-												},
-												"backgroundImage": {
-													"type": "string"
-												},
-												"autobiography": {
-													"type": "string"
-												},
-												"displayName": {
-													"type": "string"
-												},
-												"icon": {
-													"type": "string"
-												},
-												"id": {
-													"type": "string"
-												}
-											},
-											"required": [
-												"user",
-												"links",
-												"backgroundImage",
-												"autobiography",
-												"displayName",
-												"icon",
-												"id"
-											],
-											"type": "object"
-										}
-									},
-									"required": [
-										"parentCommentId",
-										"authorId",
-										"content",
-										"postId",
-										"updated_at",
-										"created_at",
-										"id",
-										"_count",
-										"repliesCount",
-										"likesCount",
-										"isLiked",
-										"author"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"description": "Comment in a post or in a comment",
-				"tags": [
-					"Comment"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "postId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "commentId",
+						"name": "tags",
 						"required": false,
 						"schema": {
 							"type": "string"
 						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"content": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"content"
-								],
-								"type": "object"
-							}
-						}
-					}
-				}
-			},
-			"get": {
-				"operationId": "ListComments",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"data": {
-											"items": {
-												"properties": {
-													"parentCommentId": {
-														"type": "string"
-													},
-													"authorId": {
-														"type": "string"
-													},
-													"content": {
-														"type": "string"
-													},
-													"postId": {
-														"type": "string"
-													},
-													"updated_at": {
-														"type": "string",
-														"format": "date-time"
-													},
-													"created_at": {
-														"type": "string",
-														"format": "date-time"
-													},
-													"id": {
-														"type": "string"
-													},
-													"_count": {
-														"properties": {
-															"replies": {
-																"type": "number",
-																"format": "double"
-															},
-															"likes": {
-																"type": "number",
-																"format": "double"
-															}
-														},
-														"required": [
-															"replies",
-															"likes"
-														],
-														"type": "object"
-													},
-													"repliesCount": {
-														"type": "number",
-														"format": "double"
-													},
-													"likesCount": {
-														"type": "number",
-														"format": "double"
-													},
-													"isLiked": {
-														"type": "boolean"
-													},
-													"author": {
-														"properties": {
-															"user": {
-																"properties": {
-																	"created_at": {
-																		"type": "string"
-																	},
-																	"verified": {
-																		"type": "boolean"
-																	},
-																	"email": {
-																		"type": "string"
-																	},
-																	"username": {
-																		"type": "string"
-																	},
-																	"id": {
-																		"type": "string"
-																	}
-																},
-																"required": [
-																	"created_at",
-																	"verified",
-																	"email",
-																	"username",
-																	"id"
-																],
-																"type": "object"
-															},
-															"links": {
-																"items": {
-																	"properties": {
-																		"postId": {
-																			"type": "string"
-																		},
-																		"url": {
-																			"type": "string"
-																		},
-																		"userProfileId": {
-																			"type": "string"
-																		},
-																		"id": {
-																			"type": "string"
-																		}
-																	},
-																	"required": [
-																		"postId",
-																		"url",
-																		"userProfileId",
-																		"id"
-																	],
-																	"type": "object"
-																},
-																"type": "array"
-															},
-															"backgroundImage": {
-																"type": "string"
-															},
-															"autobiography": {
-																"type": "string"
-															},
-															"displayName": {
-																"type": "string"
-															},
-															"icon": {
-																"type": "string"
-															},
-															"id": {
-																"type": "string"
-															}
-														},
-														"required": [
-															"user",
-															"links",
-															"backgroundImage",
-															"autobiography",
-															"displayName",
-															"icon",
-															"id"
-														],
-														"type": "object"
-													}
-												},
-												"required": [
-													"parentCommentId",
-													"authorId",
-													"content",
-													"postId",
-													"updated_at",
-													"created_at",
-													"id",
-													"_count",
-													"repliesCount",
-													"likesCount",
-													"isLiked",
-													"author"
-												],
-												"type": "object"
-											},
-											"type": "array"
-										},
-										"total": {
-											"type": "number",
-											"format": "double"
-										},
-										"pages": {
-											"type": "number",
-											"format": "double"
-										},
-										"nextPage": {
-											"type": "number",
-											"format": "double"
-										},
-										"page": {
-											"type": "number",
-											"format": "double"
-										}
-									},
-									"required": [
-										"data",
-										"total",
-										"pages",
-										"nextPage",
-										"page"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"description": "List comments of a post or replies of a comment",
-				"tags": [
-					"Comment"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
+					},
 					{
 						"in": "query",
 						"name": "page",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "quantity",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "since",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "postId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "commentId",
 						"required": false,
 						"schema": {
-							"type": "string"
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sortBy",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"created_at",
+								"updated_at",
+								"title"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "sortOrder",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
 						}
 					}
 				]
-			}
-		},
-		"/api/v1/comment/{commentId}": {
-			"get": {
-				"operationId": "FindCommentById",
+			},
+			"post": {
+				"operationId": "CreateIdea",
 				"responses": {
-					"200": {
-						"description": "",
+					"201": {
+						"description": "Idea created successfully",
 						"content": {
 							"application/json": {
 								"schema": {
 									"anyOf": [
 										{
-											"allOf": [
-												{
-													"properties": {
-														"likes": {
-															"items": {
-																"properties": {
-																	"commentId": {
-																		"type": "string"
-																	},
-																	"postId": {
-																		"type": "string"
-																	},
-																	"userProfileId": {
-																		"type": "string"
-																	},
-																	"created_at": {
-																		"type": "string",
-																		"format": "date-time"
-																	},
-																	"id": {
-																		"type": "string"
-																	}
-																},
-																"required": [
-																	"commentId",
-																	"postId",
-																	"userProfileId",
-																	"created_at",
-																	"id"
-																],
-																"type": "object"
-															},
-															"type": "array"
-														},
-														"author": {
-															"allOf": [
-																{
-																	"properties": {
-																		"links": {
-																			"items": {
-																				"properties": {
-																					"postId": {
-																						"type": "string"
-																					},
-																					"url": {
-																						"type": "string"
-																					},
-																					"userProfileId": {
-																						"type": "string"
-																					},
-																					"id": {
-																						"type": "string"
-																					}
-																				},
-																				"required": [
-																					"postId",
-																					"url",
-																					"userProfileId",
-																					"id"
-																				],
-																				"type": "object"
-																			},
-																			"type": "array"
-																		},
-																		"user": {
-																			"properties": {
-																				"refreshTokenId": {
-																					"type": "string"
-																				},
-																				"userProfileId": {
-																					"type": "string"
-																				},
-																				"userCodeId": {
-																					"type": "string"
-																				},
-																				"blockedUntil": {
-																					"type": "string",
-																					"format": "date-time"
-																				},
-																				"loginAttempts": {
-																					"type": "number",
-																					"format": "double"
-																				},
-																				"verified": {
-																					"type": "boolean"
-																				},
-																				"password": {
-																					"type": "string"
-																				},
-																				"email": {
-																					"type": "string"
-																				},
-																				"updated_at": {
-																					"type": "string",
-																					"format": "date-time"
-																				},
-																				"created_at": {
-																					"type": "string",
-																					"format": "date-time"
-																				},
-																				"id": {
-																					"type": "string"
-																				},
-																				"username": {
-																					"type": "string"
-																				}
-																			},
-																			"required": [
-																				"refreshTokenId",
-																				"userProfileId",
-																				"userCodeId",
-																				"blockedUntil",
-																				"loginAttempts",
-																				"verified",
-																				"password",
-																				"email",
-																				"updated_at",
-																				"created_at",
-																				"id",
-																				"username"
-																			],
-																			"type": "object"
-																		}
-																	},
-																	"required": [
-																		"links",
-																		"user"
-																	],
-																	"type": "object"
-																},
-																{
-																	"properties": {
-																		"updated_at": {
-																			"type": "string",
-																			"format": "date-time"
-																		},
-																		"created_at": {
-																			"type": "string",
-																			"format": "date-time"
-																		},
-																		"backgroundImage": {
-																			"type": "string"
-																		},
-																		"autobiography": {
-																			"type": "string"
-																		},
-																		"icon": {
-																			"type": "string"
-																		},
-																		"displayName": {
-																			"type": "string"
-																		},
-																		"id": {
-																			"type": "string"
-																		}
-																	},
-																	"required": [
-																		"updated_at",
-																		"created_at",
-																		"backgroundImage",
-																		"autobiography",
-																		"icon",
-																		"displayName",
-																		"id"
-																	],
-																	"type": "object"
-																}
-															]
-														},
-														"_count": {
-															"properties": {
-																"likes": {
-																	"type": "number",
-																	"format": "double"
-																}
-															},
-															"required": [
-																"likes"
-															],
-															"type": "object"
-														}
-													},
-													"required": [
-														"likes",
-														"author",
-														"_count"
-													],
-													"type": "object"
-												},
-												{
-													"properties": {
-														"parentCommentId": {
-															"type": "string"
-														},
-														"authorId": {
-															"type": "string"
-														},
-														"content": {
-															"type": "string"
-														},
-														"postId": {
-															"type": "string"
-														},
-														"updated_at": {
-															"type": "string",
-															"format": "date-time"
-														},
-														"created_at": {
-															"type": "string",
-															"format": "date-time"
-														},
-														"id": {
-															"type": "string"
-														}
-													},
-													"required": [
-														"parentCommentId",
-														"authorId",
-														"content",
-														"postId",
-														"updated_at",
-														"created_at",
-														"id"
-													],
-													"type": "object"
-												}
-											]
+											"$ref": "#/components/schemas/CreateIdeaResponse"
 										},
 										{
-											"properties": {
-												"parentCommentId": {
-													"type": "string"
-												},
-												"authorId": {
-													"type": "string"
-												},
-												"content": {
-													"type": "string"
-												},
-												"postId": {
-													"type": "string"
-												},
-												"updated_at": {
-													"type": "string",
-													"format": "date-time"
-												},
-												"created_at": {
-													"type": "string",
-													"format": "date-time"
-												},
-												"id": {
-													"type": "string"
-												},
-												"likes": {
-													"items": {
-														"properties": {
-															"commentId": {
-																"type": "string"
-															},
-															"postId": {
-																"type": "string"
-															},
-															"userProfileId": {
-																"type": "string"
-															},
-															"created_at": {
-																"type": "string",
-																"format": "date-time"
-															},
-															"id": {
-																"type": "string"
-															}
-														},
-														"required": [
-															"commentId",
-															"postId",
-															"userProfileId",
-															"created_at",
-															"id"
-														],
-														"type": "object"
-													},
-													"type": "array"
-												},
-												"_count": {
-													"properties": {
-														"likes": {
-															"type": "number",
-															"format": "double"
-														}
-													},
-													"required": [
-														"likes"
-													],
-													"type": "object"
-												},
-												"likesCount": {
-													"type": "number",
-													"format": "double"
-												},
-												"isLiked": {
-													"type": "boolean"
-												},
-												"author": {
-													"properties": {
-														"user": {
-															"properties": {
-																"created_at": {
-																	"type": "string"
-																},
-																"verified": {
-																	"type": "boolean"
-																},
-																"email": {
-																	"type": "string"
-																},
-																"username": {
-																	"type": "string"
-																},
-																"id": {
-																	"type": "string"
-																}
-															},
-															"required": [
-																"created_at",
-																"verified",
-																"email",
-																"username",
-																"id"
-															],
-															"type": "object"
-														},
-														"links": {
-															"items": {
-																"properties": {
-																	"postId": {
-																		"type": "string"
-																	},
-																	"url": {
-																		"type": "string"
-																	},
-																	"userProfileId": {
-																		"type": "string"
-																	},
-																	"id": {
-																		"type": "string"
-																	}
-																},
-																"required": [
-																	"postId",
-																	"url",
-																	"userProfileId",
-																	"id"
-																],
-																"type": "object"
-															},
-															"type": "array"
-														},
-														"backgroundImage": {
-															"type": "string"
-														},
-														"autobiography": {
-															"type": "string"
-														},
-														"displayName": {
-															"type": "string"
-														},
-														"icon": {
-															"type": "string"
-														},
-														"id": {
-															"type": "string"
-														}
-													},
-													"required": [
-														"user",
-														"links",
-														"backgroundImage",
-														"autobiography",
-														"displayName",
-														"icon",
-														"id"
-													],
-													"type": "object"
-												}
-											},
-											"required": [
-												"parentCommentId",
-												"authorId",
-												"content",
-												"postId",
-												"updated_at",
-												"created_at",
-												"id",
-												"likes",
-												"_count",
-												"likesCount",
-												"isLiked",
-												"author"
-											],
-											"type": "object"
+											"type": "string"
 										}
 									]
 								}
@@ -1794,9 +1597,101 @@
 						}
 					}
 				},
-				"description": "Find a comment of the platform by id",
+				"description": "Create a new idea\r\n\r\nThis endpoint allows authenticated users to create new ideas. The idea will be\r\nassociated with the authenticated user's profile and will be visible to other\r\nusers based on the platform's visibility rules.\r\n\r\nIdea Creation Process:\r\n- Validates input data (title, description, summary, tags)\r\n- Associates idea with authenticated user's profile\r\n- Creates idea record in database\r\n- Returns created idea with generated ID and timestamps",
 				"tags": [
-					"Comment"
+					"Ideas"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "- Object containing idea data (title, description, summary, tags)",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateIdeaInput",
+								"description": "- Object containing idea data (title, description, summary, tags)"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/follows/toggle": {
+			"post": {
+				"operationId": "ToggleFollow",
+				"responses": {
+					"200": {
+						"description": "Follow toggled successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/ToggleFollowResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Toggle follow relationship with user or company\r\n\r\nThis endpoint allows authenticated users to follow or unfollow other users\r\nor companies. If the user isn't following the target, it will create a follow\r\nrelationship. If they are already following, it will remove the relationship.\r\n\r\nFollow Toggle Process:\r\n- Validates user authentication\r\n- Checks if user is trying to follow themselves (not allowed)\r\n- Validates that target user/company exists\r\n- Creates or removes follow relationship\r\n- Updates follower count for the target\r\n- Returns current follow status and count",
+				"tags": [
+					"Follows"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "- Object containing followingId and followingType",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ToggleFollowInput",
+								"description": "- Object containing followingId and followingType"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/comments": {
+			"get": {
+				"operationId": "GetComments",
+				"responses": {
+					"200": {
+						"description": "Comments retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/GetCommentsResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Get comments for an idea with pagination\r\n\r\nThis endpoint allows authenticated users to retrieve comments for a specific idea.\r\nComments are returned in a paginated format and can be filtered by parent comment.",
+				"tags": [
+					"Comments"
 				],
 				"security": [
 					{
@@ -1805,176 +1700,69 @@
 				],
 				"parameters": [
 					{
-						"in": "path",
-						"name": "commentId",
+						"description": "The unique identifier of the idea to get comments for.",
+						"in": "query",
+						"name": "ideaId",
 						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Optional page number for pagination (default: 1).",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Optional number of items per page (default: 10, max: 100).",
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Optional ID of parent comment to get replies (for nested comments).",
+						"in": "query",
+						"name": "parentCommentId",
+						"required": false,
 						"schema": {
 							"type": "string"
 						}
 					}
 				]
-			}
-		},
-		"/api/v1/auth/signup": {
+			},
 			"post": {
-				"operationId": "Signup",
+				"operationId": "CreateComment",
 				"responses": {
 					"201": {
-						"description": "",
+						"description": "Comment created successfully",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/CreateCommentResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
 							}
 						}
 					}
 				},
-				"description": "Signup the user in the system",
+				"description": "Create a new comment on an idea\r\n\r\nThis endpoint allows authenticated users to create comments on ideas or reply\r\nto existing comments. Comments support nested replies through parentCommentId.\r\n\r\nComment Creation Process:\r\n- Validates user authentication\r\n- Validates that the target idea exists\r\n- Validates parent comment if replying to a comment\r\n- Creates comment in database with author information\r\n- Returns created comment with engagement metrics",
 				"tags": [
-					"Authentication"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/AuthInput"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/signin": {
-			"post": {
-				"operationId": "Signin",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Signin the user in the system",
-				"tags": [
-					"Authentication"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/Pick_AuthInput.email-or-password_"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/send-recover-email": {
-			"post": {
-				"operationId": "SendRecoverEmail",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Send recover email to change the password of an user of the system",
-				"tags": [
-					"Authentication"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"email": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"email"
-								],
-								"type": "object"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/verify-email-code": {
-			"post": {
-				"operationId": "VerifyEmailCode",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Verify recover email code to change the password of an user of the system",
-				"tags": [
-					"Authentication"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"email": {
-										"type": "string"
-									},
-									"code": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"email",
-									"code"
-								],
-								"type": "object"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/change-password": {
-			"post": {
-				"operationId": "ChangePassword",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Change password of an user of the system",
-				"tags": [
-					"Authentication"
+					"Comments"
 				],
 				"security": [
 					{
@@ -1983,58 +1771,13 @@
 				],
 				"parameters": [],
 				"requestBody": {
+					"description": "- Object containing ideaId, content, and optional parentCommentId",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"properties": {
-									"password": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"password"
-								],
-								"type": "object"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/refresh-token": {
-			"post": {
-				"operationId": "RefreshToken",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"description": "Refresh the user session in the system",
-				"tags": [
-					"Authentication"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"token": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"token"
-								],
-								"type": "object"
+								"$ref": "#/components/schemas/CreateCommentInput",
+								"description": "- Object containing ideaId, content, and optional parentCommentId"
 							}
 						}
 					}
@@ -2049,13 +1792,14 @@
 						"description": ""
 					}
 				},
-				"description": "Callback to the app to get the social login",
+				"description": "Handle OAuth callback from social providers\r\n\r\nThis endpoint processes the OAuth callback from social login providers (Google,\r\nLinkedIn, GitHub) after the user has authenticated with the external service.\r\nIt exchanges the authorization code for access tokens and completes the login process.\r\n\r\nOAuth Callback Process:\r\n- Receives authorization code from provider\r\n- Exchanges code for access tokens via AuthGateway\r\n- Retrieves user profile information\r\n- Creates or updates user account\r\n- Generates application authentication tokens",
 				"tags": [
 					"Authentication"
 				],
 				"security": [],
 				"parameters": [
 					{
+						"description": "- Social provider name (google, linkedin, github)",
 						"in": "path",
 						"name": "provider",
 						"required": true,
@@ -2069,6 +1813,7 @@
 						}
 					},
 					{
+						"description": "- Authorization code from OAuth provider",
 						"in": "query",
 						"name": "code",
 						"required": false,
@@ -2077,6 +1822,7 @@
 						}
 					},
 					{
+						"description": "- State parameter for OAuth security",
 						"in": "query",
 						"name": "state",
 						"required": false,
@@ -2095,18 +1841,28 @@
 						"description": "",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/SigninOutput"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
 							}
 						}
 					}
 				},
-				"description": "Signin or Signup the user in the system with a social login",
+				"description": "Authenticate user with social provider token\r\n\r\nThis endpoint authenticates users using tokens obtained from social providers\r\n(Google, LinkedIn, GitHub). It validates the social token, retrieves user profile\r\ninformation, and either signs in existing users or creates new accounts.\r\n\r\nSocial Authentication Process:\r\n- Validates social provider token via AuthGateway\r\n- Retrieves user profile from social provider\r\n- Checks if user already exists by email\r\n- Creates new account or links to existing account\r\n- Generates application authentication tokens\r\n- Updates refresh token in database",
 				"tags": [
 					"Authentication"
 				],
 				"security": [],
 				"parameters": [
 					{
+						"description": "- Social provider name (google, linkedin, github)",
 						"in": "path",
 						"name": "provider",
 						"required": true,
@@ -2121,6 +1877,7 @@
 					}
 				],
 				"requestBody": {
+					"description": "- Object containing the social provider token",
 					"required": true,
 					"content": {
 						"application/json": {
@@ -2133,7 +1890,8 @@
 								"required": [
 									"token"
 								],
-								"type": "object"
+								"type": "object",
+								"description": "- Object containing the social provider token"
 							}
 						}
 					}
@@ -2148,12 +1906,29 @@
 						"description": "",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"success": {
+													"type": "boolean"
+												}
+											},
+											"required": [
+												"success"
+											],
+											"type": "object"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
 							}
 						}
 					}
 				},
-				"description": "Link another oauth provider to your account",
+				"description": "Link additional OAuth provider to existing account\r\n\r\nThis endpoint allows authenticated users to link additional social providers\r\n(Google, LinkedIn, GitHub) to their existing account. This enables users to\r\nsign in with multiple social accounts using the same application account.\r\n\r\nProvider Linking Process:\r\n- Validates user authentication via JWT token\r\n- Validates social provider token via AuthGateway\r\n- Retrieves user profile from social provider\r\n- Checks if provider is already linked to another account\r\n- Links provider to current user account",
 				"tags": [
 					"Authentication"
 				],
@@ -2164,6 +1939,7 @@
 				],
 				"parameters": [
 					{
+						"description": "- Social provider name (google, linkedin, github)",
 						"in": "path",
 						"name": "provider",
 						"required": true,
@@ -2178,6 +1954,7 @@
 					}
 				],
 				"requestBody": {
+					"description": "- Object containing the social provider token",
 					"required": true,
 					"content": {
 						"application/json": {
@@ -2190,61 +1967,29 @@
 								"required": [
 									"token"
 								],
-								"type": "object"
+								"type": "object",
+								"description": "- Object containing the social provider token"
 							}
 						}
 					}
 				}
 			}
 		},
-		"/api/v1/follow": {
+		"/api/v1/auth/signup": {
 			"post": {
-				"operationId": "Follow",
+				"operationId": "Signup",
 				"responses": {
-					"200": {
+					"201": {
 						"description": "",
 						"content": {
 							"application/json": {
 								"schema": {
 									"anyOf": [
 										{
-											"properties": {
-												"followerUserId": {
-													"type": "string"
-												},
-												"followingUserId": {
-													"type": "string"
-												},
-												"followingTeamId": {
-													"type": "string"
-												},
-												"created_at": {
-													"type": "string",
-													"format": "date-time"
-												},
-												"id": {
-													"type": "string"
-												}
-											},
-											"required": [
-												"followerUserId",
-												"followingUserId",
-												"followingTeamId",
-												"created_at",
-												"id"
-											],
-											"type": "object"
+											"$ref": "#/components/schemas/SigninOutput"
 										},
 										{
-											"type": "string",
-											"enum": [
-												"YOU_CANT_FOLLOW_BOTH_OR_NONE",
-												"YOU_CANT_FOLLOW_YOURSELF",
-												"ALREADY_FOLLOWING",
-												"YOU_MUST_UNFOLLOW_EITHER_USER_OR_TEAM",
-												"YOU_CANT_UNFOLLOW_YOURSELF",
-												"FOLLOW_NOT_FOUND"
-											]
+											"type": "string"
 										}
 									]
 								}
@@ -2252,148 +1997,275 @@
 						}
 					}
 				},
-				"description": "Follow an user of the system",
+				"description": "Register a new user account\r\n\r\nThis endpoint creates a new user account in the system. It performs comprehensive\r\nvalidation including email uniqueness check, email identity verification through AWS SES,\r\nand secure password hashing. Upon successful registration, the user is automatically\r\nsigned in with generated access and refresh tokens.\r\n\r\nRegistration Process:\r\n- Validates email uniqueness\r\n- Verifies email identity through AWS SES\r\n- Hashes password with bcrypt\r\n- Creates user profile with default settings\r\n- Generates authentication tokens\r\n- Updates refresh token in database",
 				"tags": [
-					"Follow"
+					"Authentication"
 				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "wantFollow",
-						"required": true,
-						"schema": {
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "followingTeamId",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "followingUserId",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			},
-			"get": {
-				"operationId": "FindAll",
-				"responses": {
-					"204": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"items": {},
-											"type": "array"
-										},
-										{
-											"properties": {
-												"data": {
-													"items": {},
-													"type": "array"
-												},
-												"total": {
-													"type": "number",
-													"format": "double"
-												},
-												"pages": {
-													"type": "number",
-													"format": "double"
-												},
-												"nextPage": {
-													"type": "number",
-													"format": "double"
-												},
-												"page": {
-													"type": "number",
-													"format": "double"
-												}
-											},
-											"required": [
-												"data",
-												"total",
-												"pages",
-												"nextPage",
-												"page"
-											],
-											"type": "object"
-										}
-									]
-								}
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "- User registration data containing email, password, and username",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateUserInput",
+								"description": "- User registration data containing email, password, and username"
 							}
 						}
 					}
-				},
-				"description": "Get all follows of an user of the system",
-				"tags": [
-					"Follow"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "page",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "quantity",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "followType",
-						"required": true,
-						"schema": {
-							"type": "string",
-							"enum": [
-								"followers:user",
-								"followers:team",
-								"following"
-							]
-						}
-					}
-				]
+				}
 			}
 		},
-		"/api/v1/view": {
+		"/api/v1/auth/signin": {
 			"post": {
-				"operationId": "ViewPost",
+				"operationId": "Signin",
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "User signed in successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/SigninOutput"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
 					}
 				},
-				"description": "View a post of the system",
+				"description": "Authenticate user and generate access tokens\n\nThis endpoint authenticates a user by validating their email and password credentials.\nIt performs comprehensive security checks including email verification status,\nlogin attempt limits, and password validation. Upon successful authentication,\nit generates both access and refresh tokens for the user session.\n\nSecurity Features:\n- Email verification status check\n- Login attempt rate limiting (max 5 attempts)\n- Account temporary blocking after failed attempts\n- Password validation with bcrypt\n- Automatic email verification status update",
 				"tags": [
-					"View"
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "- Authentication credentials containing email and password",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SigninInput",
+								"description": "- Authentication credentials containing email and password"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/refresh-token": {
+			"post": {
+				"operationId": "RefreshToken",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"refreshToken": {
+													"type": "string"
+												},
+												"accessToken": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"refreshToken",
+												"accessToken"
+											],
+											"type": "object"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Refresh authentication tokens using refresh token\r\n\r\nThis endpoint allows users to obtain new access and refresh tokens using their\r\ncurrent refresh token. It validates the refresh token, verifies the user exists,\r\nand generates a new token pair. This is essential for maintaining user sessions\r\nwithout requiring re-authentication.\r\n\r\nToken Refresh Process:\r\n- Validates refresh token signature and expiration\r\n- Extracts user ID from token payload\r\n- Verifies user exists and is active\r\n- Generates new access and refresh tokens\r\n- Updates refresh token in database",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "- Object containing the refresh token",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"token": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"token"
+								],
+								"type": "object",
+								"description": "- Object containing the refresh token"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/send-recover-email": {
+			"post": {
+				"operationId": "SendRecoverEmail",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"email": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"email"
+											],
+											"type": "object"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Send password recovery email with verification code\r\n\r\nThis endpoint initiates the password recovery process by sending a verification\r\ncode to the user's email address. The code is generated randomly and stored\r\nin the user's account for verification in the next step.\r\n\r\nRecovery Process:\r\n- Validates user exists by email\r\n- Generates secure random verification code\r\n- Sends email via AWS SES with recovery template\r\n- Stores code in user account for verification\r\n- Code expires after 10 minutes",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "- Object containing the user's email address",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"email": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"email"
+								],
+								"type": "object",
+								"description": "- Object containing the user's email address"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/verify-email-code": {
+			"post": {
+				"operationId": "VerifyEmailCode",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"accessToken": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"accessToken"
+											],
+											"type": "object"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Verify recovery code and generate temporary access token\r\n\r\nThis endpoint verifies the recovery code sent to the user's email and generates\r\na temporary access token that allows the user to change their password. The\r\ncode must be used within 10 minutes of generation.\r\n\r\nVerification Process:\r\n- Validates user exists by email\r\n- Checks code expiration (10 minutes)\r\n- Verifies provided code matches stored code\r\n- Generates temporary access token for password change\r\n- Clears recovery code from user account",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "- Object containing email and verification code",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"email": {
+										"type": "string"
+									},
+									"code": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"email",
+									"code"
+								],
+								"type": "object",
+								"description": "- Object containing email and verification code"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/change-password": {
+			"post": {
+				"operationId": "ChangePassword",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/SigninOutput"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Change user password and generate new authentication tokens\r\n\r\nThis endpoint allows authenticated users to change their current password.\r\nUpon successful password change, new access and refresh tokens are automatically\r\ngenerated and the refresh token is updated in the database.",
+				"tags": [
+					"Authentication"
 				],
 				"security": [
 					{
@@ -2402,22 +2274,21 @@
 				],
 				"parameters": [],
 				"requestBody": {
+					"description": "- Object containing the new password",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"properties": {
-									"posts": {
-										"items": {
-											"type": "string"
-										},
-										"type": "array"
+									"password": {
+										"type": "string"
 									}
 								},
 								"required": [
-									"posts"
+									"password"
 								],
-								"type": "object"
+								"type": "object",
+								"description": "- Object containing the new password"
 							}
 						}
 					}

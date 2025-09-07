@@ -1,0 +1,6 @@
+export { UserRepository } from './user.repository'
+export { IdeaRepository } from './idea.repository'
+export { CommentRepository } from './comment.repository'
+export { FollowRepository } from './follow.repository'
+export { LikeRepository } from './like.repository'
+export { ViewRepository } from './view.repository'

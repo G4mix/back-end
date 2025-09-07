@@ -7,32 +7,48 @@ import express, {
 	type Response as ExResponse,
 } from 'express'
 import { RegisterRoutes } from '@tsoa-build/routes'
-import { singleton } from 'tsyringe'
+import { singleton, inject } from 'tsyringe'
 import { env } from '@config'
 import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
+import { AppModule } from '@shared/modules'
 
 @singleton()
 export class App {
 	private static instance: Application
 	private static server: Server<typeof IncomingMessage, typeof ServerResponse>
-	constructor() {
+	
+	constructor(@inject('AppModule') private appModule: AppModule) {
 		App.instance = express()
-		App.config()
-		App.routes()
 	}
 
-	public start(): App {
+	public async start(): Promise<App> {
 		if (this.isRunning()) return this
-		App.server = App.instance.listen(env['PORT'] as string, async () => {
-			console.log(`> [app] App listening at the port ${env['PORT']}`)
-		})
+		
+		try {
+			await this.appModule.initialize()
+			
+			App.server = App.instance.listen(env['PORT'] as string, () => {
+				console.log(`🌐 Server listening on port ${env['PORT']} - http://localhost:${env.PORT}/docs`)
+			})
+		} catch (error) {
+			console.error('❌ Failed to start application:', error)
+			throw error
+		}
+		
 		return this
 	}
+
 	public stop(): App {
-		App.server.close()
+		if (App.server && App.server.listening) {
+			console.log('🔄 Closing HTTP server...')
+			App.server.close(() => {
+				console.log('✅ HTTP server closed successfully')
+			})
+		}
 		return this
 	}
+
 	public isRunning(): boolean {
 		return App.server && App.server.listening
 	}
@@ -40,25 +56,30 @@ export class App {
 	public getInstance(): Application {
 		return App.instance
 	}
-	private static config(): void {
+
+	public static config(): void {
 		App.instance.use(urlencoded({ extended: true }))
 		App.instance.use(json())
-		App.instance.use((req, res, next) => {
-			cors({
-				allowedHeaders: ['Authorization', 'Content-Type'],
-				exposedHeaders: '*',
-				credentials: true,
-				methods: ['OPTIONS', 'GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
-				origin: '*'
-			})(req, res, next)
-		})
+		App.instance.use(corsMiddleware())
 		App.instance.disable('x-powered-by')
 	}
 
-	private static routes(): void {
-		App.instance.use('/api/v1/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
+	public static routes(): void {
+		App.instance.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 			return res.send(swaggerUi.generateHTML(await import('@tsoa-build/swagger.json')))
 		})
 		RegisterRoutes(App.instance)
+	}
+}
+
+function corsMiddleware() {
+	return (req: ExRequest, res: ExResponse, next: any) => {
+		cors({
+			allowedHeaders: ['Authorization', 'Content-Type'],
+			exposedHeaders: '*',
+			credentials: true,
+			methods: ['OPTIONS', 'GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
+			origin: '*'
+		})(req, res, next)
 	}
 }
