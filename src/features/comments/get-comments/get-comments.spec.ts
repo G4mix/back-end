@@ -84,7 +84,7 @@ describe('GetCommentsController', () => {
 					}
 				],
 				pagination: {
-					page: 1,
+					page: 0,
 					limit: 10,
 					total: 25,
 					totalPages: 3,
@@ -95,7 +95,7 @@ describe('GetCommentsController', () => {
 			expect(mockLogger.info).toHaveBeenCalledWith('Retrieving comments', {
 				userId: 'user-profile-123',
 				ideaId: ideaId,
-				page: 1,
+				page: 0,
 				limit: 10,
 				parentCommentId: undefined
 			})
@@ -103,7 +103,7 @@ describe('GetCommentsController', () => {
 				userId: 'user-profile-123',
 				count: 1,
 				total: 25,
-				page: 1
+				page: 0
 			})
 		})
 
@@ -119,13 +119,13 @@ describe('GetCommentsController', () => {
 			mockCommentRepository.findByIdea.mockResolvedValue({ comments: mockComments, total })
 
 			// Act
-			const result = await controller.getComments(ideaId, 2, 5, undefined, mockRequest)
+			const result = await controller.getComments(ideaId, 1, 5, undefined, mockRequest)
 
 			// Assert
 			expect(result).toEqual({
 				comments: [],
 				pagination: {
-					page: 2,
+					page: 1,
 					limit: 5,
 					total: 0,
 					totalPages: 0,

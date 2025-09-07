@@ -45,7 +45,7 @@ export class GetIdeasController extends Controller {
 	 *   "search": "mobile app",
 	 *   "authorId": "user-profile-uuid",
 	 *   "tags": "innovation,technology",
-	 *   "page": 1,
+	 *   "page": 0,
 	 *   "limit": 10,
 	 *   "sortBy": "created_at",
 	 *   "sortOrder": "desc"
@@ -76,7 +76,7 @@ export class GetIdeasController extends Controller {
 	 *     }
 	 *   ],
 	 *   "pagination": {
-	 *     "page": 1,
+	 *     "page": 0,
 	 *     "limit": 10,
 	 *     "total": 25,
 	 *     "totalPages": 3,
@@ -115,7 +115,7 @@ export class GetIdeasController extends Controller {
 				search,
 				authorId,
 				tags,
-				page: page || 1,
+				page: page || 0,
 				limit: limit || 10,
 				sortBy: sortBy || 'created_at',
 				sortOrder: sortOrder || 'desc'
@@ -134,16 +134,16 @@ export class GetIdeasController extends Controller {
 			const response = {
 				ideas: ideas.map(idea => ({
 					...idea,
-					created_at: idea.created_at.toISOString(),
-					updated_at: idea.updated_at.toISOString()
+					created_at: new Date(idea.created_at).toISOString(),
+					updated_at: new Date(idea.updated_at).toISOString()
 				})),
 				pagination: {
-					page: queryParams.page || 1,
+					page: queryParams.page || 0,
 					limit: queryParams.limit || 10,
 					total,
 					totalPages,
-					hasNext: (queryParams.page || 1) < totalPages,
-					hasPrev: (queryParams.page || 1) > 1
+					hasNext: (queryParams.page || 0) < totalPages,
+					hasPrev: (queryParams.page || 0) > 0
 				}
 			}
 
@@ -151,7 +151,7 @@ export class GetIdeasController extends Controller {
 				userId, 
 				count: ideas.length, 
 				total, 
-				page: queryParams.page || 1
+				page: queryParams.page || 0
 			})
 
 			this.setStatus(200)

@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, Body, Put, SuccessResponse, Middlewares, Security, Request } from 'tsoa'
+import { Route, Tags, Controller, Body, SuccessResponse, Middlewares, Security, Request, Patch } from 'tsoa'
 import { injectable, inject } from 'tsyringe'
 import { UpdateUserInput, UpdateUserOutput } from '@shared/types/tsoa'
 import { UserRepository } from '@shared/repositories/user.repository'
@@ -79,7 +79,7 @@ export class UpdateUserController extends Controller {
 	 * ```
 	 */
 	@SuccessResponse(200, 'User updated successfully')
-	@Put('/{userId}')
+	@Patch()
 	@Security('jwt', [])
 	@Middlewares<RequestHandler>(schemaValidation(updateUserSchema))
 	@LogResponseTime()

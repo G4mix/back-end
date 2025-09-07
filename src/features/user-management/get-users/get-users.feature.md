@@ -51,7 +51,7 @@ And the total count should be 0
 - **Method**: GET
 - **Path**: `/api/v1/users`
 - **Query Parameters**:
-  - `page` (optional): Page number (default: 1)
+  - `page` (optional): Page number (default: 0)
   - `limit` (optional): Number of users per page (default: 10, max: 100)
   - `search` (optional): Search term for username or display name
 

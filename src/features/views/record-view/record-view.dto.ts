@@ -1,6 +1,5 @@
 export class RecordViewInput {
-	ideaId!: string
-	commentId?: string
+	ideas!: string[]
 }
 
 export class RecordViewResponse {

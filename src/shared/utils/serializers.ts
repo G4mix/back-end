@@ -17,8 +17,8 @@ export const serializeUser = (user: UserWithProfile) => {
 		username: user.username,
 		email: user.email,
 		verified: user.verified,
-		created_at: user.created_at.toISOString(),
-		updated_at: user.updated_at.toISOString(),
+		created_at: new Date(user.created_at).toISOString(),
+		updated_at: new Date(user.updated_at).toISOString(),
 		userProfile: {
 			id: user.userProfile.id,
 			icon: user.userProfile.icon,
@@ -39,8 +39,8 @@ export const serializeAuthor = (author: any) => {
 		username: author.user?.username || author.username,
 		email: author.user?.email || author.email,
 		verified: author.user?.verified || author.verified,
-		created_at: author.user?.created_at?.toISOString() || author.created_at?.toISOString(),
-		updated_at: author.user?.updated_at?.toISOString() || author.updated_at?.toISOString(),
+		created_at: new Date(author.user?.created_at || author.created_at).toISOString(),
+		updated_at: new Date(author.user?.updated_at || author.updated_at)?.toISOString(),
 		userProfile: {
 			id: author.id,
 			icon: author.icon,

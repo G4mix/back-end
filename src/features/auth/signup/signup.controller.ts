@@ -9,7 +9,7 @@ import { createUserSchema } from '@shared/schemas/user.schema'
 import { RequestHandler } from 'express'
 import { BCryptEncoder, JwtManager } from '@shared/utils'
 import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants'
-import { serializeUser } from '@shared/utils/serializers'
+import { serializeUser, UserWithProfile } from '@shared/utils/serializers'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators'
 
@@ -103,7 +103,7 @@ export class SignupController extends Controller {
 				userProfileId: createdUser.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
-			user: serializeUser(createdUser)
+			user: serializeUser(createdUser as unknown as UserWithProfile)
 		}
 
 		await this.userRepository.update({ id: createdUser.id, token: data.refreshToken })

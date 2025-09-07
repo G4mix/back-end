@@ -34,7 +34,7 @@ export class GetCommentsController extends Controller {
 	 * @example query
 	 * {
 	 *   "ideaId": "uuid-of-idea",
-	 *   "page": 1,
+	 *   "page": 0,
 	 *   "limit": 10,
 	 *   "parentCommentId": "uuid-of-parent-comment"
 	 * }
@@ -61,7 +61,7 @@ export class GetCommentsController extends Controller {
 	 *     }
 	 *   ],
 	 *   "pagination": {
-	 *     "page": 1,
+	 *     "page": 0,
 	 *     "limit": 10,
 	 *     "total": 25,
 	 *     "totalPages": 3,
@@ -93,7 +93,7 @@ export class GetCommentsController extends Controller {
 
 			const queryParams = {
 				ideaId,
-				page: page || 1,
+				page: page || 0,
 				limit: limit || 10,
 				parentCommentId
 			}
@@ -125,12 +125,12 @@ export class GetCommentsController extends Controller {
 					_count: comment._count
 				})),
 				pagination: {
-					page: queryParams.page || 1,
+					page: queryParams.page || 0,
 					limit: queryParams.limit || 10,
 					total,
 					totalPages,
-					hasNext: (queryParams.page || 1) < totalPages,
-					hasPrev: (queryParams.page || 1) > 1
+					hasNext: (queryParams.page || 0) < totalPages,
+					hasPrev: (queryParams.page || 0) > 0
 				}
 			}
 
@@ -138,7 +138,7 @@ export class GetCommentsController extends Controller {
 				userId, 
 				count: comments.length, 
 				total, 
-				page: queryParams.page || 1
+				page: queryParams.page || 0
 			})
 
 			this.setStatus(200)

@@ -83,13 +83,12 @@ export class RecordViewController extends Controller {
 				return 'UNAUTHORIZED'
 			}
 
-			const { ideaId, commentId } = body
+			const { ideas } = body
 
 			this.logger.info('Recording view', { 
 				userId, 
-				ideaId, 
-				commentId,
-				action: commentId ? 'comment_view' : 'idea_view'
+				ideas, 
+				action: 'idea_view'
 			})
 
 			// TODO: Implement view recording logic
@@ -108,8 +107,7 @@ export class RecordViewController extends Controller {
 
 			this.logger.info('View recorded successfully', { 
 				userId, 
-				ideaId, 
-				commentId,
+				ideas, 
 				viewed: response.viewed,
 				viewCount: response.viewCount
 			})
@@ -121,8 +119,7 @@ export class RecordViewController extends Controller {
 			this.logger.error('Failed to record view', { 
 				error: error instanceof Error ? error.message : 'Unknown error',
 				userId: request.user?.sub,
-				ideaId: body.ideaId,
-				commentId: body.commentId
+				ideas: body.ideas,
 			})
 			
 			this.setStatus(500)

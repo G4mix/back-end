@@ -77,7 +77,7 @@ export class IdeaRepository {
 	}
 
 	async findAll(params: GetIdeasInput) {
-		const { search, authorId, tags, page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'desc' } = params
+		const { search, authorId, tags, page = 0, limit = 10, sortBy = 'created_at', sortOrder = 'desc' } = params
 		
 		const where: any = {}
 		

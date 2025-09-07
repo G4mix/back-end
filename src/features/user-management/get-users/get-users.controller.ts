@@ -1,7 +1,6 @@
 import { Route, Tags, Controller, Get, Query, SuccessResponse } from 'tsoa'
 import { injectable, inject } from 'tsyringe'
 import { UserRepository } from '@shared/repositories/user.repository'
-import { serializeUser } from '@shared/utils/serializers'
 import { Logger } from '@shared/utils/logger'
 
 @injectable()
@@ -30,7 +29,7 @@ export class GetUsersController extends Controller {
 	 * - Comprehensive pagination metadata
 	 * - Performance optimized queries
 	 * 
-	 * @param page - Page number for pagination (default: 1)
+	 * @param page - Page number for pagination (default: 0)
 	 * @param limit - Number of users per page (default: 10)
 	 * @param search - Optional search term to filter users
 	 * @returns Promise resolving to paginated user list with metadata
@@ -70,21 +69,19 @@ export class GetUsersController extends Controller {
 	@SuccessResponse(200, 'Users retrieved successfully')
 	@Get('/')
 	public async getUsers(
-		@Query() page: number = 1,
+		@Query() page: number = 0,
 		@Query() limit: number = 10,
 		@Query() search?: string
 	) {
-		const offset = (page - 1) * limit
-		
 		const result = await this.userRepository.findAll({
-			page: offset,
+			page,
 			quantity: limit,
 			search: search || '',
 			userId: ''
 		})
 
 		return {
-			users: result.data.map((user: any) => serializeUser(user)),
+			users: result,
 			pagination: {
 				page,
 				limit,

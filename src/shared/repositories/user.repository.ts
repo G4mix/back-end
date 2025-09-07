@@ -112,7 +112,7 @@ export class UserRepository {
 			},
 		})
 		if (!data) return data
-		const user: UserWithProfile = data
+		const user: UserWithProfile = data as unknown as UserWithProfile
 		if (data.userProfile.followers) {
 			user.userProfile.isFollowing = data.userProfile.followers.length !== 0
 			delete (user.userProfile as any).followers
@@ -123,6 +123,26 @@ export class UserRepository {
 	public async findById({ id }: Id) {
 		return this.pg.user.findUnique({
 			where: { id },
+			include: {
+				userProfile: {
+					include: {
+						links: true,
+						_count: {
+							select: {
+								following: true,
+								followers: true,
+							},
+						},
+					},
+				},
+				userCode: true,
+			},
+		})
+	}
+
+	public async findUserByProfileId({ userProfileId }: { userProfileId: string }) {
+		return this.pg.user.findUnique({
+			where: { userProfileId },
 			include: {
 				userProfile: {
 					include: {

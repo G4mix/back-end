@@ -74,6 +74,29 @@ export class FollowRepository {
 			return 'FOLLOW_NOT_FOUND'
 		}
 	}
+
+	public async findFollow({
+		followerUserId,
+		followingUserId,
+		followingCompanyId,
+	}: {
+		followerUserId: string;
+		followingUserId?: string;
+		followingCompanyId?: string;
+	}) {
+		if ((!followingUserId && !followingCompanyId) || (followingUserId && followingCompanyId)) {
+			return null
+		}
+
+		return await this.pg.follow.findFirst({
+			where: {
+				followerUserId,
+				...(followingUserId
+					? { followingUserId }
+					: { followingCompanyId }),
+			}
+		})
+	}
 	public async findAll({
 		page,
 		quantity,

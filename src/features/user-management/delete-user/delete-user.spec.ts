@@ -113,7 +113,7 @@ describe('DeleteUserController', () => {
 			mockUserRepository.delete.mockResolvedValue(true)
 
 			// Act
-			const result = await controller.deleteUser(userId, mockRequest as any)
+			const result = await controller.deleteUser(mockRequest as any)
 
 			// Assert
 			expect(result).toEqual({
@@ -127,14 +127,13 @@ describe('DeleteUserController', () => {
 
 		it('should return FORBIDDEN when user tries to delete another user account', async () => {
 			// Arrange
-			const userId = 'user-123'
 			const differentUserId = 'user-456'
 			const mockRequest = {
 				user: { sub: differentUserId }
 			}
 
 			// Act
-			const result = await controller.deleteUser(userId, mockRequest as any)
+			const result = await controller.deleteUser(mockRequest as any)
 
 			// Assert
 			expect(result).toEqual({
@@ -155,7 +154,7 @@ describe('DeleteUserController', () => {
 			mockUserRepository.findById.mockResolvedValue(null)
 
 			// Act
-			const result = await controller.deleteUser(userId, mockRequest as any)
+			const result = await controller.deleteUser(mockRequest as any)
 
 			// Assert
 			expect(result).toEqual({
@@ -191,7 +190,7 @@ describe('DeleteUserController', () => {
 			mockUserRepository.delete.mockResolvedValue(true)
 
 			// Act
-			const result = await controller.deleteUser(userId, mockRequest as any)
+			const result = await controller.deleteUser(mockRequest as any)
 
 			// Assert
 			expect(result).toEqual({
@@ -227,7 +226,7 @@ describe('DeleteUserController', () => {
 			mockUserRepository.delete.mockResolvedValue(true)
 
 			// Act & Assert
-			await expect(controller.deleteUser(userId, mockRequest as any)).rejects.toThrow('S3 Error')
+			await expect(controller.deleteUser(mockRequest as any)).rejects.toThrow('S3 Error')
 		})
 
 		it('should handle repository errors', async () => {
@@ -240,7 +239,7 @@ describe('DeleteUserController', () => {
 			mockUserRepository.findById.mockRejectedValue(new Error('Database Error'))
 
 			// Act & Assert
-			await expect(controller.deleteUser(userId, mockRequest as any)).rejects.toThrow('Database Error')
+			await expect(controller.deleteUser(mockRequest as any)).rejects.toThrow('Database Error')
 		})
 	})
 })

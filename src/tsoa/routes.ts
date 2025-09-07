@@ -25,7 +25,7 @@ import { DeleteIdeaController } from './../features/ideas/delete-idea/delete-ide
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { CreateIdeaController } from './../features/ideas/create-idea/create-idea.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { ToggleFollowController } from './../features/follows/toggle-follow/toggle-follow.controller';
+import { ToggleFollowController } from './../features/follow/toggle-follow/toggle-follow.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { GetCommentsController } from './../features/comments/get-comments/get-comments.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -67,8 +67,7 @@ const models: TsoaRoute.Models = {
     "RecordViewInput": {
         "dataType": "refObject",
         "properties": {
-            "ideaId": {"dataType":"string","required":true},
-            "commentId": {"dataType":"string"},
+            "ideas": {"dataType":"array","array":{"dataType":"string"},"required":true},
         },
         "additionalProperties": false,
     },
@@ -202,7 +201,6 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "following": {"dataType":"boolean","required":true},
-            "followerCount": {"dataType":"double","required":true},
             "message": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -212,7 +210,6 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "followingId": {"dataType":"string","required":true},
-            "followingType": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["user"]},{"dataType":"enum","enums":["company"]}],"required":true},
         },
         "additionalProperties": false,
     },
@@ -343,7 +340,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.put('/api/v1/users/:userId',
+        app.patch('/api/v1/users',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(UpdateUserController)),
             ...(fetchMiddlewares<RequestHandler>(UpdateUserController.prototype.updateUser)),
@@ -386,7 +383,7 @@ export function RegisterRoutes(app: Router) {
 
             async function GetUsersController_getUsers(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    page: {"default":1,"in":"query","name":"page","dataType":"double"},
+                    page: {"default":0,"in":"query","name":"page","dataType":"double"},
                     limit: {"default":10,"in":"query","name":"limit","dataType":"double"},
                     search: {"in":"query","name":"search","dataType":"string"},
             };
@@ -452,14 +449,13 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.delete('/api/v1/users/:userId',
+        app.delete('/api/v1/users',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(DeleteUserController)),
             ...(fetchMiddlewares<RequestHandler>(DeleteUserController.prototype.deleteUser)),
 
             async function DeleteUserController_deleteUser(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    userId: {"in":"path","name":"userId","required":true,"dataType":"string"},
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
             };
 
@@ -718,7 +714,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/follows/toggle',
+        app.post('/api/v1/follow/toggle',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ToggleFollowController)),
             ...(fetchMiddlewares<RequestHandler>(ToggleFollowController.prototype.toggleFollow)),

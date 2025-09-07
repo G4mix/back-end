@@ -14,9 +14,25 @@ jest.mock('@shared/decorators', () => ({
 	LogResponseTime: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor
 }))
 
+jest.mock('@shared/repositories/follow.repository', () => ({
+	FollowRepository: jest.fn().mockImplementation(() => ({
+		findFollow: jest.fn(),
+		follow: jest.fn(),
+		unfollow: jest.fn()
+	}))
+}))
+
+jest.mock('@shared/repositories/user.repository', () => ({
+	UserRepository: jest.fn().mockImplementation(() => ({
+		findById: jest.fn()
+	}))
+}))
+
 describe('ToggleFollowController', () => {
 	let controller: ToggleFollowController
 	let mockLogger: any
+	let mockFollowRepository: any
+	let mockUserRepository: any
 
 	beforeEach(() => {
 		mockLogger = {
@@ -27,7 +43,17 @@ describe('ToggleFollowController', () => {
 			log: jest.fn()
 		}
 
-		controller = new ToggleFollowController(mockLogger)
+		mockFollowRepository = {
+			findFollow: jest.fn(),
+			follow: jest.fn(),
+			unfollow: jest.fn()
+		}
+
+		mockUserRepository = {
+			findById: jest.fn()
+		}
+
+		controller = new ToggleFollowController(mockLogger, mockFollowRepository, mockUserRepository)
 	})
 
 	afterEach(() => {
@@ -38,8 +64,7 @@ describe('ToggleFollowController', () => {
 		it('should return UNAUTHORIZED when user is not authenticated', async () => {
 			// Arrange
 			const followData = {
-				followingId: 'user-profile-456',
-				followingType: 'user' as const
+				followingId: 'user-profile-456'
 			}
 			const mockRequest = {}
 
@@ -53,8 +78,7 @@ describe('ToggleFollowController', () => {
 		it('should return UNAUTHORIZED when user sub is missing', async () => {
 			// Arrange
 			const followData = {
-				followingId: 'user-profile-456',
-				followingType: 'user' as const
+				followingId: 'user-profile-456'
 			}
 			const mockRequest = {
 				user: {}

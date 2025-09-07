@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, Delete, Path, SuccessResponse, Security, Request } from 'tsoa'
+import { Route, Tags, Controller, Delete, SuccessResponse, Security, Request } from 'tsoa'
 import { injectable, inject } from 'tsyringe'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { UserGateway } from '@shared/gateways/user.gateway'
@@ -65,18 +65,12 @@ export class DeleteUserController extends Controller {
 	 * ```
 	 */
 	@SuccessResponse(200, 'User deleted successfully')
-	@Delete('/{userId}')
+	@Delete()
 	@Security('jwt', [])
 	public async deleteUser(
-		@Path() userId: string,
 		@Request() req: TsoaRequest
 	) {
-		if (req.user.sub !== userId) {
-			this.setStatus(403)
-			return { message: 'FORBIDDEN' }
-		}
-
-		const user = await this.userRepository.findById({ id: userId })
+		const user = await this.userRepository.findById({ id: req.user.sub })
 		if (!user) {
 			this.setStatus(404)
 			return { message: 'USER_NOT_FOUND' }
@@ -89,7 +83,7 @@ export class DeleteUserController extends Controller {
 			await this.userGateway.deleteUserFile({ key: user.userProfile.backgroundImage })
 		}
 
-		await this.userRepository.delete({ id: userId })
+		await this.userRepository.delete({ id: req.user.sub })
 
 		return { message: 'USER_DELETED_SUCCESSFULLY' }
 	}
