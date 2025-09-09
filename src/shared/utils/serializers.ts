@@ -1,56 +1,17 @@
-import { Link, User, UserProfile } from '@prisma/client'
+/**
+ * NOTA: Este arquivo foi simplificado.
+ * 
+ * O tipo UserWithProfile foi movido para @shared/dto/simple.dto.ts
+ * Use os DTOs inteligentes com o middleware SmartDTOMiddleware.
+ * 
+ * Exemplo:
+ * @UseOutputDTO(GetUserByIdResponseDTO)
+ * @Get('/users/:id')
+ * public async getUser(@Path() id: string) {
+ *   const user = await this.userRepository.findById(id)
+ *   return { user } // Middleware serializa automaticamente
+ * }
+ */
 
-export type UserWithProfile = User & {
-	userProfile: UserProfile & {
-		links: Link[];
-		isFollowing?: boolean;
-		_count: {
-			following: number;
-			followers: number;
-		}
-	}
-}
-
-export const serializeUser = (user: UserWithProfile) => {
-	return {
-		id: user.id,
-		username: user.username,
-		email: user.email,
-		verified: user.verified,
-		created_at: new Date(user.created_at).toISOString(),
-		updated_at: new Date(user.updated_at).toISOString(),
-		userProfile: {
-			id: user.userProfile.id,
-			icon: user.userProfile.icon,
-			displayName: user.userProfile.displayName,
-			autobiography: user.userProfile.autobiography,
-			backgroundImage: user.userProfile.backgroundImage,
-			isFollowing: user.userProfile.isFollowing,
-			links: user.userProfile.links,
-			followersCount: user.userProfile._count.followers,
-			followingCount: user.userProfile._count.following
-		}
-	}
-}
-
-export const serializeAuthor = (author: any) => {
-	return {
-		id: author.user?.id || author.id,
-		username: author.user?.username || author.username,
-		email: author.user?.email || author.email,
-		verified: author.user?.verified || author.verified,
-		created_at: new Date(author.user?.created_at || author.created_at).toISOString(),
-		updated_at: new Date(author.user?.updated_at || author.updated_at)?.toISOString(),
-		userProfile: {
-			id: author.id,
-			icon: author.icon,
-			displayName: author.displayName,
-			autobiography: author.autobiography,
-			backgroundImage: author.backgroundImage,
-			isFollowing: author.isFollowing,
-			links: author.links || [],
-			followersCount: author._count?.followers || 0,
-			followingCount: author._count?.following || 0
-		}
-	}
-}
+// Re-export do tipo para compatibilidade
+export type { UserWithProfile } from '@shared/dto/simple.dto'

@@ -8,7 +8,7 @@ import { userChangePasswordSchema } from '@shared/schemas/user.schema'
 import { RequestHandler } from 'express'
 import { BCryptEncoder, JwtManager } from '@shared/utils'
 import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants'
-import { serializeUser } from '@shared/utils/serializers'
+import { UserDTO } from '@shared/dto/simple.dto'
 import { TsoaRequest } from '@shared/types/tsoa'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators'
@@ -87,7 +87,7 @@ export class ChangePasswordController extends Controller {
 				userProfileId: user.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
-			user: serializeUser(user)
+			user: new UserDTO(user).toJSON()
 		}
 
 		await this.userRepository.update({ id: user.id, token: data.refreshToken })

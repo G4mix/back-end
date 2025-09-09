@@ -4,7 +4,6 @@ import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
-import { GetIdeasResponse } from './get-ideas.dto'
 
 @injectable()
 @Route('api/v1/ideas')
@@ -103,7 +102,7 @@ export class GetIdeasController extends Controller {
 		@Query() sortBy?: 'created_at' | 'updated_at' | 'title',
 		@Query() sortOrder?: 'asc' | 'desc',
 		@Request() request?: any
-	): Promise<GetIdeasResponse | string> {
+	): Promise<any> {
 		try {
 			const userId = request?.user?.sub
 			if (!userId) {
@@ -131,12 +130,9 @@ export class GetIdeasController extends Controller {
 			
 			const totalPages = Math.ceil(total / (queryParams.limit || 10))
 
+			// O middleware irá automaticamente serializar usando GetIdeasResponseDTO
 			const response = {
-				ideas: ideas.map(idea => ({
-					...idea,
-					created_at: new Date(idea.created_at).toISOString(),
-					updated_at: new Date(idea.updated_at).toISOString()
-				})),
+				ideas,
 				pagination: {
 					page: queryParams.page || 0,
 					limit: queryParams.limit || 10,

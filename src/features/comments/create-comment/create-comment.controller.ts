@@ -2,14 +2,15 @@ import { Route, Tags, Controller, Body, Post, SuccessResponse, Security, Request
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime, UseInputDTO, UseOutputDTO } from '@shared/decorators'
 import { CommentRepository } from '@shared/repositories/comment.repository'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
-import { CreateCommentInput, CreateCommentResponse } from './create-comment.dto'
+import { CreateCommentInput } from '@shared/types/dto-interfaces'
+import { CreateCommentInputDTO, CreateCommentResponseDTO } from '@shared/dto/simple.dto'
 
 @injectable()
-@Route('api/v1/comments')
-@Tags('Comments')
+@Route('api/v1/comment')
+@Tags('Comment')
 @Security('jwt')
 export class CreateCommentController extends Controller {
 	constructor(
@@ -86,12 +87,14 @@ export class CreateCommentController extends Controller {
 	 * ```
 	 */
 	@SuccessResponse(201, 'Comment created successfully')
+	@UseInputDTO(CreateCommentInputDTO)
+	@UseOutputDTO(CreateCommentResponseDTO)
 	@Post('/')
 	@LogResponseTime()
 	public async createComment(
 		@Body() body: CreateCommentInput,
 		@Request() request: any
-	): Promise<CreateCommentResponse | string> {
+	): Promise<any> {
 		try {
 			const userId = request.user?.sub
 			if (!userId) {
@@ -99,7 +102,9 @@ export class CreateCommentController extends Controller {
 				return 'UNAUTHORIZED'
 			}
 
-			const { ideaId, content, parentCommentId } = body
+			// O middleware já validou e processou os dados de entrada
+			const inputDTO = request.getInputDTO?.() as CreateCommentInputDTO || body
+			const { ideaId, content, parentCommentId } = inputDTO
 
 			this.logger.info('Creating comment', { 
 				userId, 
@@ -126,12 +131,12 @@ export class CreateCommentController extends Controller {
 			}
 
 			// Create comment in database
-			const newComment = await this.commentRepository.create({
-				ideaId,
-				content,
-				commentId: parentCommentId,
-				userProfileId: userId
-			})
+		const newComment = await this.commentRepository.create({
+			ideaId,
+			content,
+			commentId: parentCommentId || undefined,
+			userProfileId: userId
+		})
 
 			this.logger.info('Comment created successfully', { 
 				commentId: newComment.id, 
@@ -139,14 +144,9 @@ export class CreateCommentController extends Controller {
 				ideaId 
 			})
 
+			// O middleware irá automaticamente serializar usando CreateCommentResponseDTO
 			this.setStatus(201)
-			return { 
-				comment: {
-					...newComment,
-					created_at: newComment.created_at.toISOString(),
-					updated_at: newComment.updated_at.toISOString()
-				}
-			}
+			return { comment: newComment }
 
 		} catch (error) {
 			this.logger.error('Failed to create comment', { 

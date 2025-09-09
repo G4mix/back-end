@@ -77,8 +77,8 @@ export class ToggleLikeController extends Controller {
 		@Request() request: any
 	): Promise<ToggleLikeResponse | string> {
 		try {
-			const userId = request.user?.sub
-			if (!userId) {
+			const userProfileId = request.user?.userProfileId
+			if (!userProfileId) {
 				this.setStatus(401)
 				return 'UNAUTHORIZED'
 			}
@@ -86,7 +86,7 @@ export class ToggleLikeController extends Controller {
 			const { ideaId, commentId } = body
 
 			this.logger.info('Toggling like', { 
-				userId, 
+				userProfileId, 
 				ideaId, 
 				commentId,
 				action: commentId ? 'comment_like' : 'idea_like'
@@ -107,7 +107,7 @@ export class ToggleLikeController extends Controller {
 			}
 
 			this.logger.info('Like toggled successfully', { 
-				userId, 
+				userProfileId, 
 				ideaId, 
 				commentId,
 				liked: response.liked,
@@ -120,7 +120,7 @@ export class ToggleLikeController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to toggle like', { 
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userId: request.user?.sub,
+				userProfileId: request.user?.sub,
 				ideaId: body.ideaId,
 				commentId: body.commentId
 			})

@@ -6,8 +6,8 @@ import { CommentRepository } from '@shared/repositories/comment.repository'
 import { GetCommentsResponse } from './get-comments.dto'
 
 @injectable()
-@Route('api/v1/comments')
-@Tags('Comments')
+@Route('api/v1/comment')
+@Tags('Comment')
 @Security('jwt')
 export class GetCommentsController extends Controller {
 	constructor(
@@ -85,8 +85,8 @@ export class GetCommentsController extends Controller {
 		@Request() request?: any
 	): Promise<GetCommentsResponse | string> {
 		try {
-			const userId = request?.user?.sub
-			if (!userId) {
+			const userProfileId = request?.user?.userProfileId
+			if (!userProfileId) {
 				this.setStatus(401)
 				return 'UNAUTHORIZED'
 			}
@@ -99,7 +99,7 @@ export class GetCommentsController extends Controller {
 			}
 
 			this.logger.info('Retrieving comments', {
-				userId,
+				userProfileId,
 				...queryParams
 			})
 
@@ -135,7 +135,7 @@ export class GetCommentsController extends Controller {
 			}
 
 			this.logger.info('Comments retrieved successfully', { 
-				userId, 
+				userProfileId, 
 				count: comments.length, 
 				total, 
 				page: queryParams.page || 0
@@ -147,7 +147,7 @@ export class GetCommentsController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to retrieve comments', { 
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userId: request.user?.sub 
+				userProfileId: request.user?.userProfileId 
 			})
 			this.setStatus(500)
 			return 'Failed to retrieve comments'

@@ -6,7 +6,7 @@ import { UserRepository } from '@shared/repositories/user.repository'
 import { AuthGateway } from '@shared/gateways/auth.gateway'
 import { BCryptEncoder, JwtManager, generateRandomPassword } from '@shared/utils'
 import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants'
-import { serializeUser, UserWithProfile } from '@shared/utils/serializers'
+import { UserWithProfile, UserDTO } from '@shared/dto/simple.dto'
 import { TsoaRequest } from '@shared/types/tsoa'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators'
@@ -164,7 +164,7 @@ export class SocialLoginController extends Controller {
 				userProfileId: oauthUser.user.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
-			user: serializeUser(oauthUser.user as unknown as UserWithProfile)
+			user: new UserDTO(oauthUser.user as unknown as UserWithProfile).toJSON()
 		}
 
 		await this.userRepository.update({ id: oauthUser.user.id, token: data.refreshToken })

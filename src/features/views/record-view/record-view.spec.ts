@@ -43,7 +43,7 @@ describe('RecordViewController', () => {
 			const mockRequest = {}
 
 			// Act
-			const result = await controller.recordView(viewData, mockRequest)
+			const result = await controller.recordView({ ideas: [viewData.ideaId] }, mockRequest)
 
 			// Assert
 			expect(result).toBe('UNAUTHORIZED')
@@ -59,7 +59,7 @@ describe('RecordViewController', () => {
 			}
 
 			// Act
-			const result = await controller.recordView(viewData, mockRequest)
+			const result = await controller.recordView({ ideas: [viewData.ideaId] }, mockRequest)
 
 			// Assert
 			expect(result).toBe('UNAUTHORIZED')

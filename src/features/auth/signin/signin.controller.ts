@@ -8,7 +8,7 @@ import { signinSchema } from '@shared/schemas/user.schema'
 import { RequestHandler } from 'express'
 import { BCryptEncoder, JwtManager } from '@shared/utils'
 import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants'
-import { serializeUser } from '@shared/utils/serializers'
+import { UserDTO } from '@shared/dto/simple.dto'
 import { LogResponseTime } from '@shared/decorators'
 import { Logger } from '@shared/utils/logger'
 
@@ -146,7 +146,7 @@ export class SigninController extends Controller {
 				userProfileId: user.userProfileId,
 				expiresIn: EXPIRATION_TIME_REFRESH_TOKEN
 			}),
-			user: serializeUser(user)
+			user: new UserDTO(user).toJSON()
 		}
 
 		user = await this.userRepository.update({ id: user.id, loginAttempts: 0, token: data.refreshToken })

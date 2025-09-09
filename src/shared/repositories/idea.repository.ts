@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { injectable } from 'tsyringe'
+import { injectable, inject } from 'tsyringe'
 
 export interface CreateIdeaInput {
 	title: string
@@ -24,7 +24,7 @@ export interface GetIdeasInput {
 
 @injectable()
 export class IdeaRepository {
-	constructor(private prisma: PrismaClient) {}
+	constructor(@inject('PostgresqlClient') private prisma: PrismaClient) {}
 
 	async create(data: CreateIdeaInput) {
 		return this.prisma.idea.create({
@@ -78,7 +78,7 @@ export class IdeaRepository {
 
 	async findAll(params: GetIdeasInput) {
 		const { search, authorId, tags, page = 0, limit = 10, sortBy = 'created_at', sortOrder = 'desc' } = params
-		
+		console.log('params', params)
 		const where: any = {}
 		
 		if (search) {
@@ -116,7 +116,7 @@ export class IdeaRepository {
 					}
 				},
 				orderBy: { [sortBy]: sortOrder },
-				skip: (page - 1) * limit,
+				skip: page * limit,
 				take: limit
 			}),
 			this.prisma.idea.count({ where })

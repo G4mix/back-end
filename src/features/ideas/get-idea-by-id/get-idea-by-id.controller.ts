@@ -64,14 +64,14 @@ export class GetIdeaByIdController extends Controller {
 		@Request() request: any
 	): Promise<GetIdeaByIdResponse | string> {
 		try {
-			const userId = request.user?.sub
-			if (!userId) {
+			const userProfileId = request.user?.userProfileId
+			if (!userProfileId) {
 				this.setStatus(401)
 				return 'UNAUTHORIZED'
 			}
 
 			this.logger.info('Retrieving idea by ID', {
-				userId,
+				userProfileId,
 				ideaId: id
 			})
 
@@ -83,7 +83,7 @@ export class GetIdeaByIdController extends Controller {
 			}
 
 			this.logger.info('Idea retrieved successfully', {
-				userId,
+				userProfileId,
 				ideaId: id,
 				title: idea.title
 			})
@@ -100,7 +100,7 @@ export class GetIdeaByIdController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to retrieve idea', {
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userId: request.user?.sub,
+				userProfileId: request.user?.sub,
 				ideaId: id
 			})
 			this.setStatus(500)

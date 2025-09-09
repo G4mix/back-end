@@ -148,30 +148,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "IdeaResponse": {
-        "dataType": "refObject",
-        "properties": {
-            "id": {"dataType":"string","required":true},
-            "title": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
-            "description": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
-            "authorId": {"dataType":"string","required":true},
-            "author": {"dataType":"nestedObjectLiteral","nestedProperties":{"icon":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"displayName":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"id":{"dataType":"string","required":true}},"required":true},
-            "created_at": {"dataType":"string","required":true},
-            "updated_at": {"dataType":"string","required":true},
-            "_count": {"dataType":"nestedObjectLiteral","nestedProperties":{"comments":{"dataType":"double","required":true},"views":{"dataType":"double","required":true},"likes":{"dataType":"double","required":true}}},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "GetIdeasResponse": {
-        "dataType": "refObject",
-        "properties": {
-            "ideas": {"dataType":"array","array":{"dataType":"refObject","ref":"IdeaResponse"},"required":true},
-            "pagination": {"dataType":"nestedObjectLiteral","nestedProperties":{"hasPrev":{"dataType":"boolean","required":true},"hasNext":{"dataType":"boolean","required":true},"totalPages":{"dataType":"double","required":true},"total":{"dataType":"double","required":true},"limit":{"dataType":"double","required":true},"page":{"dataType":"double","required":true}},"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "GetIdeaByIdResponse": {
         "dataType": "refObject",
         "properties": {
@@ -235,14 +211,6 @@ const models: TsoaRoute.Models = {
         "properties": {
             "comments": {"dataType":"array","array":{"dataType":"refObject","ref":"CommentResponse"},"required":true},
             "pagination": {"dataType":"nestedObjectLiteral","nestedProperties":{"hasPrev":{"dataType":"boolean","required":true},"hasNext":{"dataType":"boolean","required":true},"totalPages":{"dataType":"double","required":true},"total":{"dataType":"double","required":true},"limit":{"dataType":"double","required":true},"page":{"dataType":"double","required":true}},"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "CreateCommentResponse": {
-        "dataType": "refObject",
-        "properties": {
-            "comment": {"dataType":"nestedObjectLiteral","nestedProperties":{"_count":{"dataType":"nestedObjectLiteral","nestedProperties":{"replies":{"dataType":"double","required":true},"likes":{"dataType":"double","required":true}}},"updated_at":{"dataType":"string","required":true},"created_at":{"dataType":"string","required":true},"author":{"dataType":"nestedObjectLiteral","nestedProperties":{"icon":{"dataType":"string"},"displayName":{"dataType":"string"},"id":{"dataType":"string","required":true}},"required":true},"authorId":{"dataType":"string","required":true},"parentCommentId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"ideaId":{"dataType":"string","required":true},"content":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}},"required":true},
         },
         "additionalProperties": false,
     },
@@ -522,7 +490,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.put('/api/v1/ideas/:id',
+        app.patch('/api/v1/ideas/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(UpdateIdeaController)),
             ...(fetchMiddlewares<RequestHandler>(UpdateIdeaController.prototype.updateIdea)),
@@ -751,7 +719,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/comments',
+        app.get('/api/v1/comment',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(GetCommentsController)),
             ...(fetchMiddlewares<RequestHandler>(GetCommentsController.prototype.getComments)),
@@ -791,7 +759,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/comments',
+        app.post('/api/v1/comment',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(CreateCommentController)),
             ...(fetchMiddlewares<RequestHandler>(CreateCommentController.prototype.createComment)),

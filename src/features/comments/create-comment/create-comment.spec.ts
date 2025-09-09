@@ -82,7 +82,7 @@ describe('CreateCommentController', () => {
 			mockCommentRepository.create.mockResolvedValue(mockCreatedComment)
 
 			// Act
-			const result = await controller.createComment(commentData, mockRequest)
+			const result = await controller.createComment(commentData as any, mockRequest)
 
 			// Assert
 			expect(result).toEqual({
@@ -161,7 +161,7 @@ describe('CreateCommentController', () => {
 			mockCommentRepository.create.mockResolvedValue(mockCreatedComment)
 
 			// Act
-			const result = await controller.createComment(commentData, mockRequest)
+			const result = await controller.createComment(commentData as any, mockRequest)
 
 			// Assert
 			expect(result).toEqual({
@@ -203,7 +203,7 @@ describe('CreateCommentController', () => {
 			const mockRequest = {}
 
 			// Act
-			const result = await controller.createComment(commentData, mockRequest)
+			const result = await controller.createComment(commentData as any, mockRequest)
 
 			// Assert
 			expect(result).toBe('UNAUTHORIZED')
@@ -221,7 +221,7 @@ describe('CreateCommentController', () => {
 			}
 
 			// Act
-			const result = await controller.createComment(commentData, mockRequest)
+			const result = await controller.createComment(commentData as any, mockRequest)
 
 			// Assert
 			expect(result).toBe('UNAUTHORIZED')
@@ -242,7 +242,7 @@ describe('CreateCommentController', () => {
 			mockIdeaRepository.findById.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act
-			const result = await controller.createComment(commentData, mockRequest)
+			const result = await controller.createComment(commentData as any, mockRequest)
 
 			// Assert
 			expect(result).toBe('Failed to create comment')
@@ -293,7 +293,7 @@ describe('CreateCommentController', () => {
 			mockCommentRepository.create.mockResolvedValue(mockCreatedComment)
 
 			// Act
-			await controller.createComment(commentData, mockRequest)
+			await controller.createComment(commentData as any, mockRequest)
 
 			// Assert
 			expect(mockLogger.info).toHaveBeenCalledWith('Creating comment', {

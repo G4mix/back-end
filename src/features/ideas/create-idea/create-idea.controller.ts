@@ -68,14 +68,14 @@ export class CreateIdeaController extends Controller {
 		@Request() request: any
 	): Promise<CreateIdeaResponse | string> {
 		try {
-			const userId = request.user?.sub
-			if (!userId) {
+			const userProfileId = request.user?.userProfileId
+			if (!userProfileId) {
 				this.setStatus(401)
 				return 'UNAUTHORIZED'
 			}
 
 			this.logger.info('Creating new idea', { 
-				userId, 
+				userProfileId, 
 				title: body.title,
 				descriptionLength: body.description.length 
 			})
@@ -91,12 +91,12 @@ export class CreateIdeaController extends Controller {
 			const newIdea = await this.ideaRepository.create({
 				title: body.title,
 				description: body.description,
-				authorId: userId
+				authorId: userProfileId
 			})
 
 			this.logger.info('Idea created successfully', { 
 				ideaId: newIdea.id, 
-				userId 
+				userProfileId 
 			})
 
 			this.setStatus(201)

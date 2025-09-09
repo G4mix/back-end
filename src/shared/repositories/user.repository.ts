@@ -2,7 +2,7 @@ import { inject, injectable, singleton } from 'tsyringe'
 import { Prisma, PrismaClient } from '@prisma/client'
 import { AuthInput, UpdateInput } from '@shared/types'
 import { Id } from '@shared/types'
-import { serializeUser, UserWithProfile } from '@shared/utils/serializers'
+import { UserWithProfile, UserDTO } from '@shared/dto/simple.dto'
 import { generateRandomCode } from '@shared/utils'
 
 @injectable()
@@ -75,7 +75,7 @@ export class UserRepository {
 		let users: any[] = []
 
 		data.map((user) => {
-			users = [...users, serializeUser(user)]
+			users = [...users, new UserDTO(user).toJSON()]
 		})
 
 		return {

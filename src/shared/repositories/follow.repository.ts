@@ -1,6 +1,6 @@
 import { inject, injectable, singleton } from 'tsyringe'
 import { PrismaClient } from '@prisma/client'
-import { serializeUser } from '@shared/utils'
+import { UserDTO } from '@shared/dto/simple.dto'
 
 @injectable()
 @singleton()
@@ -137,7 +137,7 @@ export class FollowRepository {
 						include: userInclude
 					}
 				}
-				resultTransformer = (follow: any) => serializeUser(follow.followerUser)
+				resultTransformer = (follow: any) => new UserDTO(follow.followerUser).toJSON()
 			},
 			'followers:team': () => {
 				whereClause = { followingTeamId: targetId }
@@ -146,7 +146,7 @@ export class FollowRepository {
 						include: userInclude
 					}
 				}
-				resultTransformer = (follow: any) => serializeUser(follow.followerUser)
+				resultTransformer = (follow: any) => new UserDTO(follow.followerUser).toJSON()
 			},
 			'following': () => {
 				if (!userId) return []
@@ -159,7 +159,7 @@ export class FollowRepository {
 				}
 				resultTransformer = (follow: any) => {
 					if (follow.followingUser) {
-						return serializeUser(follow.followingUser)
+						return new UserDTO(follow.followingUser).toJSON()
 					}
 					if (follow.followingTeam) {
 						return {

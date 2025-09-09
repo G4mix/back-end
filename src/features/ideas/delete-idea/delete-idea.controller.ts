@@ -46,14 +46,14 @@ export class DeleteIdeaController extends Controller {
 		@Request() request: any
 	): Promise<string> {
 		try {
-			const userId = request.user?.sub
-			if (!userId) {
+			const userProfileId = request.user?.userProfileId
+			if (!userProfileId) {
 				this.setStatus(401)
 				return 'UNAUTHORIZED'
 			}
 
 			this.logger.info('Deleting idea', {
-				userId,
+				userProfileId,
 				ideaId: id
 			})
 
@@ -65,7 +65,7 @@ export class DeleteIdeaController extends Controller {
 			}
 
 			// Check if user is the author
-			if (existingIdea.authorId !== userId) {
+			if (existingIdea.authorId !== userProfileId) {
 				this.setStatus(403)
 				return 'FORBIDDEN'
 			}
@@ -75,7 +75,7 @@ export class DeleteIdeaController extends Controller {
 
 			this.logger.info('Idea deleted successfully', {
 				ideaId: id,
-				userId
+				userProfileId
 			})
 
 			this.setStatus(200)

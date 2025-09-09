@@ -8,7 +8,7 @@ import { updateUserSchema } from '@shared/schemas/user.schema'
 import { RequestHandler } from 'express'
 import { BCryptEncoder } from '@shared/utils'
 import { MAX_SIZE, SUPPORTED_IMAGES } from '@shared/constants'
-import { serializeUser } from '@shared/utils/serializers'
+import { UserDTO } from '@shared/dto/simple.dto'
 import { TsoaRequest } from '@shared/types/tsoa'
 import { LogResponseTime } from '@shared/decorators'
 import { Logger } from '@shared/utils/logger'
@@ -147,7 +147,7 @@ export class UpdateUserController extends Controller {
 		this.logger.info('User profile updated successfully', { userId })
 
 		return {
-			user: serializeUser(updatedUser)
+			user: new UserDTO(updatedUser).toJSON()
 		}
 	}
 }

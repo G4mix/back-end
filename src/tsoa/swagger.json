@@ -331,133 +331,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"IdeaResponse": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"title": {
-						"type": "string",
-						"nullable": true
-					},
-					"description": {
-						"type": "string",
-						"nullable": true
-					},
-					"authorId": {
-						"type": "string"
-					},
-					"author": {
-						"properties": {
-							"icon": {
-								"type": "string",
-								"nullable": true
-							},
-							"displayName": {
-								"type": "string",
-								"nullable": true
-							},
-							"id": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"id"
-						],
-						"type": "object"
-					},
-					"created_at": {
-						"type": "string"
-					},
-					"updated_at": {
-						"type": "string"
-					},
-					"_count": {
-						"properties": {
-							"comments": {
-								"type": "number",
-								"format": "double"
-							},
-							"views": {
-								"type": "number",
-								"format": "double"
-							},
-							"likes": {
-								"type": "number",
-								"format": "double"
-							}
-						},
-						"required": [
-							"comments",
-							"views",
-							"likes"
-						],
-						"type": "object"
-					}
-				},
-				"required": [
-					"id",
-					"title",
-					"description",
-					"authorId",
-					"author",
-					"created_at",
-					"updated_at"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"GetIdeasResponse": {
-				"properties": {
-					"ideas": {
-						"items": {
-							"$ref": "#/components/schemas/IdeaResponse"
-						},
-						"type": "array"
-					},
-					"pagination": {
-						"properties": {
-							"hasPrev": {
-								"type": "boolean"
-							},
-							"hasNext": {
-								"type": "boolean"
-							},
-							"totalPages": {
-								"type": "number",
-								"format": "double"
-							},
-							"total": {
-								"type": "number",
-								"format": "double"
-							},
-							"limit": {
-								"type": "number",
-								"format": "double"
-							},
-							"page": {
-								"type": "number",
-								"format": "double"
-							}
-						},
-						"required": [
-							"hasPrev",
-							"hasNext",
-							"totalPages",
-							"total",
-							"limit",
-							"page"
-						],
-						"type": "object"
-					}
-				},
-				"required": [
-					"ideas",
-					"pagination"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"GetIdeaByIdResponse": {
 				"properties": {
 					"idea": {
@@ -752,86 +625,8 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"CreateCommentResponse": {
-				"properties": {
-					"comment": {
-						"properties": {
-							"_count": {
-								"properties": {
-									"replies": {
-										"type": "number",
-										"format": "double"
-									},
-									"likes": {
-										"type": "number",
-										"format": "double"
-									}
-								},
-								"required": [
-									"replies",
-									"likes"
-								],
-								"type": "object"
-							},
-							"updated_at": {
-								"type": "string"
-							},
-							"created_at": {
-								"type": "string"
-							},
-							"author": {
-								"properties": {
-									"icon": {
-										"type": "string"
-									},
-									"displayName": {
-										"type": "string"
-									},
-									"id": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"id"
-								],
-								"type": "object"
-							},
-							"authorId": {
-								"type": "string"
-							},
-							"parentCommentId": {
-								"type": "string",
-								"nullable": true
-							},
-							"ideaId": {
-								"type": "string"
-							},
-							"content": {
-								"type": "string"
-							},
-							"id": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"updated_at",
-							"created_at",
-							"author",
-							"authorId",
-							"ideaId",
-							"content",
-							"id"
-						],
-						"type": "object"
-					}
-				},
-				"required": [
-					"comment"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"CreateCommentInput": {
+				"description": "Interfaces simples para o TSOA\r\nOs DTOs reais estão em",
 				"properties": {
 					"ideaId": {
 						"type": "string"
@@ -1255,32 +1050,7 @@
 						"description": "User retrieved successfully",
 						"content": {
 							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"properties": {
-												"user": {},
-												"message": {
-													"type": "string"
-												}
-											},
-											"required": [
-												"message"
-											],
-											"type": "object"
-										},
-										{
-											"properties": {
-												"message": {},
-												"user": {}
-											},
-											"required": [
-												"user"
-											],
-											"type": "object"
-										}
-									]
-								}
+								"schema": {}
 							}
 						}
 					}
@@ -1350,7 +1120,7 @@
 			}
 		},
 		"/api/v1/ideas/{id}": {
-			"put": {
+			"patch": {
 				"operationId": "UpdateIdea",
 				"responses": {
 					"200": {
@@ -1490,16 +1260,7 @@
 						"description": "Ideas retrieved successfully",
 						"content": {
 							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"$ref": "#/components/schemas/GetIdeasResponse"
-										},
-										{
-											"type": "string"
-										}
-									]
-								}
+								"schema": {}
 							}
 						}
 					}
@@ -1674,7 +1435,7 @@
 				}
 			}
 		},
-		"/api/v1/comments": {
+		"/api/v1/comment": {
 			"get": {
 				"operationId": "GetComments",
 				"responses": {
@@ -1698,7 +1459,7 @@
 				},
 				"description": "Get comments for an idea with pagination\r\n\r\nThis endpoint allows authenticated users to retrieve comments for a specific idea.\r\nComments are returned in a paginated format and can be filtered by parent comment.",
 				"tags": [
-					"Comments"
+					"Comment"
 				],
 				"security": [
 					{
@@ -1753,23 +1514,14 @@
 						"description": "Comment created successfully",
 						"content": {
 							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"$ref": "#/components/schemas/CreateCommentResponse"
-										},
-										{
-											"type": "string"
-										}
-									]
-								}
+								"schema": {}
 							}
 						}
 					}
 				},
 				"description": "Create a new comment on an idea\r\n\r\nThis endpoint allows authenticated users to create comments on ideas or reply\r\nto existing comments. Comments support nested replies through parentCommentId.\r\n\r\nComment Creation Process:\r\n- Validates user authentication\r\n- Validates that the target idea exists\r\n- Validates parent comment if replying to a comment\r\n- Creates comment in database with author information\r\n- Returns created comment with engagement metrics",
 				"tags": [
-					"Comments"
+					"Comment"
 				],
 				"security": [
 					{

@@ -1,6 +1,6 @@
 import { inject, injectable, singleton } from 'tsyringe'
 import { PrismaClient } from '@prisma/client'
-import { serializeAuthor } from '@shared/utils'
+import { CommentAuthorDTO } from '@shared/dto/simple.dto'
 
 @injectable()
 @singleton()
@@ -27,7 +27,7 @@ export class CommentRepository {
 		
 		return {
 			...comment,
-			author: serializeAuthor(comment.author),
+			author: new CommentAuthorDTO(comment.author).toJSON(),
 			isLiked: false,
 			likesCount: count.likes,
 			repliesCount: count.replies
@@ -111,7 +111,7 @@ export class CommentRepository {
 
 		return {
 			...comment,
-			author: serializeAuthor(comment.author),
+			author: new CommentAuthorDTO(comment.author).toJSON(),
 			isLiked: likes.length > 0,
 			likesCount: count.likes
 		}
@@ -172,7 +172,7 @@ export class CommentRepository {
 	
 			return {
 				...comment,
-				author: serializeAuthor(comment.author),
+				author: new CommentAuthorDTO(comment.author).toJSON(),
 				isLiked: likedCommentIds.has(comment.id),
 				likesCount: count.likes,
 				repliesCount: count.replies

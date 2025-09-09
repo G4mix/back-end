@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, Path, Put, Body, SuccessResponse, Security, Request } from 'tsoa'
+import { Route, Tags, Controller, Path, Patch, Body, SuccessResponse, Security, Request } from 'tsoa'
 import { inject, injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators'
@@ -50,7 +50,7 @@ export class UpdateIdeaController extends Controller {
 	 * "Failed to update idea"
 	 */
 	@SuccessResponse(200, 'Idea updated successfully')
-	@Put('/{id}')
+	@Patch('/{id}')
 	@LogResponseTime()
 	public async updateIdea(
 		@Path() id: string,
@@ -58,14 +58,14 @@ export class UpdateIdeaController extends Controller {
 		@Request() request: any
 	): Promise<UpdateIdeaResponse | string> {
 		try {
-			const userId = request.user?.sub
-			if (!userId) {
+			const userProfileId = request.user?.userProfileId
+			if (!userProfileId) {
 				this.setStatus(401)
 				return 'UNAUTHORIZED'
 			}
 
 			this.logger.info('Updating idea', {
-				userId,
+				userProfileId,
 				ideaId: id,
 				title: body.title,
 				descriptionLength: body.description?.length
@@ -79,7 +79,7 @@ export class UpdateIdeaController extends Controller {
 			}
 
 			// Check if user is the author
-			if (existingIdea.authorId !== userId) {
+			if (existingIdea.authorId !== userProfileId) {
 				this.setStatus(403)
 				return 'FORBIDDEN'
 			}
@@ -89,7 +89,7 @@ export class UpdateIdeaController extends Controller {
 
 			this.logger.info('Idea updated successfully', {
 				ideaId: id,
-				userId
+				userProfileId
 			})
 
 			this.setStatus(200)
@@ -104,7 +104,7 @@ export class UpdateIdeaController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to update idea', {
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userId: request.user?.sub,
+				userProfileId: request.user?.userProfileId,
 				ideaId: id
 			})
 			this.setStatus(500)
