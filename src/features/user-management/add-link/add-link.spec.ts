@@ -1,122 +1,195 @@
-import { AddLinkController } from './add-link.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+describe('Add Link Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-// Mock do LinkRepository
-jest.mock('@shared/repositories/link.repository', () => ({
-	LinkRepository: jest.fn().mockImplementation(() => ({
-		create: jest.fn()
-	}))
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-jest.mock('@shared/decorators', () => ({
-	LogResponseTime: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor
-}))
-
-describe('AddLinkController', () => {
-	let controller: AddLinkController
-	let mockLogger: any
-	let mockLinkRepository: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		mockLinkRepository = {
-			create: jest.fn()
-		}
-
-		controller = new AddLinkController(mockLogger, mockLinkRepository)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('addLink', () => {
-		it('should add link successfully', async () => {
+	describe('POST /api/v1/users/links', () => {
+		it('should add personal link successfully with valid URL', async () => {
 			// Arrange
-			const linkData = {
-				url: 'https://github.com/testuser'
-			}
-
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
-
-			const mockCreatedLink = {
-				id: 'link-uuid-123',
-				url: linkData.url,
-				created_at: new Date('2024-01-01T00:00:00.000Z')
-			}
-
-			mockLinkRepository.create.mockResolvedValue(mockCreatedLink)
-
-			// Act
-			const result = await controller.addLink(linkData, mockRequest)
-
-			// Assert
-			expect(result).toEqual({
-				link: {
-					id: 'link-uuid-123',
-					url: 'https://github.com/testuser',
-					created_at: expect.any(String)
+			const linkData = TestData.createPersonalLink()
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						create: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							url: linkData.url,
+							userId: TestData.generateUUID(),
+							created_at: new Date()
+						})
+					}
 				}
 			})
 
-			expect(mockLinkRepository.create).toHaveBeenCalledWith({
-				url: linkData.url,
-				userProfileId: 'user-profile-123'
-			})
-		})
-
-		it('should return 401 when not authenticated', async () => {
-			// Arrange
-			const linkData = {
-				url: 'https://github.com/testuser'
-			}
-
-			const mockRequest = {}
-
 			// Act
-			const result = await controller.addLink(linkData, mockRequest)
+			const response = await httpClient.post('/api/v1/users/links', linkData)
 
 			// Assert
-			expect(result).toBe('UNAUTHORIZED')
-			expect(mockLinkRepository.create).not.toHaveBeenCalled()
+			expect(response.status).toBe(201)
+			expect(response.data).toHaveProperty('link')
+			expect(response.data.link.url).toBe(linkData.url)
+		})
+
+		it('should return validation error for invalid URL format', async () => {
+			// Arrange
+			const linkData = TestData.createPersonalLink({ url: 'invalid-url' })
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/users/links', linkData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_URL'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for URL without http', async () => {
+			// Arrange
+			const linkData = TestData.createPersonalLink({ url: 'example.com' })
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/users/links', linkData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'URL_MUST_START_WITH_HTTP'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for URL without https', async () => {
+			// Arrange
+			const linkData = TestData.createPersonalLink({ url: 'http://example.com' })
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/users/links', linkData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'URL_MUST_START_WITH_HTTP'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for long URL', async () => {
+			// Arrange
+			const linkData = TestData.createPersonalLink({ 
+				url: 'https://example.com/' + 'a'.repeat(700)
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/users/links', linkData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'URL_TOO_LONG'
+						}
+					}
+				})
+		})
+
+		it('should return UNAUTHORIZED when no token provided', async () => {
+			// Arrange
+			const linkData = TestData.createPersonalLink()
+			httpClient.clearAuthToken()
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/users/links', linkData))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const linkData = {
-				url: 'https://github.com/testuser'
+			const linkData = TestData.createPersonalLink()
+			
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						create: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/users/links', linkData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
+		})
+
+		it('should accept various valid URL formats', async () => {
+			// Arrange
+			const validUrls = [
+				'https://github.com/user',
+				'https://linkedin.com/in/user',
+				'https://twitter.com/user',
+				'https://example.com/path?query=value',
+				'https://subdomain.example.com'
+			]
+
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						create: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							url: '',
+							userId: TestData.generateUUID(),
+							created_at: new Date()
+						})
+					}
+				}
+			})
+
+			// Act & Assert
+			for (const url of validUrls) {
+				const linkData = TestData.createPersonalLink({ url })
+				const response = await httpClient.post('/api/v1/users/links', linkData)
+				expect(response.status).toBe(201)
 			}
-
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
-
-			mockLinkRepository.create.mockRejectedValue(new Error('Database connection failed'))
-
-			// Act
-			const result = await controller.addLink(linkData, mockRequest)
-
-			// Assert
-			expect(result).toBe('DATABASE_ERROR')
 		})
 	})
 })

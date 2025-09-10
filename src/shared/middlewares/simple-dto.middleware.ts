@@ -5,7 +5,7 @@ import { Logger } from '@shared/utils/logger'
 declare global {
 	namespace Express {
 		interface Request {
-			getInputDTO?: () => any
+			getInputDTO?: <T = any>() => T
 			getQueryDTO?: () => any
 			getParamsDTO?: () => any
 		}

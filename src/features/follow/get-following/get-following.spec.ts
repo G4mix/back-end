@@ -1,194 +1,247 @@
-import { GetFollowingController } from './get-following.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+describe('Get Following Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-// Mock do FollowRepository
-jest.mock('@shared/repositories/follow.repository', () => ({
-	FollowRepository: jest.fn().mockImplementation(() => ({
-		findFollowing: jest.fn()
-	}))
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-jest.mock('@shared/decorators', () => ({
-	LogResponseTime: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor
-}))
-
-describe('GetFollowingController', () => {
-	let controller: GetFollowingController
-	let mockLogger: any
-	let mockFollowRepository: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		mockFollowRepository = {
-			findFollowing: jest.fn()
-		}
-
-		controller = new GetFollowingController(mockLogger, mockFollowRepository)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('getFollowing', () => {
-		it('should get following successfully', async () => {
+	describe('GET /api/v1/follow/following/:userId', () => {
+		it('should get following with pagination successfully', async () => {
 			// Arrange
-			const userId = 'user-profile-123'
-			const mockRequest = {
-				user: { userProfileId: 'current-user-123' }
-			}
-
+			const userId = TestData.generateUUID()
 			const mockFollowing = [
 				{
-					id: 'follow-1',
-					followingUser: {
-						id: 'following-1',
-						displayName: 'Following One',
-						icon: 'https://example.com/icon1.jpg',
-						user: { username: 'following1' }
-					},
-					created_at: new Date('2024-01-01T00:00:00.000Z')
+					id: TestData.generateUUID(),
+					followerId: userId,
+					followingId: TestData.generateUUID(),
+					created_at: new Date(),
+					following: {
+						id: TestData.generateUUID(),
+						username: 'following1',
+						email: 'following1@example.com',
+						userProfile: {
+							name: 'Following 1',
+							bio: 'Bio of following 1',
+							icon: 'https://example.com/following1.jpg'
+						}
+					}
 				},
 				{
-					id: 'follow-2',
-					followingUser: {
-						id: 'following-2',
-						displayName: 'Following Two',
-						icon: 'https://example.com/icon2.jpg',
-						user: { username: 'following2' }
-					},
-					created_at: new Date('2024-01-02T00:00:00.000Z')
+					id: TestData.generateUUID(),
+					followerId: userId,
+					followingId: TestData.generateUUID(),
+					created_at: new Date(),
+					following: {
+						id: TestData.generateUUID(),
+						username: 'following2',
+						email: 'following2@example.com',
+						userProfile: {
+							name: 'Following 2',
+							bio: 'Bio of following 2',
+							icon: 'https://example.com/following2.jpg'
+						}
+					}
 				}
 			]
 
-			mockFollowRepository.findFollowing.mockResolvedValue({
-				following: mockFollowing,
-				total: 2
-			})
-
-			// Act
-			const result = await controller.getFollowing(userId, 0, 10, mockRequest)
-
-			// Assert
-			expect(result).toEqual({
-				following: [
-					{
-						id: 'follow-1',
-						followingUser: {
-							id: 'following-1',
-							displayName: 'Following One',
-							icon: 'https://example.com/icon1.jpg',
-							username: 'following1'
-						},
-						created_at: '2024-01-01T00:00:00.000Z'
-					},
-					{
-						id: 'follow-2',
-						followingUser: {
-							id: 'following-2',
-							displayName: 'Following Two',
-							icon: 'https://example.com/icon2.jpg',
-							username: 'following2'
-						},
-						created_at: '2024-01-02T00:00:00.000Z'
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					follow: {
+						findMany: jest.fn().mockResolvedValue(mockFollowing),
+						count: jest.fn().mockResolvedValue(2)
 					}
-				],
-				pagination: {
-					page: 0,
-					limit: 10,
-					total: 2,
-					totalPages: 1,
-					hasNext: false,
-					hasPrev: false
 				}
 			})
 
-			expect(mockFollowRepository.findFollowing).toHaveBeenCalledWith({
-				userId,
+			// Act
+			const response = await httpClient.get(`/api/v1/follow/following/${userId}`, {
 				page: 0,
 				limit: 10
 			})
-		})
-
-		it('should return 401 when not authenticated', async () => {
-			// Arrange
-			const userId = 'user-profile-123'
-			const mockRequest = {}
-
-			// Act
-			const result = await controller.getFollowing(userId, 0, 10, mockRequest)
 
 			// Assert
-			expect(result).toBe('UNAUTHORIZED')
-			expect(mockFollowRepository.findFollowing).not.toHaveBeenCalled()
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('following')
+			expect(response.data).toHaveProperty('pagination')
+			expect(response.data.following).toHaveLength(2)
+			expect(response.data.pagination.total).toBe(2)
 		})
 
-		it('should handle pagination correctly', async () => {
+		it('should return validation error for invalid user ID', async () => {
+			// Act & Assert
+			await expect(httpClient.get('/api/v1/follow/following/invalid-uuid'))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_USER_ID'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for invalid page number', async () => {
 			// Arrange
-			const userId = 'user-profile-123'
-			const mockRequest = {
-				user: { userProfileId: 'current-user-123' }
-			}
+			const userId = TestData.generateUUID()
 
-			mockFollowRepository.findFollowing.mockResolvedValue({
-				following: [],
-				total: 15
-			})
+			// Act & Assert
+			await expect(httpClient.get(`/api/v1/follow/following/${userId}`, { page: -1 }))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_PAGE'
+						}
+					}
+				})
+		})
 
-			// Act
-			const result = await controller.getFollowing(userId, 1, 5, mockRequest)
+		it('should return validation error for invalid limit', async () => {
+			// Arrange
+			const userId = TestData.generateUUID()
 
-			// Assert
-			expect(result).toEqual({
-				following: [],
-				pagination: {
-					page: 1,
-					limit: 5,
-					total: 15,
-					totalPages: 3,
-					hasNext: true,
-					hasPrev: true
+			// Act & Assert
+			await expect(httpClient.get(`/api/v1/follow/following/${userId}`, { limit: 200 }))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'LIMIT_TOO_LARGE'
+						}
+					}
+				})
+		})
+
+		it('should return empty array when no following found', async () => {
+			// Arrange
+			const userId = TestData.generateUUID()
+
+			// Mock do Prisma para retornar array vazio
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					follow: {
+						findMany: jest.fn().mockResolvedValue([]),
+						count: jest.fn().mockResolvedValue(0)
+					}
 				}
 			})
 
-			expect(mockFollowRepository.findFollowing).toHaveBeenCalledWith({
-				userId,
-				page: 1,
-				limit: 5
+			// Act
+			const response = await httpClient.get(`/api/v1/follow/following/${userId}`, {
+				page: 0,
+				limit: 10
 			})
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data.following).toHaveLength(0)
+			expect(response.data.pagination.total).toBe(0)
+		})
+
+		it('should get following sorted by follow date', async () => {
+			// Arrange
+			const userId = TestData.generateUUID()
+			const mockFollowing = [
+				{
+					id: TestData.generateUUID(),
+					followerId: userId,
+					followingId: TestData.generateUUID(),
+					created_at: new Date('2024-01-02'),
+					following: {
+						id: TestData.generateUUID(),
+						username: 'newfollowing',
+						email: 'newfollowing@example.com',
+						userProfile: {
+							name: 'New Following',
+							bio: 'Bio of new following',
+							icon: 'https://example.com/newfollowing.jpg'
+						}
+					}
+				},
+				{
+					id: TestData.generateUUID(),
+					followerId: userId,
+					followingId: TestData.generateUUID(),
+					created_at: new Date('2024-01-01'),
+					following: {
+						id: TestData.generateUUID(),
+						username: 'oldfollowing',
+						email: 'oldfollowing@example.com',
+						userProfile: {
+							name: 'Old Following',
+							bio: 'Bio of old following',
+							icon: 'https://example.com/oldfollowing.jpg'
+						}
+					}
+				}
+			]
+
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					follow: {
+						findMany: jest.fn().mockResolvedValue(mockFollowing),
+						count: jest.fn().mockResolvedValue(2)
+					}
+				}
+			})
+
+			// Act
+			const response = await httpClient.get(`/api/v1/follow/following/${userId}`, {
+				page: 0,
+				limit: 10
+			})
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data.following).toHaveLength(2)
+			expect(response.data.following[0].following.username).toBe('newfollowing')
+			expect(response.data.following[1].following.username).toBe('oldfollowing')
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const userId = 'user-profile-123'
-			const mockRequest = {
-				user: { userProfileId: 'current-user-123' }
-			}
+			const userId = TestData.generateUUID()
 
-			mockFollowRepository.findFollowing.mockRejectedValue(new Error('Database connection failed'))
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					follow: {
+						findMany: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
 
-			// Act
-			const result = await controller.getFollowing(userId, 0, 10, mockRequest)
-
-			// Assert
-			expect(result).toBe('DATABASE_ERROR')
+			// Act & Assert
+			await expect(httpClient.get(`/api/v1/follow/following/${userId}`, { page: 0, limit: 10 }))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

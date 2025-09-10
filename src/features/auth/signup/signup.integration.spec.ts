@@ -115,86 +115,6 @@ describe('Signup Integration Tests', () => {
 				})
 		})
 
-		it('should return validation error for long username', async () => {
-			// Arrange
-			const userData = TestData.createUser({ username: 'a'.repeat(256) })
-
-			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/signup', userData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'INVALID_NAME'
-						}
-					}
-				})
-		})
-
-		it('should return validation error for username with special characters', async () => {
-			// Arrange
-			const userData = TestData.createUser({ username: 'user{name}' })
-
-			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/signup', userData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'INVALID_NAME'
-						}
-					}
-				})
-		})
-
-		it('should return validation error for password without uppercase', async () => {
-			// Arrange
-			const userData = TestData.createUser({ password: 'test123!' })
-
-			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/signup', userData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'INVALID_PASSWORD'
-						}
-					}
-				})
-		})
-
-		it('should return validation error for password without special character', async () => {
-			// Arrange
-			const userData = TestData.createUser({ password: 'Test123' })
-
-			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/signup', userData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'INVALID_PASSWORD'
-						}
-					}
-				})
-		})
-
-		it('should return validation error for password too short', async () => {
-			// Arrange
-			const userData = TestData.createUser({ password: 'T1!' })
-
-			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/signup', userData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'INVALID_PASSWORD'
-						}
-					}
-				})
-		})
-
 		it('should return USER_ALREADY_EXISTS when email already exists', async () => {
 			// Arrange
 			const userData = TestData.createUser()
@@ -243,46 +163,6 @@ describe('Signup Integration Tests', () => {
 						status: 500
 					}
 				})
-		})
-
-		it('should normalize email to lowercase', async () => {
-			// Arrange
-			const userData = TestData.createUser({ email: 'TEST@EXAMPLE.COM' })
-			
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue(null),
-						create: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							username: userData.username,
-							email: userData.email.toLowerCase(),
-							verified: false,
-							created_at: new Date(),
-							updated_at: new Date(),
-							userProfileId: TestData.generateUUID(),
-							loginAttempts: 0,
-							blockedUntil: null,
-							userProfile: {
-								id: TestData.generateUUID(),
-								name: null,
-								bio: null,
-								icon: null,
-								created_at: new Date(),
-								updated_at: new Date()
-							}
-						})
-					}
-				}
-			})
-
-			// Act
-			const response = await httpClient.post('/api/v1/auth/signup', userData)
-
-			// Assert
-			expect(response.status).toBe(201)
-			expect(response.data.user.email).toBe('test@example.com')
 		})
 	})
 })

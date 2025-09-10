@@ -1,225 +1,244 @@
-import { DeleteUserController } from './delete-user.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Mock completo do Prisma Client
-jest.mock('@prisma/client', () => ({
-	PrismaClient: jest.fn().mockImplementation(() => ({
-		user: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn()
-		},
-		userProfile: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		}
-	})),
-	Prisma: {
-		QueryMode: {
-			insensitive: 'insensitive'
-		}
-	}
-}))
+describe('Delete User Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-// Mock do UserGateway
-jest.mock('@shared/gateways/user.gateway', () => ({
-	UserGateway: jest.fn().mockImplementation(() => ({
-		uploadUserIcon: jest.fn(),
-		uploadUserBackground: jest.fn(),
-		deleteUserFile: jest.fn()
-	}))
-}))
-
-describe('DeleteUserController', () => {
-	let controller: DeleteUserController
-	let mockUserRepository: any
-	let mockUserGateway: any
-	let mockLogger: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		// Mock completo do UserRepository
-		mockUserRepository = {
-			findAll: jest.fn(),
-			findById: jest.fn(),
-			findByEmail: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		}
-
-		// Mock completo do UserGateway
-		mockUserGateway = {
-			uploadUserIcon: jest.fn(),
-			uploadUserBackground: jest.fn(),
-			deleteUserFile: jest.fn()
-		}
-
-		// Mock completo do Logger
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		controller = new DeleteUserController(mockUserRepository, mockUserGateway, mockLogger)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('deleteUser', () => {
-		it('should delete user successfully when user owns the account', async () => {
+	describe('DELETE /api/v1/users', () => {
+		it('should delete user successfully', async () => {
 			// Arrange
-			const userId = 'user-123'
 			const mockUser = {
-				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
+				id: TestData.generateUUID(),
+				username: 'testuser',
+				email: 'test@example.com',
 				verified: true,
-				created_at: new Date('2023-01-01'),
-				updated_at: new Date('2023-01-01'),
 				userProfile: {
-					id: 'profile-123',
-					icon: 'icon-key',
-					backgroundImage: 'bg-key'
+					icon: 'https://example.com/icon.jpg',
+					backgroundImage: 'https://example.com/background.jpg'
 				}
 			}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findById: jest.fn().mockResolvedValue(mockUser),
+						delete: jest.fn().mockResolvedValue({
+							id: mockUser.id
+						})
+					}
+				}
+			})
 
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			mockUserRepository.findById.mockResolvedValue(mockUser)
-			mockUserGateway.deleteUserFile.mockResolvedValue(true)
-			mockUserRepository.delete.mockResolvedValue(true)
+			// Mock do S3 para deletar arquivos
+			IntegrationTestSetup.setupMocks({
+				s3: {
+					send: jest.fn().mockResolvedValue({})
+				}
+			})
 
 			// Act
-			const result = await controller.deleteUser(mockRequest as any)
+			const response = await httpClient.delete('/api/v1/users')
 
 			// Assert
-			expect(result).toEqual({
-				message: 'USER_DELETED_SUCCESSFULLY'
-			})
-			expect(mockUserRepository.findById).toHaveBeenCalledWith({ id: userId })
-			expect(mockUserGateway.deleteUserFile).toHaveBeenCalledWith({ key: 'icon-key' })
-			expect(mockUserGateway.deleteUserFile).toHaveBeenCalledWith({ key: 'bg-key' })
-			expect(mockUserRepository.delete).toHaveBeenCalledWith({ id: userId })
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('message')
 		})
 
-		it('should return USER_NOT_FOUND when user does not exist', async () => {
+		it('should delete user without profile images successfully', async () => {
 			// Arrange
-			const nonExistentUserId = 'non-existent-user'
-			const mockRequest = {
-				user: { sub: nonExistentUserId }
-			}
-
-			// Act
-			const result = await controller.deleteUser(mockRequest as any)
-
-			// Assert
-			expect(result).toEqual({
-				message: 'USER_NOT_FOUND'
-			})
-			expect(mockUserRepository.findById).toHaveBeenCalledWith({ id: nonExistentUserId })
-			expect(mockUserGateway.deleteUserFile).not.toHaveBeenCalled()
-			expect(mockUserRepository.delete).not.toHaveBeenCalled()
-		})
-
-
-		it('should handle user without profile images', async () => {
-			// Arrange
-			const userId = 'user-123'
 			const mockUser = {
-				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
+				id: TestData.generateUUID(),
+				username: 'testuser',
+				email: 'test@example.com',
 				verified: true,
-				created_at: new Date('2023-01-01'),
-				updated_at: new Date('2023-01-01'),
 				userProfile: {
-					id: 'profile-123',
 					icon: null,
 					backgroundImage: null
 				}
 			}
-
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			mockUserRepository.findById.mockResolvedValue(mockUser)
-			mockUserRepository.delete.mockResolvedValue(true)
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findById: jest.fn().mockResolvedValue(mockUser),
+						delete: jest.fn().mockResolvedValue({
+							id: mockUser.id
+						})
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.deleteUser(mockRequest as any)
+			const response = await httpClient.delete('/api/v1/users')
 
 			// Assert
-			expect(result).toEqual({
-				message: 'USER_DELETED_SUCCESSFULLY'
-			})
-			expect(mockUserGateway.deleteUserFile).not.toHaveBeenCalled()
-			expect(mockUserRepository.delete).toHaveBeenCalledWith({ id: userId })
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('message')
 		})
 
-		it('should handle gateway errors gracefully', async () => {
+		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
-			const userId = 'user-123'
+			httpClient.clearAuthToken()
+
+			// Act & Assert
+			await expect(httpClient.delete('/api/v1/users'))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
+		})
+
+		it('should return USER_NOT_FOUND when user does not exist', async () => {
+			// Arrange
+			// Mock do Prisma para retornar null
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findById: jest.fn().mockResolvedValue(null)
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.delete('/api/v1/users'))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: {
+							message: 'USER_NOT_FOUND'
+						}
+					}
+				})
+		})
+
+		it('should handle S3 errors gracefully', async () => {
+			// Arrange
 			const mockUser = {
-				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
+				id: TestData.generateUUID(),
+				username: 'testuser',
+				email: 'test@example.com',
 				verified: true,
-				created_at: new Date('2023-01-01'),
-				updated_at: new Date('2023-01-01'),
 				userProfile: {
-					id: 'profile-123',
-					icon: 'icon-key',
-					backgroundImage: 'bg-key'
+					icon: 'https://example.com/icon.jpg',
+					backgroundImage: 'https://example.com/background.jpg'
 				}
 			}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findById: jest.fn().mockResolvedValue(mockUser),
+						delete: jest.fn().mockResolvedValue({
+							id: mockUser.id
+						})
+					}
+				}
+			})
 
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			mockUserRepository.findById.mockResolvedValue(mockUser)
-			mockUserGateway.deleteUserFile.mockRejectedValue(new Error('S3 Error'))
-			mockUserRepository.delete.mockResolvedValue(true)
+			// Mock do S3 para retornar erro
+			IntegrationTestSetup.setupMocks({
+				s3: {
+					send: jest.fn().mockRejectedValue(new Error('S3 service unavailable'))
+				}
+			})
 
 			// Act & Assert
-			await expect(controller.deleteUser(mockRequest as any)).rejects.toThrow('S3 Error')
+			await expect(httpClient.delete('/api/v1/users'))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 
-		it('should handle repository errors', async () => {
+		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const userId = 'user-123'
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			mockUserRepository.findById.mockRejectedValue(new Error('Database Error'))
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findById: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
 
 			// Act & Assert
-			await expect(controller.deleteUser(mockRequest as any)).rejects.toThrow('Database Error')
+			await expect(httpClient.delete('/api/v1/users'))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
+		})
+
+		it('should delete user with all related data', async () => {
+			// Arrange
+			const mockUser = {
+				id: TestData.generateUUID(),
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				userProfile: {
+					icon: 'https://example.com/icon.jpg',
+					backgroundImage: 'https://example.com/background.jpg'
+				}
+			}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findById: jest.fn().mockResolvedValue(mockUser),
+						delete: jest.fn().mockResolvedValue({
+							id: mockUser.id
+						})
+					}
+				}
+			})
+
+			// Mock do S3
+			IntegrationTestSetup.setupMocks({
+				s3: {
+					send: jest.fn().mockResolvedValue({})
+				}
+			})
+
+			// Act
+			const response = await httpClient.delete('/api/v1/users')
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('message')
 		})
 	})
 })

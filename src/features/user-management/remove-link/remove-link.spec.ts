@@ -1,130 +1,165 @@
-import { RemoveLinkController } from './remove-link.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+describe('Remove Link Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-// Mock do LinkRepository
-jest.mock('@shared/repositories/link.repository', () => ({
-	LinkRepository: jest.fn().mockImplementation(() => ({
-		findByUserAndId: jest.fn(),
-		delete: jest.fn()
-	}))
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-jest.mock('@shared/decorators', () => ({
-	LogResponseTime: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor
-}))
-
-describe('RemoveLinkController', () => {
-	let controller: RemoveLinkController
-	let mockLogger: any
-	let mockLinkRepository: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		mockLinkRepository = {
-			findByUserAndId: jest.fn(),
-			delete: jest.fn()
-		}
-
-		controller = new RemoveLinkController(mockLogger, mockLinkRepository)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('removeLink', () => {
-		it('should remove link successfully', async () => {
+	describe('DELETE /api/v1/users/links/:linkId', () => {
+		it('should remove personal link successfully', async () => {
 			// Arrange
-			const linkId = 'link-uuid-123'
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
-
-			const mockLink = {
-				id: linkId,
-				url: 'https://github.com/testuser',
-				userProfileId: 'user-profile-123'
-			}
-
-			mockLinkRepository.findByUserAndId.mockResolvedValue(mockLink)
-			mockLinkRepository.delete.mockResolvedValue({})
+			const linkId = TestData.generateUUID()
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						findFirst: jest.fn().mockResolvedValue({
+							id: linkId,
+							url: 'https://github.com/testuser',
+							userId: TestData.generateUUID()
+						}),
+						delete: jest.fn().mockResolvedValue({
+							id: linkId
+						})
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.removeLink(linkId, mockRequest)
+			const response = await httpClient.delete(`/api/v1/users/links/${linkId}`)
 
 			// Assert
-			expect(result).toBe('Link removed successfully')
-
-			expect(mockLinkRepository.findByUserAndId).toHaveBeenCalledWith({
-				linkId,
-				userProfileId: 'user-profile-123'
-			})
-			expect(mockLinkRepository.delete).toHaveBeenCalledWith({
-				id: linkId
-			})
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('message')
 		})
 
-		it('should return 401 when not authenticated', async () => {
-			// Arrange
-			const linkId = 'link-uuid-123'
-			const mockRequest = {}
-
-			// Act
-			const result = await controller.removeLink(linkId, mockRequest)
-
-			// Assert
-			expect(result).toBe('UNAUTHORIZED')
-			expect(mockLinkRepository.findByUserAndId).not.toHaveBeenCalled()
+		it('should return validation error for invalid link ID', async () => {
+			// Act & Assert
+			await expect(httpClient.delete('/api/v1/users/links/invalid-uuid'))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_LINK_ID'
+						}
+					}
+				})
 		})
 
-		it('should return 404 for non-existent link', async () => {
+		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
-			const linkId = 'link-uuid-123'
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
+			const linkId = TestData.generateUUID()
+			httpClient.clearAuthToken()
 
-			mockLinkRepository.findByUserAndId.mockResolvedValue(null)
+			// Act & Assert
+			await expect(httpClient.delete(`/api/v1/users/links/${linkId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
+		})
 
-			// Act
-			const result = await controller.removeLink(linkId, mockRequest)
+		it('should return LINK_NOT_FOUND when link does not exist', async () => {
+			// Arrange
+			const linkId = TestData.generateUUID()
 
-			// Assert
-			expect(result).toBe('LINK_NOT_FOUND')
-			expect(mockLinkRepository.delete).not.toHaveBeenCalled()
+			// Mock do Prisma para retornar null
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						findFirst: jest.fn().mockResolvedValue(null)
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.delete(`/api/v1/users/links/${linkId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: {
+							message: 'LINK_NOT_FOUND'
+						}
+					}
+				})
+		})
+
+		it('should return FORBIDDEN when user is not the owner of the link', async () => {
+			// Arrange
+			const linkId = TestData.generateUUID()
+
+			// Mock do Prisma para retornar link de outro usuário
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						findFirst: jest.fn().mockResolvedValue({
+							id: linkId,
+							url: 'https://github.com/testuser',
+							userId: 'different-user-id'
+						})
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.delete(`/api/v1/users/links/${linkId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 403,
+						data: {
+							message: 'FORBIDDEN'
+						}
+					}
+				})
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const linkId = 'link-uuid-123'
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
+			const linkId = TestData.generateUUID()
 
-			mockLinkRepository.findByUserAndId.mockRejectedValue(new Error('Database connection failed'))
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						findFirst: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
 
-			// Act
-			const result = await controller.removeLink(linkId, mockRequest)
-
-			// Assert
-			expect(result).toBe('DATABASE_ERROR')
+			// Act & Assert
+			await expect(httpClient.delete(`/api/v1/users/links/${linkId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

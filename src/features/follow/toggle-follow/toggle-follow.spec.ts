@@ -1,94 +1,226 @@
-import { ToggleFollowController } from './toggle-follow.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+describe('Toggle Follow Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-jest.mock('@shared/decorators', () => ({
-	LogResponseTime: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-jest.mock('@shared/repositories/follow.repository', () => ({
-	FollowRepository: jest.fn().mockImplementation(() => ({
-		findFollow: jest.fn(),
-		follow: jest.fn(),
-		unfollow: jest.fn()
-	}))
-}))
-
-jest.mock('@shared/repositories/user.repository', () => ({
-	UserRepository: jest.fn().mockImplementation(() => ({
-		findById: jest.fn()
-	}))
-}))
-
-describe('ToggleFollowController', () => {
-	let controller: ToggleFollowController
-	let mockLogger: any
-	let mockFollowRepository: any
-	let mockUserRepository: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		mockFollowRepository = {
-			findFollow: jest.fn(),
-			follow: jest.fn(),
-			unfollow: jest.fn()
-		}
-
-		mockUserRepository = {
-			findById: jest.fn()
-		}
-
-		controller = new ToggleFollowController(mockLogger, mockFollowRepository, mockUserRepository)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('toggleFollow', () => {
-		it('should return UNAUTHORIZED when user is not authenticated', async () => {
+	describe('POST /api/v1/follow/toggle', () => {
+		it('should follow user successfully', async () => {
 			// Arrange
 			const followData = {
-				followingId: 'user-profile-456'
+				userId: TestData.generateUUID()
 			}
-			const mockRequest = {}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					follow: {
+						findFirst: jest.fn().mockResolvedValue(null), // Follow não existe
+						create: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							followerId: TestData.generateUUID(),
+							followingId: followData.userId,
+							created_at: new Date()
+						})
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.toggleFollow(followData, mockRequest)
+			const response = await httpClient.post('/api/v1/follow/toggle', followData)
 
 			// Assert
-			expect(result).toBe('UNAUTHORIZED')
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('following')
+			expect(response.data.following).toBe(true)
 		})
 
-		it('should return UNAUTHORIZED when user sub is missing', async () => {
+		it('should unfollow user successfully', async () => {
 			// Arrange
 			const followData = {
-				followingId: 'user-profile-456'
+				userId: TestData.generateUUID()
 			}
-			const mockRequest = {
-				user: {}
-			}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					follow: {
+						findFirst: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							followerId: TestData.generateUUID(),
+							followingId: followData.userId,
+							created_at: new Date()
+						}), // Follow existe
+						delete: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID()
+						})
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.toggleFollow(followData, mockRequest)
+			const response = await httpClient.post('/api/v1/follow/toggle', followData)
 
 			// Assert
-			expect(result).toBe('UNAUTHORIZED')
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('following')
+			expect(response.data.following).toBe(false)
+		})
+
+		it('should return validation error for invalid user ID', async () => {
+			// Arrange
+			const followData = {
+				userId: 'invalid-uuid'
+			}
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_USER_ID'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for empty user ID', async () => {
+			// Arrange
+			const followData = {
+				userId: ''
+			}
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'USER_ID_REQUIRED'
+						}
+					}
+				})
+		})
+
+		it('should return UNAUTHORIZED when no token provided', async () => {
+			// Arrange
+			const followData = {
+				userId: TestData.generateUUID()
+			}
+			httpClient.clearAuthToken()
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
+		})
+
+		it('should return USER_NOT_FOUND when user to follow does not exist', async () => {
+			// Arrange
+			const followData = {
+				userId: TestData.generateUUID()
+			}
+
+			// Mock do Prisma para retornar null
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					follow: {
+						findFirst: jest.fn().mockResolvedValue(null)
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: {
+							message: 'USER_NOT_FOUND'
+						}
+					}
+				})
+		})
+
+		it('should return CANNOT_FOLLOW_SELF when trying to follow yourself', async () => {
+			// Arrange
+			const followData = {
+				userId: TestData.generateUUID()
+			}
+
+			// Mock do Prisma para retornar erro de auto-follow
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					follow: {
+						findFirst: jest.fn().mockResolvedValue(null)
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'CANNOT_FOLLOW_SELF'
+						}
+					}
+				})
+		})
+
+		it('should handle database errors gracefully', async () => {
+			// Arrange
+			const followData = {
+				userId: TestData.generateUUID()
+			}
+
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					follow: {
+						findFirst: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

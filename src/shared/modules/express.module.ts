@@ -13,6 +13,7 @@ export class ExpressModule implements StartupModule {
 	public async initialize(): Promise<void> {
 		this.logger.info('Setting up Express middleware...')
 		App.config()
+		App.configValidation(this.logger)
 		this.logger.info('Express middleware configured successfully')
 	}
 }

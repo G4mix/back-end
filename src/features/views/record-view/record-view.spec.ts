@@ -1,79 +1,261 @@
-import { RecordViewController } from './record-view.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+describe('Record View Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-jest.mock('@shared/decorators', () => ({
-	LogResponseTime: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-describe('RecordViewController', () => {
-	let controller: RecordViewController
-	let mockLogger: any
-	let mockViewRepository: any
-	let mockIdeaRepository: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		mockViewRepository = {
-			createMany: jest.fn(),
-			getCount: jest.fn()
-		}
-
-		mockIdeaRepository = {
-			findById: jest.fn()
-		}
-
-		controller = new RecordViewController(mockLogger, mockViewRepository, mockIdeaRepository)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('recordView', () => {
-		it('should return UNAUTHORIZED when user is not authenticated', async () => {
+	describe('POST /api/v1/views/record', () => {
+		it('should record view for idea successfully', async () => {
 			// Arrange
 			const viewData = {
-				ideaId: 'idea-uuid-123'
+				ideaId: TestData.generateUUID()
 			}
-			const mockRequest = {}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					view: {
+						findFirst: jest.fn().mockResolvedValue(null), // View não existe
+						create: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							ideaId: viewData.ideaId,
+							userId: TestData.generateUUID(),
+							created_at: new Date()
+						})
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.recordView({ ideas: [viewData.ideaId] }, mockRequest)
+			const response = await httpClient.post('/api/v1/views/record', viewData)
 
 			// Assert
-			expect(result).toBe('UNAUTHORIZED')
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('message')
 		})
 
-		it('should return UNAUTHORIZED when user sub is missing', async () => {
+		it('should not record duplicate view for same user and idea', async () => {
 			// Arrange
 			const viewData = {
-				ideaId: 'idea-uuid-123'
+				ideaId: TestData.generateUUID()
 			}
-			const mockRequest = {
-				user: {}
-			}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					view: {
+						findFirst: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							ideaId: viewData.ideaId,
+							userId: TestData.generateUUID(),
+							created_at: new Date()
+						}) // View já existe
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.recordView({ ideas: [viewData.ideaId] }, mockRequest)
+			const response = await httpClient.post('/api/v1/views/record', viewData)
 
 			// Assert
-			expect(result).toBe('UNAUTHORIZED')
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('message')
+		})
+
+		it('should record multiple views for different ideas', async () => {
+			// Arrange
+			const viewData = {
+				ideaId: TestData.generateUUID()
+			}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					view: {
+						findFirst: jest.fn().mockResolvedValue(null), // View não existe
+						create: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							ideaId: viewData.ideaId,
+							userId: TestData.generateUUID(),
+							created_at: new Date()
+						})
+					}
+				}
+			})
+
+			// Act
+			const response = await httpClient.post('/api/v1/views/record', viewData)
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('message')
+		})
+
+		it('should return validation error for invalid idea ID', async () => {
+			// Arrange
+			const viewData = {
+				ideaId: 'invalid-uuid'
+			}
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/views/record', viewData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_IDEA_ID'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for empty idea ID', async () => {
+			// Arrange
+			const viewData = {
+				ideaId: ''
+			}
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/views/record', viewData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'IDEA_ID_REQUIRED'
+						}
+					}
+				})
+		})
+
+		it('should return UNAUTHORIZED when no token provided', async () => {
+			// Arrange
+			const viewData = {
+				ideaId: TestData.generateUUID()
+			}
+			httpClient.clearAuthToken()
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/views/record', viewData))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
+		})
+
+		it('should handle database errors gracefully', async () => {
+			// Arrange
+			const viewData = {
+				ideaId: TestData.generateUUID()
+			}
+
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					view: {
+						findFirst: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/views/record', viewData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
+		})
+
+		it('should handle bulk view recording', async () => {
+			// Arrange
+			const viewData = {
+				ideas: [
+					TestData.generateUUID(),
+					TestData.generateUUID(),
+					TestData.generateUUID()
+				]
+			}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					view: {
+						createMany: jest.fn().mockResolvedValue({
+							count: 3
+						})
+					}
+				}
+			})
+
+			// Act
+			const response = await httpClient.post('/api/v1/views/record', viewData)
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('message')
+		})
+
+		it('should return validation error for empty ideas array', async () => {
+			// Arrange
+			const viewData = {
+				ideas: []
+			}
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/views/record', viewData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'IDEAS_ARRAY_REQUIRED'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for invalid ideas array', async () => {
+			// Arrange
+			const viewData = {
+				ideas: ['invalid-uuid', TestData.generateUUID()]
+			}
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/views/record', viewData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_IDEA_ID'
+						}
+					}
+				})
 		})
 	})
 })

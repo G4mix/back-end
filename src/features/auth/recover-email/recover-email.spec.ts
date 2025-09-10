@@ -1,276 +1,223 @@
-import { RecoverEmailController } from './recover-email.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Mock completo do Prisma Client
-jest.mock('@prisma/client', () => ({
-	PrismaClient: jest.fn().mockImplementation(() => ({
-		user: {
-			findUnique: jest.fn(),
-			findMany: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn()
-		},
-		userProfile: {
-			findUnique: jest.fn(),
-			findMany: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		},
-		userCode: {
-			findUnique: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn()
-		}
-	})),
-	Prisma: {
-		QueryMode: {
-			insensitive: 'insensitive'
-		}
-	}
-}))
+describe('Recover Email Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+	})
 
-jest.mock('@shared/utils', () => ({
-	generateRandomCode: jest.fn(() => 'ABC123'),
-	JwtManager: {
-		generateToken: jest.fn((payload: any) => `jwt_token_${payload.sub}`),
-		decode: jest.fn()
-	}
-}))
-
-describe('RecoverEmailController', () => {
-	let controller: RecoverEmailController
-	let mockUserRepository: any
-	let mockSESGateway: any
-	let mockLogger: any
-
-	const mockUser = {
-		id: 'user-123',
-		username: 'testuser',
-		email: 'test@example.com',
-		verified: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-		userProfileId: 'profile-123',
-		loginAttempts: 0,
-		blockedUntil: null,
-		userCode: {
-			id: 'code-123',
-			code: 'ABC123',
-			updated_at: new Date()
-		}
-	}
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		mockUserRepository = {
-			findByEmail: jest.fn(),
-			update: jest.fn()
-		}
-		mockSESGateway = {
-			sendEmail: jest.fn()
-		}
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn()
-		}
-		controller = new RecoverEmailController(mockUserRepository, mockSESGateway, mockLogger)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('sendRecoverEmail', () => {
-		it('should send recovery email successfully', async () => {
+	describe('POST /api/v1/auth/recover-email', () => {
+		it('should send recovery email successfully with valid email', async () => {
 			// Arrange
-			mockUserRepository.findByEmail.mockResolvedValue(mockUser)
-			mockSESGateway.sendEmail.mockResolvedValue({ success: true })
-			mockUserRepository.update.mockResolvedValue(mockUser)
-
-			// Act
-			const result = await controller.sendRecoverEmail({ email: 'test@example.com' })
-
-			// Assert
-			expect(result).toEqual({ email: 'test@example.com' })
-			expect(mockUserRepository.findByEmail).toHaveBeenCalledWith({ email: 'test@example.com' })
-			expect(mockSESGateway.sendEmail).toHaveBeenCalledWith({
-				template: 'RecoverEmailCodeTemplate',
-				receiver: 'test@example.com',
-				data: { code: 'ABC123' }
-			})
-			expect(mockUserRepository.update).toHaveBeenCalledWith({ id: 'user-123', code: 'ABC123' })
-		})
-
-		it('should return USER_NOT_FOUND when user does not exist', async () => {
-			// Arrange
-			mockUserRepository.findByEmail.mockResolvedValue(null)
-
-			// Act
-			const result = await controller.sendRecoverEmail({ email: 'nonexistent@example.com' })
-
-			// Assert
-			expect(result).toBe('USER_NOT_FOUND')
-			expect(mockUserRepository.findByEmail).toHaveBeenCalledWith({ email: 'nonexistent@example.com' })
-			expect(mockSESGateway.sendEmail).not.toHaveBeenCalled()
-		})
-
-		it('should handle email sending failure', async () => {
-			// Arrange
-			mockUserRepository.findByEmail.mockResolvedValue(mockUser)
-			mockSESGateway.sendEmail.mockResolvedValue('EMAIL_SEND_FAILED')
-
-			// Act
-			const result = await controller.sendRecoverEmail({ email: 'test@example.com' })
-
-			// Assert
-			expect(result).toBe('EMAIL_SEND_FAILED')
-			expect(mockSESGateway.sendEmail).toHaveBeenCalled()
-			expect(mockUserRepository.update).not.toHaveBeenCalled()
-		})
-
-		it('should normalize email to lowercase', async () => {
-			// Arrange
-			mockUserRepository.findByEmail.mockResolvedValue(mockUser)
-			mockSESGateway.sendEmail.mockResolvedValue({ success: true })
-			mockUserRepository.update.mockResolvedValue(mockUser)
-
-			// Act
-			await controller.sendRecoverEmail({ email: 'TEST@EXAMPLE.COM' })
-
-			// Assert
-			expect(mockUserRepository.findByEmail).toHaveBeenCalledWith({ email: 'test@example.com' })
-			expect(mockSESGateway.sendEmail).toHaveBeenCalledWith({
-				template: 'RecoverEmailCodeTemplate',
-				receiver: 'test@example.com',
-				data: { code: 'ABC123' }
-			})
-		})
-	})
-
-	describe('verifyEmailCode', () => {
-		it('should verify email code successfully', async () => {
-			// Arrange
-			mockUserRepository.findByEmail.mockResolvedValue(mockUser)
-
-			// Act
-			const result = await controller.verifyEmailCode({ 
-				code: 'ABC123', 
-				email: 'test@example.com' 
-			})
-
-			// Assert
-			expect(result).toEqual({
-				accessToken: 'jwt_token_user-123'
-			})
-			expect(mockUserRepository.findByEmail).toHaveBeenCalledWith({ email: 'test@example.com' })
-		})
-
-		it('should return USER_NOT_FOUND when user does not exist', async () => {
-			// Arrange
-			mockUserRepository.findByEmail.mockResolvedValue(null)
-
-			// Act
-			const result = await controller.verifyEmailCode({ 
-				code: 'ABC123', 
-				email: 'nonexistent@example.com' 
-			})
-
-			// Assert
-			expect(result).toBe('USER_NOT_FOUND')
-		})
-
-		it('should return USER_NOT_FOUND when user has no code', async () => {
-			// Arrange
-			const userWithoutCode = { ...mockUser, userCode: null }
-			mockUserRepository.findByEmail.mockResolvedValue(userWithoutCode)
-
-			// Act
-			const result = await controller.verifyEmailCode({ 
-				code: 'ABC123', 
-				email: 'test@example.com' 
-			})
-
-			// Assert
-			expect(result).toBe('USER_NOT_FOUND')
-		})
-
-		it('should return CODE_EXPIRED when code is expired', async () => {
-			// Arrange
-			const expiredUser = {
-				...mockUser,
-				userCode: {
-					...mockUser.userCode,
-					updated_at: new Date(Date.now() - 11 * 60 * 1000) // 11 minutes ago
-				}
+			const recoverEmailData = {
+				email: 'test@example.com'
 			}
-			mockUserRepository.findByEmail.mockResolvedValue(expiredUser)
-
-			// Act
-			const result = await controller.verifyEmailCode({ 
-				code: 'ABC123', 
-				email: 'test@example.com' 
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							email: recoverEmailData.email,
+							verified: false
+						}),
+						update: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							email: recoverEmailData.email,
+							verificationCode: '123456'
+						})
+					}
+				}
 			})
 
+			// Mock do SES
+			IntegrationTestSetup.setupMocks({
+				ses: {
+					send: jest.fn().mockResolvedValue({ MessageId: 'test-message-id' })
+				}
+			})
+
+			// Act
+			const response = await httpClient.post('/api/v1/auth/recover-email', recoverEmailData)
+
 			// Assert
-			expect(result).toBe('CODE_EXPIRED')
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('message')
 		})
 
-		it('should return CODE_NOT_EQUALS when code is wrong', async () => {
+		it('should return validation error for invalid email format', async () => {
 			// Arrange
-			mockUserRepository.findByEmail.mockResolvedValue(mockUser)
+			const recoverEmailData = {
+				email: 'invalid-email'
+			}
 
-			// Act
-			const result = await controller.verifyEmailCode({ 
-				code: 'WRONG', 
-				email: 'test@example.com' 
-			})
-
-			// Assert
-			expect(result).toBe('CODE_NOT_EQUALS')
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_EMAIL'
+						}
+					}
+				})
 		})
 
-		it('should normalize code to uppercase', async () => {
+		it('should return validation error for empty email', async () => {
 			// Arrange
-			mockUserRepository.findByEmail.mockResolvedValue(mockUser)
+			const recoverEmailData = {
+				email: ''
+			}
 
-			// Act
-			const result = await controller.verifyEmailCode({ 
-				code: 'abc123', 
-				email: 'test@example.com' 
-			})
-
-			// Assert
-			expect(result).toEqual({
-				accessToken: 'jwt_token_user-123'
-			})
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'EMAIL_REQUIRED'
+						}
+					}
+				})
 		})
 
-		it('should normalize email to lowercase', async () => {
+		it('should return USER_NOT_FOUND when user does not exist', async () => {
 			// Arrange
-			mockUserRepository.findByEmail.mockResolvedValue(mockUser)
+			const recoverEmailData = {
+				email: 'nonexistent@example.com'
+			}
 
-			// Act
-			await controller.verifyEmailCode({ 
-				code: 'ABC123', 
-				email: 'TEST@EXAMPLE.COM' 
+			// Mock do Prisma para retornar null
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue(null)
+					}
+				}
 			})
 
-			// Assert
-			expect(mockUserRepository.findByEmail).toHaveBeenCalledWith({ email: 'test@example.com' })
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: {
+							message: 'USER_NOT_FOUND'
+						}
+					}
+				})
+		})
+
+		it('should return USER_ALREADY_VERIFIED when user is already verified', async () => {
+			// Arrange
+			const recoverEmailData = {
+				email: 'test@example.com'
+			}
+
+			// Mock do Prisma para retornar usuário já verificado
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							email: recoverEmailData.email,
+							verified: true
+						})
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+				.rejects.toMatchObject({
+					response: {
+						status: 409,
+						data: {
+							message: 'USER_ALREADY_VERIFIED'
+						}
+					}
+				})
+		})
+
+		it('should handle SES errors gracefully', async () => {
+			// Arrange
+			const recoverEmailData = {
+				email: 'test@example.com'
+			}
+
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							email: recoverEmailData.email,
+							verified: false
+						}),
+						update: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							email: recoverEmailData.email,
+							verificationCode: '123456'
+						})
+					}
+				}
+			})
+
+			// Mock do SES para retornar erro
+			IntegrationTestSetup.setupMocks({
+				ses: {
+					send: jest.fn().mockRejectedValue(new Error('SES service unavailable'))
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
+		})
+
+		it('should handle database errors gracefully', async () => {
+			// Arrange
+			const recoverEmailData = {
+				email: 'test@example.com'
+			}
+
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

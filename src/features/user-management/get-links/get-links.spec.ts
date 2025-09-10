@@ -1,159 +1,166 @@
-import { GetLinksController } from './get-links.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+describe('Get Links Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-// Mock do LinkRepository
-jest.mock('@shared/repositories/link.repository', () => ({
-	LinkRepository: jest.fn().mockImplementation(() => ({
-		findByUser: jest.fn()
-	}))
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-jest.mock('@shared/decorators', () => ({
-	LogResponseTime: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor
-}))
-
-describe('GetLinksController', () => {
-	let controller: GetLinksController
-	let mockLogger: any
-	let mockLinkRepository: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		mockLinkRepository = {
-			findByUser: jest.fn()
-		}
-
-		controller = new GetLinksController(mockLogger, mockLinkRepository)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('getLinks', () => {
-		it('should get links successfully', async () => {
+	describe('GET /api/v1/users/links', () => {
+		it('should get personal links successfully', async () => {
 			// Arrange
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
-
 			const mockLinks = [
 				{
-					id: 'link-1',
+					id: TestData.generateUUID(),
 					url: 'https://github.com/testuser',
-					created_at: new Date('2024-01-01T00:00:00.000Z')
+					userId: TestData.generateUUID(),
+					created_at: new Date()
 				},
 				{
-					id: 'link-2',
+					id: TestData.generateUUID(),
 					url: 'https://linkedin.com/in/testuser',
-					created_at: new Date('2024-01-02T00:00:00.000Z')
+					userId: TestData.generateUUID(),
+					created_at: new Date()
+				},
+				{
+					id: TestData.generateUUID(),
+					url: 'https://twitter.com/testuser',
+					userId: TestData.generateUUID(),
+					created_at: new Date()
 				}
 			]
 
-			mockLinkRepository.findByUser.mockResolvedValue(mockLinks)
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						findMany: jest.fn().mockResolvedValue(mockLinks)
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.getLinks(undefined, mockRequest)
+			const response = await httpClient.get('/api/v1/users/links')
 
 			// Assert
-			expect(result).toEqual({
-				links: [
-					{
-						id: 'link-1',
-						url: 'https://github.com/testuser',
-						created_at: '2024-01-01T00:00:00.000Z'
-					},
-					{
-						id: 'link-2',
-						url: 'https://linkedin.com/in/testuser',
-						created_at: '2024-01-02T00:00:00.000Z'
-					}
-				]
-			})
-
-			expect(mockLinkRepository.findByUser).toHaveBeenCalledWith({
-				userProfileId: 'user-profile-123'
-			})
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('links')
+			expect(response.data.links).toHaveLength(3)
+			expect(response.data.links[0].url).toBe('https://github.com/testuser')
+			expect(response.data.links[1].url).toBe('https://linkedin.com/in/testuser')
+			expect(response.data.links[2].url).toBe('https://twitter.com/testuser')
 		})
 
-		it('should get links for specific user', async () => {
+		it('should return empty array when no links found', async () => {
 			// Arrange
-			const userId = 'other-user-123'
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
+			// Mock do Prisma para retornar array vazio
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						findMany: jest.fn().mockResolvedValue([])
+					}
+				}
+			})
 
+			// Act
+			const response = await httpClient.get('/api/v1/users/links')
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data.links).toHaveLength(0)
+		})
+
+		it('should return UNAUTHORIZED when no token provided', async () => {
+			// Arrange
+			httpClient.clearAuthToken()
+
+			// Act & Assert
+			await expect(httpClient.get('/api/v1/users/links'))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
+		})
+
+		it('should get links sorted by creation date', async () => {
+			// Arrange
 			const mockLinks = [
 				{
-					id: 'link-1',
-					url: 'https://github.com/otheruser',
-					created_at: new Date('2024-01-01T00:00:00.000Z')
+					id: TestData.generateUUID(),
+					url: 'https://github.com/testuser',
+					userId: TestData.generateUUID(),
+					created_at: new Date('2024-01-02')
+				},
+				{
+					id: TestData.generateUUID(),
+					url: 'https://linkedin.com/in/testuser',
+					userId: TestData.generateUUID(),
+					created_at: new Date('2024-01-01')
 				}
 			]
 
-			mockLinkRepository.findByUser.mockResolvedValue(mockLinks)
-
-			// Act
-			const result = await controller.getLinks(userId, mockRequest)
-
-			// Assert
-			expect(result).toEqual({
-				links: [
-					{
-						id: 'link-1',
-						url: 'https://github.com/otheruser',
-						created_at: '2024-01-01T00:00:00.000Z'
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						findMany: jest.fn().mockResolvedValue(mockLinks)
 					}
-				]
+				}
 			})
-
-			expect(mockLinkRepository.findByUser).toHaveBeenCalledWith({
-				userProfileId: userId
-			})
-		})
-
-		it('should return 401 when not authenticated', async () => {
-			// Arrange
-			const mockRequest = {}
 
 			// Act
-			const result = await controller.getLinks(undefined, mockRequest)
+			const response = await httpClient.get('/api/v1/users/links')
 
 			// Assert
-			expect(result).toBe('UNAUTHORIZED')
-			expect(mockLinkRepository.findByUser).not.toHaveBeenCalled()
+			expect(response.status).toBe(200)
+			expect(response.data.links).toHaveLength(2)
+			expect(response.data.links[0].url).toBe('https://github.com/testuser')
+			expect(response.data.links[1].url).toBe('https://linkedin.com/in/testuser')
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					link: {
+						findMany: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
 
-			mockLinkRepository.findByUser.mockRejectedValue(new Error('Database connection failed'))
-
-			// Act
-			const result = await controller.getLinks(undefined, mockRequest)
-
-			// Assert
-			expect(result).toBe('DATABASE_ERROR')
+			// Act & Assert
+			await expect(httpClient.get('/api/v1/users/links'))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

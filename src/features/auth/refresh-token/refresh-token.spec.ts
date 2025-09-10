@@ -1,219 +1,202 @@
-import { RefreshTokenController } from './refresh-token.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Definir mocks uma única vez
-const mockUtils = jest.requireMock('@shared/utils')
+describe('Refresh Token Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
 
-// Mock completo do Prisma Client
-jest.mock('@prisma/client', () => ({
-	PrismaClient: jest.fn().mockImplementation(() => ({
-		user: {
-			findUnique: jest.fn(),
-			findMany: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn()
-		},
-		userProfile: {
-			findUnique: jest.fn(),
-			findMany: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		}
-	})),
-	Prisma: {
-		QueryMode: {
-			insensitive: 'insensitive'
-		}
-	}
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+	})
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
-
-jest.mock('@shared/utils', () => ({
-	JwtManager: {
-		generateToken: jest.fn((payload: any) => `jwt_token_${payload.sub}`),
-		decode: jest.fn((token: string) => {
-			if (token === 'invalid_token') {
-				throw new Error('Invalid token')
-			}
-			return { sub: 'user-123' }
-		})
-	}
-}))
-
-// Mock das constantes
-jest.mock('@shared/constants', () => ({
-	EXPIRATION_TIME_REFRESH_TOKEN: '7d'
-}))
-
-describe('RefreshTokenController', () => {
-	let controller: RefreshTokenController
-	let mockUserRepository: any
-	let mockLogger: any
-
-	const mockUser = {
-		id: 'user-123',
-		username: 'testuser',
-		email: 'test@example.com',
-		verified: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-		userProfileId: 'profile-123',
-		loginAttempts: 0,
-		blockedUntil: null,
-		userProfile: {
-			id: 'profile-123',
-			name: 'Test User',
-			bio: 'Test bio',
-			icon: null,
-			created_at: new Date(),
-			updated_at: new Date()
-		}
-	}
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		mockUserRepository = {
-			findById: jest.fn(),
-			update: jest.fn()
-		}
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn()
-		}
-		controller = new RefreshTokenController(mockUserRepository, mockLogger)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('refreshToken', () => {
-		it('should refresh token successfully', async () => {
+	describe('POST /api/v1/auth/refresh-token', () => {
+		it('should refresh token successfully with valid refresh token', async () => {
 			// Arrange
-			mockUserRepository.findById.mockResolvedValue(mockUser)
-			mockUserRepository.update.mockResolvedValue(mockUser)
+			const refreshTokenData = {
+				refreshToken: 'valid-refresh-token'
+			}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							username: 'testuser',
+							email: 'test@example.com',
+							verified: true,
+							created_at: new Date(),
+							updated_at: new Date(),
+							userProfileId: TestData.generateUUID(),
+							loginAttempts: 0,
+							blockedUntil: null,
+							userProfile: {
+								id: TestData.generateUUID(),
+								name: null,
+								bio: null,
+								icon: null,
+								created_at: new Date(),
+								updated_at: new Date()
+							}
+						})
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.refreshToken({ token: 'valid_refresh_token' })
+			const response = await httpClient.post('/api/v1/auth/refresh-token', refreshTokenData)
 
 			// Assert
-			expect(result).toEqual({
-				accessToken: 'jwt_token_user-123',
-				refreshToken: 'jwt_token_user-123'
-			})
-			expect(mockUserRepository.findById).toHaveBeenCalledWith({ id: 'user-123' })
-			expect(mockUserRepository.update).toHaveBeenCalledWith({ 
-				id: 'user-123', 
-				token: 'jwt_token_user-123' 
-			})
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('accessToken')
+			expect(response.data).toHaveProperty('refreshToken')
+			expect(response.data).toHaveProperty('user')
 		})
 
-		it('should return UNAUTHORIZED for invalid token', async () => {
+		it('should return validation error for empty refresh token', async () => {
 			// Arrange
-			mockUtils.JwtManager.decode.mockImplementation(() => {
-				throw new Error('Invalid token')
+			const refreshTokenData = {
+				refreshToken: ''
+			}
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'REFRESH_TOKEN_REQUIRED'
+						}
+					}
+				})
+		})
+
+		it('should return INVALID_REFRESH_TOKEN when token is invalid', async () => {
+			// Arrange
+			const refreshTokenData = {
+				refreshToken: 'invalid-refresh-token'
+			}
+
+			// Mock do Prisma para retornar null
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue(null)
+					}
+				}
 			})
 
-			// Act
-			const result = await controller.refreshToken({ token: 'invalid_token' })
-
-			// Assert
-			expect(result).toBe('UNAUTHORIZED')
-			expect(mockUserRepository.findById).not.toHaveBeenCalled()
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'INVALID_REFRESH_TOKEN'
+						}
+					}
+				})
 		})
 
 		it('should return USER_NOT_FOUND when user does not exist', async () => {
 			// Arrange
-			mockUtils.JwtManager.decode.mockReturnValue({ sub: 'user-123' })
-			mockUserRepository.findById.mockResolvedValue(null)
+			const refreshTokenData = {
+				refreshToken: 'valid-refresh-token'
+			}
 
-			// Act
-			const result = await controller.refreshToken({ token: 'valid_refresh_token' })
-
-			// Assert
-			expect(result).toBe('USER_NOT_FOUND')
-			expect(mockUserRepository.findById).toHaveBeenCalledWith({ id: 'user-123' })
-			expect(mockUserRepository.update).not.toHaveBeenCalled()
-		})
-
-		it('should generate new access token', async () => {
-			// Arrange
-			mockUtils.JwtManager.decode.mockReturnValue({ sub: 'user-123' })
-			mockUserRepository.findById.mockResolvedValue(mockUser)
-			mockUserRepository.update.mockResolvedValue(mockUser)
-
-			// Act
-			const result = await controller.refreshToken({ token: 'valid_refresh_token' })
-
-			// Assert
-			expect(result).toHaveProperty('accessToken')
-			expect((result as any)?.accessToken).toBe('jwt_token_user-123')
-		})
-
-		it('should generate new refresh token', async () => {
-			// Arrange
-			mockUtils.JwtManager.decode.mockReturnValue({ sub: 'user-123' })
-			mockUserRepository.findById.mockResolvedValue(mockUser)
-			mockUserRepository.update.mockResolvedValue(mockUser)
-
-			// Act
-			const result = await controller.refreshToken({ token: 'valid_refresh_token' })
-
-			// Assert
-			expect(result).toHaveProperty('refreshToken')
-			expect((result as any)?.refreshToken).toBe('jwt_token_user-123')
-		})
-
-		it('should update refresh token in database', async () => {
-			// Arrange
-			mockUtils.JwtManager.decode.mockReturnValue({ sub: 'user-123' })
-			mockUserRepository.findById.mockResolvedValue(mockUser)
-			mockUserRepository.update.mockResolvedValue(mockUser)
-
-			// Act
-			await controller.refreshToken({ token: 'valid_refresh_token' })
-
-			// Assert
-			expect(mockUserRepository.update).toHaveBeenCalledWith({ 
-				id: 'user-123', 
-				token: 'jwt_token_user-123' 
+			// Mock do Prisma para retornar null
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue(null)
+					}
+				}
 			})
-		})
-
-		it('should handle repository errors gracefully', async () => {
-			// Arrange
-			mockUtils.JwtManager.decode.mockReturnValue({ sub: 'user-123' })
-			mockUserRepository.findById.mockRejectedValue(new Error('Database error'))
 
 			// Act & Assert
-			await expect(controller.refreshToken({ token: 'valid_refresh_token' }))
-				.rejects.toThrow('Database error')
+			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: {
+							message: 'USER_NOT_FOUND'
+						}
+					}
+				})
 		})
 
-		it('should decode token to get user ID', async () => {
+		it('should return USER_NOT_VERIFIED when user is not verified', async () => {
 			// Arrange
-			mockUserRepository.findById.mockResolvedValue(mockUser)
-			mockUserRepository.update.mockResolvedValue(mockUser)
+			const refreshTokenData = {
+				refreshToken: 'valid-refresh-token'
+			}
 
-			// Act
-			await controller.refreshToken({ token: 'valid_refresh_token' })
+			// Mock do Prisma para retornar usuário não verificado
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							username: 'testuser',
+							email: 'test@example.com',
+							verified: false,
+							created_at: new Date(),
+							updated_at: new Date(),
+							userProfileId: TestData.generateUUID(),
+							loginAttempts: 0,
+							blockedUntil: null
+						})
+					}
+				}
+			})
 
-			// Assert
-			const { JwtManager } = await import('@shared/utils')
-			expect(JwtManager.decode).toHaveBeenCalledWith('valid_refresh_token')
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+				.rejects.toMatchObject({
+					response: {
+						status: 403,
+						data: {
+							message: 'USER_NOT_VERIFIED'
+						}
+					}
+				})
+		})
+
+		it('should handle database errors gracefully', async () => {
+			// Arrange
+			const refreshTokenData = {
+				refreshToken: 'valid-refresh-token'
+			}
+
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

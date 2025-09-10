@@ -12,7 +12,7 @@ import { env } from '@config'
 import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
 import { AppModule } from '@shared/modules'
-import { setupSmartDTOMiddleware } from '@shared/middlewares/smart-dto-setup'
+import { setupAutoValidationMiddleware } from '@shared/middlewares/auto-validation.middleware'
 import { Logger } from '@shared/utils/logger'
 
 @singleton()
@@ -69,13 +69,10 @@ export class App {
 		App.instance.disable('x-powered-by')
 	}
 
-	public configSmartDTO(): void {
-		setupSmartDTOMiddleware(App.instance, this.logger)
+	public static configValidation(logger: Logger): void {
+		setupAutoValidationMiddleware(App.instance, logger)
 	}
 
-	public static configSmartDTO(logger: Logger): void {
-		setupSmartDTOMiddleware(App.instance, logger)
-	}
 
 	public static routes(): void {
 		App.instance.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {

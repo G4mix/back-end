@@ -1,146 +1,208 @@
-import { GetIdeaByIdController } from './get-idea-by-id.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+describe('Get Idea By ID Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-jest.mock('@shared/decorators', () => ({
-	LogResponseTime: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-describe('GetIdeaByIdController', () => {
-	let controller: GetIdeaByIdController
-	let mockLogger: any
-	let mockIdeaRepository: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		mockIdeaRepository = {
-			findById: jest.fn()
-		}
-
-		controller = new GetIdeaByIdController(mockLogger, mockIdeaRepository)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('getIdeaById', () => {
-		it('should retrieve idea successfully', async () => {
+	describe('GET /api/v1/ideas/:id', () => {
+		it('should get idea by id successfully', async () => {
 			// Arrange
-			const ideaId = 'idea-uuid-123'
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
-
+			const ideaId = TestData.generateUUID()
 			const mockIdea = {
 				id: ideaId,
-				title: 'Revolutionary Mobile App',
-				description: 'A detailed description of the mobile app concept...',
-				authorId: 'user-profile-456',
-				author: {
-					id: 'user-profile-456',
-					displayName: 'John Doe',
-					icon: 'https://example.com/icon.jpg'
-				},
+				title: 'Test Idea',
+				description: 'Test Description',
+				authorId: TestData.generateUUID(),
 				created_at: new Date(),
 				updated_at: new Date(),
+				tags: [
+					{ name: 'react' },
+					{ name: 'typescript' }
+				],
+				images: [
+					{ url: 'https://example.com/image1.jpg' },
+					{ url: 'https://example.com/image2.jpg' }
+				],
+				links: [
+					{ url: 'https://github.com/example' },
+					{ url: 'https://example.com' }
+				],
 				_count: {
-					likes: 15,
-					views: 120,
-					comments: 8
+					likes: 10,
+					comments: 5,
+					views: 100
 				}
 			}
 
-			mockIdeaRepository.findById.mockResolvedValue(mockIdea)
-
-			// Act
-			const result = await controller.getIdeaById(ideaId, mockRequest)
-
-			// Assert
-			expect(result).toEqual({
-				idea: {
-					...mockIdea,
-					created_at: expect.any(String),
-					updated_at: expect.any(String)
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					idea: {
+						findUnique: jest.fn().mockResolvedValue(mockIdea)
+					}
 				}
 			})
-			expect(mockLogger.info).toHaveBeenCalledWith('Retrieving idea by ID', {
-				userProfileId: 'user-profile-123',
-				ideaId: ideaId
-			})
-			expect(mockLogger.info).toHaveBeenCalledWith('Idea retrieved successfully', {
-				userProfileId: 'user-profile-123',
-				ideaId: ideaId,
-				title: mockIdea.title
-			})
+
+			// Act
+			const response = await httpClient.get(`/api/v1/ideas/${ideaId}`)
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('idea')
+			expect(response.data.idea.id).toBe(ideaId)
+			expect(response.data.idea.title).toBe('Test Idea')
+			expect(response.data.idea.tags).toHaveLength(2)
+			expect(response.data.idea.images).toHaveLength(2)
+			expect(response.data.idea.links).toHaveLength(2)
+		})
+
+		it('should return validation error for invalid UUID', async () => {
+			// Act & Assert
+			await expect(httpClient.get('/api/v1/ideas/invalid-uuid'))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_IDEA_ID'
+						}
+					}
+				})
 		})
 
 		it('should return IDEA_NOT_FOUND when idea does not exist', async () => {
 			// Arrange
-			const ideaId = 'idea-inexistente'
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
+			const ideaId = TestData.generateUUID()
 
-			mockIdeaRepository.findById.mockResolvedValue(null)
-
-			// Act
-			const result = await controller.getIdeaById(ideaId, mockRequest)
-
-			// Assert
-			expect(result).toBe('IDEA_NOT_FOUND')
-			expect(mockLogger.info).toHaveBeenCalledWith('Retrieving idea by ID', {
-				userProfileId: 'user-profile-123',
-				ideaId: ideaId
+			// Mock do Prisma para retornar null
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					idea: {
+						findUnique: jest.fn().mockResolvedValue(null)
+					}
+				}
 			})
+
+			// Act & Assert
+			await expect(httpClient.get(`/api/v1/ideas/${ideaId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: {
+							message: 'IDEA_NOT_FOUND'
+						}
+					}
+				})
 		})
 
-		it('should return UNAUTHORIZED when user is not authenticated', async () => {
+		it('should get idea with all related data', async () => {
 			// Arrange
-			const ideaId = 'idea-uuid-123'
-			const mockRequest = {}
+			const ideaId = TestData.generateUUID()
+			const mockIdea = {
+				id: ideaId,
+				title: 'Complete Idea',
+				description: 'Complete Description',
+				authorId: TestData.generateUUID(),
+				created_at: new Date(),
+				updated_at: new Date(),
+				author: {
+					id: TestData.generateUUID(),
+					username: 'testuser',
+					email: 'test@example.com',
+					userProfile: {
+						name: 'Test User',
+						bio: 'Test Bio',
+						icon: 'https://example.com/icon.jpg'
+					}
+				},
+				tags: [
+					{ name: 'react' },
+					{ name: 'typescript' },
+					{ name: 'nodejs' }
+				],
+				images: [
+					{ url: 'https://example.com/image1.jpg' },
+					{ url: 'https://example.com/image2.jpg' },
+					{ url: 'https://example.com/image3.jpg' }
+				],
+				links: [
+					{ url: 'https://github.com/example' },
+					{ url: 'https://example.com' },
+					{ url: 'https://docs.example.com' }
+				],
+				_count: {
+					likes: 25,
+					comments: 12,
+					views: 500
+				}
+			}
+
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					idea: {
+						findUnique: jest.fn().mockResolvedValue(mockIdea)
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.getIdeaById(ideaId, mockRequest)
+			const response = await httpClient.get(`/api/v1/ideas/${ideaId}`)
 
 			// Assert
-			expect(result).toBe('UNAUTHORIZED')
+			expect(response.status).toBe(200)
+			expect(response.data.idea.author).toBeDefined()
+			expect(response.data.idea.author.username).toBe('testuser')
+			expect(response.data.idea.tags).toHaveLength(3)
+			expect(response.data.idea.images).toHaveLength(3)
+			expect(response.data.idea.links).toHaveLength(3)
+			expect(response.data.idea._count.likes).toBe(25)
+			expect(response.data.idea._count.comments).toBe(12)
+			expect(response.data.idea._count.views).toBe(500)
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const ideaId = 'idea-uuid-123'
-			const mockRequest = {
-				user: { userProfileId: 'user-profile-123' }
-			}
+			const ideaId = TestData.generateUUID()
 
-			mockIdeaRepository.findById.mockRejectedValue(new Error('Database connection failed'))
-
-			// Act
-			const result = await controller.getIdeaById(ideaId, mockRequest)
-
-			// Assert
-			expect(result).toBe('Failed to retrieve idea')
-			expect(mockLogger.error).toHaveBeenCalledWith('Failed to retrieve idea', {
-				error: 'Database connection failed',
-				userProfileId: 'user-profile-123',
-				ideaId: ideaId
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					idea: {
+						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
 			})
+
+			// Act & Assert
+			await expect(httpClient.get(`/api/v1/ideas/${ideaId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

@@ -1,203 +1,224 @@
-import { GetUserByIdController } from './get-user-by-id.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Mock completo do Prisma Client
-jest.mock('@prisma/client', () => ({
-	PrismaClient: jest.fn().mockImplementation(() => ({
-		user: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn()
-		},
-		userProfile: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		}
-	})),
-	Prisma: {
-		QueryMode: {
-			insensitive: 'insensitive'
-		}
-	}
-}))
+describe('Get User By ID Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-describe('GetUserByIdController', () => {
-	let controller: GetUserByIdController
-	let mockUserRepository: any
-	let mockLogger: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		// Mock completo do UserRepository
-		mockUserRepository = {
-			findAll: jest.fn(),
-			findById: jest.fn(),
-			findByEmail: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		}
-
-		// Mock completo do Logger
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		controller = new GetUserByIdController(mockUserRepository, mockLogger)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('getUserById', () => {
-		it('should return user when found', async () => {
+	describe('GET /api/v1/users/:id', () => {
+		it('should get user by id successfully', async () => {
 			// Arrange
-			const userId = 'user-123'
+			const userId = TestData.generateUUID()
 			const mockUser = {
 				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
+				username: 'testuser',
+				email: 'test@example.com',
 				verified: true,
-				created_at: new Date('2023-01-01'),
-				updated_at: new Date('2023-01-01'),
+				created_at: new Date(),
+				updated_at: new Date(),
 				userProfile: {
-					id: 'profile-123',
-					icon: 'icon-url',
-					displayName: 'John Doe',
-					autobiography: 'Software developer',
-					backgroundImage: 'bg-url',
-					isFollowing: false,
-					links: ['https://github.com/john'],
-					_count: { followers: 5, following: 10 }
+					name: 'Test User',
+					bio: 'Bio of test user',
+					icon: 'https://example.com/user.jpg',
+					backgroundImage: 'https://example.com/background.jpg'
+				},
+				_count: {
+					followers: 10,
+					following: 5
 				}
 			}
-			mockUserRepository.findById.mockResolvedValue(mockUser)
 
-			// Act
-			const result = await controller.getUserById(userId)
-
-			// Assert
-			expect(result).toEqual({
-				user: {
-					id: userId,
-					username: 'john_doe',
-					email: 'john@example.com',
-					verified: true,
-					created_at: expect.any(Date),
-					updated_at: expect.any(Date),
-					userProfile: {
-						id: 'profile-123',
-						icon: 'icon-url',
-						displayName: 'John Doe',
-						autobiography: 'Software developer',
-						backgroundImage: 'bg-url',
-						isFollowing: false,
-						links: ['https://github.com/john'],
-						_count: {
-							followers: 5,
-							following: 10,
-						}
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue(mockUser)
 					}
 				}
 			})
-			expect(mockUserRepository.findById).toHaveBeenCalledWith({ id: userId })
-		})
-
-		it('should return 404 when user not found', async () => {
-			// Arrange
-			const userId = 'non-existent-user'
-			mockUserRepository.findById.mockResolvedValue(null)
 
 			// Act
-			const result = await controller.getUserById(userId)
+			const response = await httpClient.get(`/api/v1/users/${userId}`)
 
 			// Assert
-			expect(result).toEqual({
-				message: 'USER_NOT_FOUND'
-			})
-			expect(mockUserRepository.findById).toHaveBeenCalledWith({ id: userId })
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('user')
+			expect(response.data.user.id).toBe(userId)
+			expect(response.data.user.username).toBe('testuser')
+			expect(response.data.user.email).toBe('test@example.com')
+			expect(response.data.user.userProfile.name).toBe('Test User')
 		})
 
-		it('should handle repository errors', async () => {
+		it('should return validation error for invalid UUID', async () => {
+			// Act & Assert
+			await expect(httpClient.get('/api/v1/users/invalid-uuid'))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_USER_ID'
+						}
+					}
+				})
+		})
+
+		it('should return USER_NOT_FOUND when user does not exist', async () => {
 			// Arrange
-			const userId = 'user-123'
-			const error = new Error('Database connection failed')
-			mockUserRepository.findById.mockRejectedValue(error)
+			const userId = TestData.generateUUID()
+
+			// Mock do Prisma para retornar null
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue(null)
+					}
+				}
+			})
 
 			// Act & Assert
-			await expect(controller.getUserById(userId)).rejects.toThrow('Database connection failed')
+			await expect(httpClient.get(`/api/v1/users/${userId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: {
+							message: 'USER_NOT_FOUND'
+						}
+					}
+				})
 		})
 
-		it('should handle user without profile', async () => {
+		it('should get user with all profile information', async () => {
 			// Arrange
-			const userId = 'user-123'
+			const userId = TestData.generateUUID()
 			const mockUser = {
 				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
+				username: 'completeuser',
+				email: 'complete@example.com',
 				verified: true,
-				created_at: new Date('2023-01-01'),
-				updated_at: new Date('2023-01-01'),
+				created_at: new Date(),
+				updated_at: new Date(),
 				userProfile: {
-					id: 'profile-123',
-					icon: null,
-					displayName: 'John Doe',
-					autobiography: 'Software developer',
-					backgroundImage: null,
-					isFollowing: false,
-					links: [],
-					_count: { followers: 0, following: 0 }
+					name: 'Complete User',
+					bio: 'This is a complete user profile with all information filled out',
+					icon: 'https://example.com/complete-user.jpg',
+					backgroundImage: 'https://example.com/complete-background.jpg'
+				},
+				_count: {
+					followers: 25,
+					following: 12
 				}
 			}
-			mockUserRepository.findById.mockResolvedValue(mockUser)
 
-			// Act
-			const result = await controller.getUserById(userId)
-
-			// Assert
-			expect(result).toEqual({
-				user: {
-					id: userId,
-					username: 'john_doe',
-					email: 'john@example.com',
-					verified: true,
-					created_at: expect.any(Date),
-					updated_at: expect.any(Date),
-					userProfile: {
-						id: 'profile-123',
-						icon: null,
-						displayName: 'John Doe',
-						autobiography: 'Software developer',
-						backgroundImage: null,
-						isFollowing: false,
-						links: [],
-						_count: {
-							followers: 0,
-							following: 0,
-						}
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue(mockUser)
 					}
 				}
 			})
+
+			// Act
+			const response = await httpClient.get(`/api/v1/users/${userId}`)
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data.user.userProfile.name).toBe('Complete User')
+			expect(response.data.user.userProfile.bio).toBe('This is a complete user profile with all information filled out')
+			expect(response.data.user.userProfile.icon).toBe('https://example.com/complete-user.jpg')
+			expect(response.data.user.userProfile.backgroundImage).toBe('https://example.com/complete-background.jpg')
+			expect(response.data.user._count.followers).toBe(25)
+			expect(response.data.user._count.following).toBe(12)
+		})
+
+		it('should get user with minimal profile information', async () => {
+			// Arrange
+			const userId = TestData.generateUUID()
+			const mockUser = {
+				id: userId,
+				username: 'minimaluser',
+				email: 'minimal@example.com',
+				verified: false,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					name: null,
+					bio: null,
+					icon: null,
+					backgroundImage: null
+				},
+				_count: {
+					followers: 0,
+					following: 0
+				}
+			}
+
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue(mockUser)
+					}
+				}
+			})
+
+			// Act
+			const response = await httpClient.get(`/api/v1/users/${userId}`)
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data.user.username).toBe('minimaluser')
+			expect(response.data.user.verified).toBe(false)
+			expect(response.data.user.userProfile.name).toBeNull()
+			expect(response.data.user.userProfile.bio).toBeNull()
+			expect(response.data.user.userProfile.icon).toBeNull()
+			expect(response.data.user.userProfile.backgroundImage).toBeNull()
+			expect(response.data.user._count.followers).toBe(0)
+			expect(response.data.user._count.following).toBe(0)
+		})
+
+		it('should handle database errors gracefully', async () => {
+			// Arrange
+			const userId = TestData.generateUUID()
+
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.get(`/api/v1/users/${userId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

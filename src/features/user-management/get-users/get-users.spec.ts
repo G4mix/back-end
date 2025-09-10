@@ -1,216 +1,284 @@
-import { GetUsersController } from './get-users.controller'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Mock completo do Prisma Client
-jest.mock('@prisma/client', () => ({
-	PrismaClient: jest.fn().mockImplementation(() => ({
-		user: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn()
-		},
-		userProfile: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		}
-	})),
-	Prisma: {
-		QueryMode: {
-			insensitive: 'insensitive'
-		}
-	}
-}))
+describe('Get Users Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-describe('GetUsersController', () => {
-	let controller: GetUsersController
-	let mockUserRepository: any
-	let mockLogger: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		// Mock completo do UserRepository
-		mockUserRepository = {
-			findAll: jest.fn(),
-			findById: jest.fn(),
-			findByEmail: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		}
-
-		// Mock completo do Logger
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		controller = new GetUsersController(mockUserRepository, mockLogger)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('getUsers', () => {
-		it('should return users with default pagination', async () => {
+	describe('GET /api/v1/users', () => {
+		it('should get users with pagination successfully', async () => {
 			// Arrange
-			const mockUsers = {
-				data: [
-					{
-						id: 'user-1',
-						username: 'john_doe',
-						email: 'john@example.com',
-						verified: true,
-						created_at: new Date('2023-01-01'),
-						updated_at: new Date('2023-01-01'),
-						userProfile: {
-							id: 'profile-1',
-							icon: null,
-							displayName: 'John Doe',
-							autobiography: 'Software developer',
-							backgroundImage: null,
-							isFollowing: false,
-							links: [],
-							_count: { followers: 5, following: 10 }
+			const mockUsers = [
+				{
+					id: TestData.generateUUID(),
+					username: 'testuser1',
+					email: 'testuser1@example.com',
+					verified: true,
+					created_at: new Date(),
+					updated_at: new Date(),
+					userProfile: {
+						name: 'Test User 1',
+						bio: 'Bio of test user 1',
+						icon: 'https://example.com/user1.jpg'
+					},
+					_count: {
+						followers: 10,
+						following: 5
+					}
+				},
+				{
+					id: TestData.generateUUID(),
+					username: 'testuser2',
+					email: 'testuser2@example.com',
+					verified: true,
+					created_at: new Date(),
+					updated_at: new Date(),
+					userProfile: {
+						name: 'Test User 2',
+						bio: 'Bio of test user 2',
+						icon: 'https://example.com/user2.jpg'
+					},
+					_count: {
+						followers: 20,
+						following: 10
+					}
+				}
+			]
+
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findMany: jest.fn().mockResolvedValue(mockUsers),
+						count: jest.fn().mockResolvedValue(2)
+					}
+				}
+			})
+
+			// Act
+			const response = await httpClient.get('/api/v1/users', {
+				page: 0,
+				limit: 10
+			})
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('users')
+			expect(response.data).toHaveProperty('pagination')
+			expect(response.data.users).toHaveLength(2)
+			expect(response.data.pagination.total).toBe(2)
+		})
+
+		it('should get users with search query successfully', async () => {
+			// Arrange
+			const mockUsers = [
+				{
+					id: TestData.generateUUID(),
+					username: 'testuser',
+					email: 'testuser@example.com',
+					verified: true,
+					created_at: new Date(),
+					updated_at: new Date(),
+					userProfile: {
+						name: 'Test User',
+						bio: 'Bio of test user',
+						icon: 'https://example.com/user.jpg'
+					},
+					_count: {
+						followers: 10,
+						following: 5
+					}
+				}
+			]
+
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findMany: jest.fn().mockResolvedValue(mockUsers),
+						count: jest.fn().mockResolvedValue(1)
+					}
+				}
+			})
+
+			// Act
+			const response = await httpClient.get('/api/v1/users', {
+				page: 0,
+				limit: 10,
+				search: 'testuser'
+			})
+
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('users')
+			expect(response.data.users).toHaveLength(1)
+		})
+
+		it('should return validation error for invalid page number', async () => {
+			// Act & Assert
+			await expect(httpClient.get('/api/v1/users', { page: -1 }))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_PAGE'
 						}
 					}
-				],
-				total: 1
-			}
-			mockUserRepository.findAll.mockResolvedValue(mockUsers)
+				})
+		})
 
-			// Act
-			const result = await controller.getUsers()
-
-			// Assert
-			expect(result).toEqual({
-				users: {
-					data: [
-						{
-							id: 'user-1',
-							username: 'john_doe',
-							email: 'john@example.com',
-							verified: true,
-							created_at: expect.any(Date),
-							updated_at: expect.any(Date),
-							userProfile: {
-								id: 'profile-1',
-								icon: null,
-								displayName: 'John Doe',
-								autobiography: 'Software developer',
-								backgroundImage: null,
-								isFollowing: false,
-								links: [],
-								_count: {
-									followers: 5,
-									following: 10,
-								}
-							}
+		it('should return validation error for invalid limit', async () => {
+			// Act & Assert
+			await expect(httpClient.get('/api/v1/users', { limit: 200 }))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'LIMIT_TOO_LARGE'
 						}
-					],
-					total: 1
-				},
-				pagination: {
-					page: 0,
-					limit: 10,
-					total: 1
-				}
-			})
-			expect(mockUserRepository.findAll).toHaveBeenCalledWith({
-				page: 0,
-				quantity: 10,
-				search: '',
-				userId: ''
-			})
+					}
+				})
 		})
 
-		it('should return users with custom pagination', async () => {
+		it('should return validation error for negative limit', async () => {
+			// Act & Assert
+			await expect(httpClient.get('/api/v1/users', { limit: -1 }))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_LIMIT'
+						}
+					}
+				})
+		})
+
+		it('should return empty array when no users found', async () => {
 			// Arrange
-			const mockUsers = {
-				data: [],
-				total: 0
-			}
-			mockUserRepository.findAll.mockResolvedValue(mockUsers)
+			// Mock do Prisma para retornar array vazio
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findMany: jest.fn().mockResolvedValue([]),
+						count: jest.fn().mockResolvedValue(0)
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.getUsers(2, 5)
+			const response = await httpClient.get('/api/v1/users', {
+				page: 0,
+				limit: 10
+			})
 
 			// Assert
-			expect(result).toEqual({
-				users: {
-					data: [],
-					total: 0
-				},
-				pagination: {
-					page: 2,
-					limit: 5,
-					total: 0
-				}
-			})
-			expect(mockUserRepository.findAll).toHaveBeenCalledWith({
-				page: 2,
-				quantity: 5,
-				search: '',
-				userId: ''
-			})
+			expect(response.status).toBe(200)
+			expect(response.data.users).toHaveLength(0)
+			expect(response.data.pagination.total).toBe(0)
 		})
 
-		it('should return users with search term', async () => {
+		it('should get users sorted by creation date', async () => {
 			// Arrange
-			const mockUsers = {
-				data: [],
-				total: 0
-			}
-			mockUserRepository.findAll.mockResolvedValue(mockUsers)
+			const mockUsers = [
+				{
+					id: TestData.generateUUID(),
+					username: 'newuser',
+					email: 'newuser@example.com',
+					verified: true,
+					created_at: new Date('2024-01-02'),
+					updated_at: new Date('2024-01-02'),
+					userProfile: {
+						name: 'New User',
+						bio: 'Bio of new user',
+						icon: 'https://example.com/newuser.jpg'
+					},
+					_count: {
+						followers: 5,
+						following: 2
+					}
+				},
+				{
+					id: TestData.generateUUID(),
+					username: 'olduser',
+					email: 'olduser@example.com',
+					verified: true,
+					created_at: new Date('2024-01-01'),
+					updated_at: new Date('2024-01-01'),
+					userProfile: {
+						name: 'Old User',
+						bio: 'Bio of old user',
+						icon: 'https://example.com/olduser.jpg'
+					},
+					_count: {
+						followers: 15,
+						following: 8
+					}
+				}
+			]
+
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findMany: jest.fn().mockResolvedValue(mockUsers),
+						count: jest.fn().mockResolvedValue(2)
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.getUsers(0, 10, 'john')
+			const response = await httpClient.get('/api/v1/users', {
+				page: 0,
+				limit: 10
+			})
 
 			// Assert
-			expect(result).toEqual({
-				users: {
-					data: [],
-					total: 0
-				},
-				pagination: {
-					page: 0,
-					limit: 10,
-					total: 0
-				}
-			})
-			expect(mockUserRepository.findAll).toHaveBeenCalledWith({
-				page: 0,
-				quantity: 10,
-				search: 'john',
-				userId: ''
-			})
+			expect(response.status).toBe(200)
+			expect(response.data.users).toHaveLength(2)
+			expect(response.data.users[0].username).toBe('newuser')
+			expect(response.data.users[1].username).toBe('olduser')
 		})
 
-		it('should handle repository errors', async () => {
+		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const error = new Error('Database connection failed')
-			mockUserRepository.findAll.mockRejectedValue(error)
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findMany: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
+				}
+			})
 
 			// Act & Assert
-			await expect(controller.getUsers()).rejects.toThrow('Database connection failed')
+			await expect(httpClient.get('/api/v1/users', { page: 0, limit: 10 }))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

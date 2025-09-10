@@ -8,3 +8,4 @@ export {
 	validateInputDTO, 
 	validateOutputDTO 
 } from './dto-validation.middleware'
+export { setupAutoValidationMiddleware, AutoValidationMiddleware } from './auto-validation.middleware'

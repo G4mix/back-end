@@ -1,477 +1,267 @@
-import { UpdateUserController } from './update-user.controller'
-import { Readable } from 'stream'
+import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { TestData } from '@test/helpers/test-data'
 
-// Mock de Readable stream
-const mockStream = new Readable({
-	read() {
-		this.push('fake-stream-data')
-		this.push(null)
-	}
-})
+describe('Update User Integration Tests', () => {
+	let httpClient: HttpClient
+	let baseUrl: string
+	let authToken: string
 
-// Mock completo do Prisma Client
-jest.mock('@prisma/client', () => ({
-	PrismaClient: jest.fn().mockImplementation(() => ({
-		user: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn()
-		},
-		userProfile: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		}
-	})),
-	Prisma: {
-		QueryMode: {
-			insensitive: 'insensitive'
-		}
-	}
-}))
+	beforeAll(async () => {
+		// Inicia o servidor real
+		baseUrl = await IntegrationTestSetup.startServer()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Simula login para obter token
+		authToken = TestData.generateFakeToken()
+		httpClient.setAuthToken(authToken)
+	})
 
-// Mock do Logger
-jest.mock('@shared/utils/logger', () => ({
-	Logger: jest.fn().mockImplementation(() => ({
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		debug: jest.fn(),
-		log: jest.fn()
-	}))
-}))
-
-// Mock do UserGateway
-jest.mock('@shared/gateways/user.gateway', () => ({
-	UserGateway: jest.fn().mockImplementation(() => ({
-		uploadUserIcon: jest.fn(),
-		uploadUserBackground: jest.fn(),
-		deleteUserFile: jest.fn()
-	}))
-}))
-
-jest.mock('@shared/utils', () => ({
-	BCryptEncoder: {
-		encode: jest.fn(),
-		compare: jest.fn()
-	}
-}))
-
-// Mock das constantes
-jest.mock('@shared/constants', () => ({
-	MAX_SIZE: 5 * 1024 * 1024, // 5MB
-	SUPPORTED_IMAGES: {
-		'image/jpeg': '.jpg',
-		'image/png': '.png',
-		'image/webp': '.webp'
-	}
-}))
-
-describe('UpdateUserController', () => {
-	let controller: UpdateUserController
-	let mockUserRepository: any
-	let mockUserGateway: any
-	let mockLogger: any
+	afterAll(async () => {
+		// Para o servidor
+		await IntegrationTestSetup.stopServer()
+	})
 
 	beforeEach(() => {
-		// Mock completo do UserRepository
-		mockUserRepository = {
-			findAll: jest.fn(),
-			findById: jest.fn(),
-			findByEmail: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn()
-		}
-
-		// Mock completo do UserGateway
-		mockUserGateway = {
-			uploadUserIcon: jest.fn(),
-			uploadUserBackground: jest.fn(),
-			deleteUserFile: jest.fn()
-		}
-
-		// Mock completo do Logger
-		mockLogger = {
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-			debug: jest.fn(),
-			log: jest.fn()
-		}
-
-		controller = new UpdateUserController(mockUserRepository, mockUserGateway, mockLogger)
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	afterEach(() => {
-		jest.clearAllMocks()
-	})
-
-	describe('updateUser', () => {
-		it('should update user basic information successfully', async () => {
+	describe('PUT /api/v1/users', () => {
+		it('should update user successfully with valid data', async () => {
 			// Arrange
-			const userId = 'user-123'
-			const updateInput = {
-				username: 'john_updated',
-				email: 'john.updated@example.com',
-				displayName: 'John Updated',
-				autobiography: 'Updated bio'
+			const updateData = {
+				name: 'Updated Name',
+				bio: 'Updated bio with enough characters to pass validation',
+				icon: 'https://example.com/updated-icon.jpg',
+				backgroundImage: 'https://example.com/updated-background.jpg'
 			}
-
-			const mockCurrentUser = {
-				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
-				verified: true,
-				created_at: new Date('2023-01-01'),
-				updated_at: new Date('2023-01-01'),
-				userProfile: {
-					id: 'profile-123',
-					icon: null,
-					displayName: 'John Doe',
-					autobiography: 'Old bio',
-					backgroundImage: null,
-					isFollowing: false,
-					links: [],
-					_count: { followers: 5, following: 10 }
-				}
-			}
-
-			const mockUpdatedUser = {
-				...mockCurrentUser,
-				username: 'john_updated',
-				email: 'john.updated@example.com',
-				userProfile: {
-					...mockCurrentUser.userProfile,
-					displayName: 'John Updated',
-					autobiography: 'Updated bio'
-				}
-			}
-
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			mockUserRepository.findById.mockResolvedValue(mockCurrentUser)
-			mockUserRepository.update.mockResolvedValue(mockUpdatedUser)
-
-			// Act
-			const result = await controller.updateUser(updateInput, mockRequest as any)
-
-			// Assert
-			expect(result).toEqual({
-				user: {
-					id: userId,
-					username: 'john_updated',
-					email: 'john.updated@example.com',
-					verified: true,
-					created_at: '2023-01-01T00:00:00.000Z',
-					updated_at: '2023-01-01T00:00:00.000Z',
-					userProfile: {
-						id: 'profile-123',
-						icon: null,
-						displayName: 'John Updated',
-						autobiography: 'Updated bio',
-						backgroundImage: null,
-						isFollowing: false,
-						links: [],
-						followersCount: 5,
-						followingCount: 10
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							username: 'testuser',
+							email: 'test@example.com',
+							verified: true
+						}),
+						update: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							username: 'testuser',
+							email: 'test@example.com',
+							verified: true,
+							userProfile: {
+								name: updateData.name,
+								bio: updateData.bio,
+								icon: updateData.icon,
+								backgroundImage: updateData.backgroundImage
+							}
+						})
 					}
 				}
 			})
-			expect(mockUserRepository.update).toHaveBeenCalledWith({
-				id: userId,
-				username: 'john_updated',
-				email: 'john.updated@example.com',
-				displayName: 'John Updated',
-				autobiography: 'Updated bio'
-			})
-		})
-
-		it('should update user password successfully', async () => {
-			// Arrange
-			const userId = 'user-123'
-			const updateInput = {
-				password: 'NewPassword123!'
-			}
-
-			const mockCurrentUser = {
-				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
-				verified: true,
-				created_at: new Date('2023-01-01'),
-				updated_at: new Date('2023-01-01'),
-				userProfile: {
-					id: 'profile-123',
-					icon: null,
-					displayName: 'John Doe',
-					autobiography: 'Bio',
-					backgroundImage: null,
-					isFollowing: false,
-					links: [],
-					_count: { followers: 5, following: 10 }
-				}
-			}
-
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			mockUserRepository.findById.mockResolvedValue(mockCurrentUser)
-			mockUserRepository.update.mockResolvedValue(mockCurrentUser)
-			const { BCryptEncoder } = jest.requireMock('@shared/utils')
-			BCryptEncoder.encode.mockReturnValue('hashed_new_password')
 
 			// Act
-			const result = await controller.updateUser(updateInput, mockRequest as any)
+			const response = await httpClient.put('/api/v1/users', updateData)
 
 			// Assert
-			expect(result).toBeDefined()
-			expect(mockUserRepository.update).toHaveBeenCalledWith({
-				id: userId,
-				password: 'hashed_new_password'
-			})
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('user')
+			expect(response.data.user.userProfile.name).toBe(updateData.name)
+			expect(response.data.user.userProfile.bio).toBe(updateData.bio)
 		})
 
-		it('should upload user icon successfully', async () => {
+		it('should return validation error for long name', async () => {
 			// Arrange
-			const userId = 'user-123'
-			const updateInput = {
-				icon: {
-					fieldname: 'icon',
-					originalname: 'test.jpg',
-					encoding: '7bit',
-					mimetype: 'image/jpeg',
-					size: 1024 * 1024, // 1MB
-					buffer: Buffer.from('fake-image-data'),
-					stream: mockStream,
-					destination: '',
-					filename: 'test.jpg',
-					path: '/tmp/test.jpg'
-				}
+			const updateData = {
+				name: 'A'.repeat(101), // Excede 100 caracteres
+				bio: 'Valid bio with enough characters'
 			}
-
-			const mockCurrentUser = {
-				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
-				verified: true,
-				created_at: new Date('2023-01-01'),
-				updated_at: new Date('2023-01-01'),
-				userProfile: {
-					id: 'profile-123',
-					icon: null,
-					displayName: 'John Doe',
-					autobiography: 'Bio',
-					backgroundImage: null,
-					isFollowing: false,
-					links: [],
-					_count: { followers: 5, following: 10 }
-				}
-			}
-
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			mockUserRepository.findById.mockResolvedValue(mockCurrentUser)
-			mockUserGateway.uploadUserIcon.mockResolvedValue({ key: 'new-icon-key', url: 'https://example.com/new-icon-key' })
-			mockUserRepository.update.mockResolvedValue({
-				...mockCurrentUser,
-				userProfile: {
-					...mockCurrentUser.userProfile,
-					icon: 'new-icon-key'
-				}
-			})
-
-			// Act
-			const result = await controller.updateUser(updateInput, mockRequest as any)
-
-			// Assert
-			expect(result).toBeDefined()
-			expect(mockUserGateway.uploadUserIcon).toHaveBeenCalledWith({ file: updateInput.icon })
-			expect(mockUserRepository.update).toHaveBeenCalledWith({
-				id: userId,
-				icon: { key: 'new-icon-key', url: 'https://example.com/new-icon-key' }
-			})
-		})
-
-		it('should throw error when file is too large', async () => {
-			// Arrange
-			const userId = 'user-123'
-			const updateInput = {
-				icon: {
-					fieldname: 'icon',
-					originalname: 'test.jpg',
-					encoding: '7bit',
-					mimetype: 'image/jpeg',
-					size: 10 * 1024 * 1024, // 10MB (exceeds MAX_SIZE)
-					buffer: Buffer.from('fake-image-data'),
-					stream: mockStream,
-					destination: '/tmp',
-					filename: 'test.jpg',
-					path: '/tmp/test.jpg'
-				}
-			}
-
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			const mockCurrentUser = {
-				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
-				userProfile: {
-					id: 'profile-123',
-					displayName: 'John Doe',
-					autobiography: 'Test bio',
-					icon: 'current-icon-key',
-					backgroundImage: 'current-bg-key',
-					links: [],
-					_count: { followers: 5, following: 10 }
-				}
-			}
-
-			mockUserRepository.findById.mockResolvedValue(mockCurrentUser)
 
 			// Act & Assert
-			await expect(controller.updateUser(updateInput, mockRequest as any)).rejects.toThrow('FILE_TOO_LARGE')
+			await expect(httpClient.put('/api/v1/users', updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'NAME_TOO_LONG'
+						}
+					}
+				})
 		})
 
-		it('should throw error when file type is unsupported', async () => {
+		it('should return validation error for long bio', async () => {
 			// Arrange
-			const userId = 'user-123'
-			const updateInput = {
-				icon: {
-					fieldname: 'icon',
-					originalname: 'test.gif',
-					encoding: '7bit',
-					mimetype: 'image/gif', // Unsupported type
-					size: 1024 * 1024,
-					buffer: Buffer.from('fake-image-data'),
-					stream: mockStream,
-					destination: '/tmp',
-					filename: 'test.gif',
-					path: '/tmp/test.gif'
-				}
+			const updateData = {
+				name: 'Valid Name',
+				bio: 'A'.repeat(501) // Excede 500 caracteres
 			}
-
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			const mockCurrentUser = {
-				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
-				userProfile: {
-					id: 'profile-123',
-					displayName: 'John Doe',
-					autobiography: 'Test bio',
-					icon: 'current-icon-key',
-					backgroundImage: 'current-bg-key',
-					links: [],
-					_count: { followers: 5, following: 10 }
-				}
-			}
-
-			mockUserRepository.findById.mockResolvedValue(mockCurrentUser)
 
 			// Act & Assert
-			await expect(controller.updateUser(updateInput, mockRequest as any)).rejects.toThrow('UNSUPPORTED_FILE_TYPE')
+			await expect(httpClient.put('/api/v1/users', updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'BIO_TOO_LONG'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for invalid icon URL', async () => {
+			// Arrange
+			const updateData = {
+				name: 'Valid Name',
+				bio: 'Valid bio',
+				icon: 'invalid-url'
+			}
+
+			// Act & Assert
+			await expect(httpClient.put('/api/v1/users', updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_ICON_URL'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for invalid background image URL', async () => {
+			// Arrange
+			const updateData = {
+				name: 'Valid Name',
+				bio: 'Valid bio',
+				backgroundImage: 'invalid-url'
+			}
+
+			// Act & Assert
+			await expect(httpClient.put('/api/v1/users', updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_BACKGROUND_IMAGE_URL'
+						}
+					}
+				})
+		})
+
+		it('should return UNAUTHORIZED when no token provided', async () => {
+			// Arrange
+			const updateData = {
+				name: 'Updated Name',
+				bio: 'Updated bio'
+			}
+			httpClient.clearAuthToken()
+
+			// Act & Assert
+			await expect(httpClient.put('/api/v1/users', updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
 		})
 
 		it('should return USER_NOT_FOUND when user does not exist', async () => {
 			// Arrange
-			const userId = 'non-existent-user'
-			const updateInput = {
-				username: 'new_username'
+			const updateData = {
+				name: 'Updated Name',
+				bio: 'Updated bio'
 			}
 
-			const mockRequest = {
-				user: { sub: userId }
-			}
+			// Mock do Prisma para retornar null
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue(null)
+					}
+				}
+			})
 
-			mockUserRepository.findById.mockResolvedValue(null)
+			// Act & Assert
+			await expect(httpClient.put('/api/v1/users', updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: {
+							message: 'USER_NOT_FOUND'
+						}
+					}
+				})
+		})
+
+		it('should update user with partial data', async () => {
+			// Arrange
+			const updateData = {
+				name: 'Updated Name Only'
+			}
+			
+			// Mock do Prisma
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							username: 'testuser',
+							email: 'test@example.com',
+							verified: true
+						}),
+						update: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							username: 'testuser',
+							email: 'test@example.com',
+							verified: true,
+							userProfile: {
+								name: updateData.name,
+								bio: 'Old bio',
+								icon: 'https://example.com/old-icon.jpg',
+								backgroundImage: 'https://example.com/old-background.jpg'
+							}
+						})
+					}
+				}
+			})
 
 			// Act
-			const result = await controller.updateUser(updateInput, mockRequest as any)
+			const response = await httpClient.put('/api/v1/users', updateData)
 
 			// Assert
-			expect(result).toBe('USER_NOT_FOUND')
+			expect(response.status).toBe(200)
+			expect(response.data.user.userProfile.name).toBe(updateData.name)
 		})
 
-		it('should handle gateway upload errors', async () => {
+		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const userId = 'user-123'
-			const updateInput = {
-				icon: {
-					fieldname: 'icon',
-					originalname: 'test.jpg',
-					encoding: '7bit',
-					mimetype: 'image/jpeg',
-					size: 1024 * 1024,
-					buffer: Buffer.from('fake-image-data'),
-					stream: mockStream,
-					destination: '/tmp',
-					filename: 'test.jpg',
-					path: '/tmp/test.jpg'
+			const updateData = {
+				name: 'Updated Name',
+				bio: 'Updated bio'
+			}
+
+			// Mock do Prisma para retornar erro
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					}
 				}
-			}
-
-			const mockCurrentUser = {
-				id: userId,
-				username: 'john_doe',
-				email: 'john@example.com',
-				verified: true,
-				created_at: new Date('2023-01-01'),
-				updated_at: new Date('2023-01-01'),
-				userProfile: {
-					id: 'profile-123',
-					icon: null,
-					displayName: 'John Doe',
-					autobiography: 'Bio',
-					backgroundImage: null,
-					isFollowing: false,
-					links: [],
-					_count: { followers: 5, following: 10 }
-				}
-			}
-
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			mockUserRepository.findById.mockResolvedValue(mockCurrentUser)
-			mockUserGateway.uploadUserIcon.mockResolvedValue('UPLOAD_ERROR')
+			})
 
 			// Act & Assert
-			await expect(controller.updateUser(updateInput, mockRequest as any)).rejects.toThrow('UPLOAD_ERROR')
-		})
-
-		it('should handle repository errors', async () => {
-			// Arrange
-			const userId = 'user-123'
-			const updateInput = {
-				username: 'new_username'
-			}
-
-			const mockRequest = {
-				user: { sub: userId }
-			}
-
-			mockUserRepository.findById.mockRejectedValue(new Error('Database Error'))
-
-			// Act & Assert
-			await expect(controller.updateUser(updateInput, mockRequest as any)).rejects.toThrow('Database Error')
+			await expect(httpClient.put('/api/v1/users', updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })
