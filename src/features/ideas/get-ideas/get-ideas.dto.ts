@@ -18,6 +18,21 @@ export class IdeaResponse {
 		displayName?: string | null
 		icon?: string | null
 	}
+	tags?: Array<{
+		id: string
+		name: string
+	}>
+	images?: Array<{
+		id: string
+		src: string
+		alt: string
+		width: number
+		height: number
+	}>
+	links?: Array<{
+		id: string
+		url: string
+	}>
 	created_at!: string
 	updated_at!: string
 	_count?: {

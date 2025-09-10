@@ -84,7 +84,7 @@ export class DeleteIdeaController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to delete idea', {
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userId: request.user?.sub,
+				userProfileId: request.user?.userProfileId,
 				ideaId: id
 			})
 			this.setStatus(500)

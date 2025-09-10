@@ -4,6 +4,7 @@ import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { UpdateIdeaInput, UpdateIdeaResponse } from './update-idea.dto'
+import { IdeaGateway } from '@shared/gateways/idea.gateway'
 
 @injectable()
 @Route('api/v1/ideas')
@@ -12,11 +13,13 @@ import { UpdateIdeaInput, UpdateIdeaResponse } from './update-idea.dto'
 export class UpdateIdeaController extends Controller {
 	constructor(
 		@inject('Logger') private logger: Logger,
-		@inject('IdeaRepository') private ideaRepository: IdeaRepository
+		@inject('IdeaRepository') private ideaRepository: IdeaRepository,
+		@inject('IdeaGateway') private ideaGateway: IdeaGateway
 	) {
 		super()
 		void this.logger
 		void this.ideaRepository
+		void this.ideaGateway
 	}
 
 	/**
@@ -84,8 +87,26 @@ export class UpdateIdeaController extends Controller {
 				return 'FORBIDDEN'
 			}
 
+			// Process images if provided
+			let processedImages = undefined
+			if (body.images && body.images.length > 0) {
+				// Delete old images first
+				if (existingIdea.images && existingIdea.images.length > 0) {
+					const oldImageUrls = existingIdea.images.map((img: any) => img.src)
+					await this.ideaGateway.deleteIdeaImages({ imageUrls: oldImageUrls })
+				}
+				
+				// Upload new images
+				processedImages = await this.ideaGateway.uploadIdeaImages({
+					files: body.images
+				})
+			}
+
 			// Update idea in database
-			const updatedIdea = await this.ideaRepository.update(id, body)
+			const updatedIdea = await this.ideaRepository.update(id, {
+				...body,
+				images: processedImages
+			})
 
 			this.logger.info('Idea updated successfully', {
 				ideaId: id,

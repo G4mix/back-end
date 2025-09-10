@@ -51,7 +51,7 @@ export class CommentRepository {
 
 	public async findByIdea(params: { ideaId: string; page: number; limit: number; parentCommentId?: string }) {
 		const { ideaId, page, limit, parentCommentId } = params
-		const skip = (page - 1) * limit
+		const skip = page * limit
 
 		const where: any = { ideaId }
 		if (parentCommentId) {

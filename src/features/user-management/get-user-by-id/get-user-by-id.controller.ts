@@ -1,9 +1,7 @@
 import { Route, Tags, Controller, Get, Path, SuccessResponse } from 'tsoa'
 import { injectable, inject } from 'tsyringe'
 import { UserRepository } from '@shared/repositories/user.repository'
-import { GetUserByIdResponseDTO } from '@shared/dto/simple.dto'
 import { Logger } from '@shared/utils/logger'
-import { UseOutputDTO } from '@shared/decorators'
 
 @injectable()
 @Route('api/v1/users')
@@ -68,7 +66,6 @@ export class GetUserByIdController extends Controller {
 	 * ```
 	 */
 	@SuccessResponse(200, 'User retrieved successfully')
-	@UseOutputDTO(GetUserByIdResponseDTO)
 	@Get('/{userId}')
 	public async getUserById(@Path() userId: string): Promise<any> {
 		const user = await this.userRepository.findById({ id: userId })

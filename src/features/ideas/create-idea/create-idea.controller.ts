@@ -5,6 +5,7 @@ import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { CreateIdeaInput, CreateIdeaResponse } from './create-idea.dto'
+import { IdeaGateway } from '@shared/gateways/idea.gateway'
 
 @injectable()
 @Route('api/v1/ideas')
@@ -13,11 +14,13 @@ import { CreateIdeaInput, CreateIdeaResponse } from './create-idea.dto'
 export class CreateIdeaController extends Controller {
 	constructor(
 		@inject('Logger') private logger: Logger,
-		@inject('IdeaRepository') private ideaRepository: IdeaRepository
+		@inject('IdeaRepository') private ideaRepository: IdeaRepository,
+		@inject('IdeaGateway') private ideaGateway: IdeaGateway
 	) {
 		super()
 		void this.logger
 		void this.ideaRepository
+		void this.ideaGateway
 	}
 
 	/**
@@ -87,11 +90,22 @@ export class CreateIdeaController extends Controller {
 				return 'IDEA_ALREADY_EXISTS'
 			}
 
+			// Process images if provided
+			let processedImages = undefined
+			if (body.images && body.images.length > 0) {
+				processedImages = await this.ideaGateway.uploadIdeaImages({
+					files: body.images
+				})
+			}
+
 			// Create idea in database
 			const newIdea = await this.ideaRepository.create({
 				title: body.title,
 				description: body.description,
-				authorId: userProfileId
+				authorId: userProfileId,
+				tags: body.tags,
+				images: processedImages,
+				links: body.links
 			})
 
 			this.logger.info('Idea created successfully', { 
@@ -111,7 +125,7 @@ export class CreateIdeaController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to create idea', { 
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userId: request.user?.sub 
+				userProfileId: request.user?.userProfileId 
 			})
 			
 			this.setStatus(500)

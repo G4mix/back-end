@@ -204,4 +204,66 @@ export class FollowRepository {
 			data
 		}
 	}
+
+	public async findFollowers({
+		userId, page, limit
+	}: { userId: string; page: number; limit: number; }) {
+		const skip = page * limit
+
+		const [followers, total] = await Promise.all([
+			this.pg.follow.findMany({
+				where: { followingUserId: userId },
+				skip,
+				take: limit,
+				orderBy: { created_at: 'desc' },
+				include: {
+					followerUser: {
+						include: {
+							user: {
+								select: {
+									username: true
+								}
+							}
+						}
+					}
+				}
+			}),
+			this.pg.follow.count({
+				where: { followingUserId: userId }
+			})
+		])
+
+		return { followers, total }
+	}
+
+	public async findFollowing({
+		userId, page, limit
+	}: { userId: string; page: number; limit: number; }) {
+		const skip = page * limit
+
+		const [following, total] = await Promise.all([
+			this.pg.follow.findMany({
+				where: { followerUserId: userId },
+				skip,
+				take: limit,
+				orderBy: { created_at: 'desc' },
+				include: {
+					followingUser: {
+						include: {
+							user: {
+								select: {
+									username: true
+								}
+							}
+						}
+					}
+				}
+			}),
+			this.pg.follow.count({
+				where: { followerUserId: userId }
+			})
+		])
+
+		return { following, total }
+	}
 }

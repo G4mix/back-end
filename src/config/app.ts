@@ -12,13 +12,18 @@ import { env } from '@config'
 import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
 import { AppModule } from '@shared/modules'
+import { setupSmartDTOMiddleware } from '@shared/middlewares/smart-dto-setup'
+import { Logger } from '@shared/utils/logger'
 
 @singleton()
 export class App {
-	private static instance: Application
+	public static instance: Application
 	private static server: Server<typeof IncomingMessage, typeof ServerResponse>
 	
-	constructor(@inject('AppModule') private appModule: AppModule) {
+	constructor(
+		@inject('AppModule') private appModule: AppModule,
+		@inject('Logger') private logger: Logger
+	) {
 		App.instance = express()
 	}
 
@@ -29,10 +34,10 @@ export class App {
 			await this.appModule.initialize()
 			
 			App.server = App.instance.listen(env['PORT'] as string, () => {
-				console.log(`🌐 Server listening on port ${env['PORT']} - http://localhost:${env.PORT}/docs`)
+				this.logger.log(`🌐 Server listening on port ${env['PORT']} - http://localhost:${env.PORT}/docs`)
 			})
 		} catch (error) {
-			console.error('❌ Failed to start application:', error)
+			this.logger.error('❌ Failed to start application:', error)
 			throw error
 		}
 		
@@ -41,9 +46,9 @@ export class App {
 
 	public stop(): App {
 		if (App.server && App.server.listening) {
-			console.log('🔄 Closing HTTP server...')
+			this.logger.log('🔄 Closing HTTP server...')
 			App.server.close(() => {
-				console.log('✅ HTTP server closed successfully')
+				this.logger.log('✅ HTTP server closed successfully')
 			})
 		}
 		return this
@@ -62,6 +67,14 @@ export class App {
 		App.instance.use(json())
 		App.instance.use(corsMiddleware())
 		App.instance.disable('x-powered-by')
+	}
+
+	public configSmartDTO(): void {
+		setupSmartDTOMiddleware(App.instance, this.logger)
+	}
+
+	public static configSmartDTO(logger: Logger): void {
+		setupSmartDTOMiddleware(App.instance, logger)
 	}
 
 	public static routes(): void {

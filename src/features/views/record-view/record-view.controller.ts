@@ -4,6 +4,8 @@ import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators'
 import { RecordViewInput, RecordViewResponse } from './record-view.dto'
+import { ViewRepository } from '@shared/repositories/view.repository'
+import { IdeaRepository } from '@shared/repositories/idea.repository'
 
 @injectable()
 @Route('api/v1/views')
@@ -11,10 +13,14 @@ import { RecordViewInput, RecordViewResponse } from './record-view.dto'
 @Security('jwt')
 export class RecordViewController extends Controller {
 	constructor(
-		@inject('Logger') private logger: Logger
+		@inject('Logger') private logger: Logger,
+		@inject('ViewRepository') private viewRepository: ViewRepository,
+		@inject('IdeaRepository') private ideaRepository: IdeaRepository
 	) {
 		super()
 		void this.logger
+		void this.viewRepository
+		void this.ideaRepository
 	}
 
 	/**
@@ -77,8 +83,8 @@ export class RecordViewController extends Controller {
 		@Request() request: any
 	): Promise<RecordViewResponse | string> {
 		try {
-			const userId = request.user?.sub
-			if (!userId) {
+			const userProfileId = request.user?.userProfileId
+			if (!userProfileId) {
 				this.setStatus(401)
 				return 'UNAUTHORIZED'
 			}
@@ -86,27 +92,37 @@ export class RecordViewController extends Controller {
 			const { ideas } = body
 
 			this.logger.info('Recording view', { 
-				userId, 
+				userProfileId, 
 				ideas, 
 				action: 'idea_view'
 			})
 
-			// TODO: Implement view recording logic
-			// 1. Validate that idea (and comment if provided) exists
-			// 2. Check if user has already viewed recently (prevent spam)
-			// 3. Record new view if not duplicate
-			// 4. Update view count
-			// 5. Return current status
+			// Validate that all ideas exist
+			for (const ideaId of ideas) {
+				const idea = await this.ideaRepository.findById(ideaId)
+				if (!idea) {
+					this.setStatus(404)
+					return 'IDEA_NOT_FOUND'
+				}
+			}
 
-			// Mock response - assuming view was recorded
-			const response = {
+			// Record views for all ideas (skipDuplicates handles duplicates)
+			await this.viewRepository.createMany({
+				userProfileId,
+				ideas
+			})
+
+			// Get total view count for the first idea (for response)
+			const viewCount = await this.viewRepository.getCount({ ideaId: ideas[0] })
+
+			const response: RecordViewResponse = {
 				viewed: true,
-				viewCount: 125,
+				viewCount,
 				message: 'View recorded successfully'
 			}
 
 			this.logger.info('View recorded successfully', { 
-				userId, 
+				userProfileId, 
 				ideas, 
 				viewed: response.viewed,
 				viewCount: response.viewCount
@@ -118,7 +134,7 @@ export class RecordViewController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to record view', { 
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userId: request.user?.sub,
+				userProfileId: request.user?.userProfileId,
 				ideas: body.ideas,
 			})
 			

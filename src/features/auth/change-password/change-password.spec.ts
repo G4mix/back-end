@@ -153,11 +153,11 @@ describe('ChangePasswordController', () => {
 					userProfile: {
 						id: 'profile-123',
 						icon: null,
-						displayName: undefined,
-						autobiography: undefined,
-						backgroundImage: undefined,
+						displayName: null,
+						autobiography: null,
+						backgroundImage: null,
 						isFollowing: undefined,
-						links: undefined,
+						links: [],
 						followersCount: 0,
 						followingCount: 0
 					}

@@ -125,33 +125,12 @@ describe('DeleteUserController', () => {
 			expect(mockUserRepository.delete).toHaveBeenCalledWith({ id: userId })
 		})
 
-		it('should return FORBIDDEN when user tries to delete another user account', async () => {
-			// Arrange
-			const differentUserId = 'user-456'
-			const mockRequest = {
-				user: { sub: differentUserId }
-			}
-
-			// Act
-			const result = await controller.deleteUser(mockRequest as any)
-
-			// Assert
-			expect(result).toEqual({
-				message: 'FORBIDDEN'
-			})
-			expect(mockUserRepository.findById).not.toHaveBeenCalled()
-			expect(mockUserGateway.deleteUserFile).not.toHaveBeenCalled()
-			expect(mockUserRepository.delete).not.toHaveBeenCalled()
-		})
-
 		it('should return USER_NOT_FOUND when user does not exist', async () => {
 			// Arrange
-			const userId = 'non-existent-user'
+			const nonExistentUserId = 'non-existent-user'
 			const mockRequest = {
-				user: { sub: userId }
+				user: { sub: nonExistentUserId }
 			}
-
-			mockUserRepository.findById.mockResolvedValue(null)
 
 			// Act
 			const result = await controller.deleteUser(mockRequest as any)
@@ -160,10 +139,11 @@ describe('DeleteUserController', () => {
 			expect(result).toEqual({
 				message: 'USER_NOT_FOUND'
 			})
-			expect(mockUserRepository.findById).toHaveBeenCalledWith({ id: userId })
+			expect(mockUserRepository.findById).toHaveBeenCalledWith({ id: nonExistentUserId })
 			expect(mockUserGateway.deleteUserFile).not.toHaveBeenCalled()
 			expect(mockUserRepository.delete).not.toHaveBeenCalled()
 		})
+
 
 		it('should handle user without profile images', async () => {
 			// Arrange

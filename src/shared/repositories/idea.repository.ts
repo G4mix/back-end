@@ -1,15 +1,32 @@
 import { PrismaClient } from '@prisma/client'
 import { injectable, inject } from 'tsyringe'
 
+export interface ProcessedImage {
+	src: string
+	alt: string
+	width: number
+	height: number
+}
+
 export interface CreateIdeaInput {
 	title: string
 	description: string
 	authorId: string
+	tags?: string[]
+	images?: ProcessedImage[]
+	links?: Array<{
+		url: string
+	}>
 }
 
 export interface UpdateIdeaInput {
 	title?: string
 	description?: string
+	tags?: string[]
+	images?: ProcessedImage[]
+	links?: Array<{
+		url: string
+	}>
 }
 
 export interface GetIdeasInput {
@@ -28,13 +45,54 @@ export class IdeaRepository {
 
 	async create(data: CreateIdeaInput) {
 		return this.prisma.idea.create({
-			data,
+			data: {
+				...data,
+				tags: data.tags ? {
+					create: data.tags.map((tagName: string) => ({
+						name: tagName
+					}))
+				} : undefined,
+				images: data.images ? {
+					create: data.images.map((image: any) => ({
+						src: image.src,
+						alt: image.alt,
+						width: image.width,
+						height: image.height
+					}))
+				} : undefined,
+				links: data.links ? {
+					create: data.links.map((link: any) => ({
+						url: link.url
+					}))
+				} : undefined
+			},
 			include: {
 				author: {
 					select: {
 						id: true,
 						displayName: true,
 						icon: true
+					}
+				},
+				tags: {
+					select: {
+						id: true,
+						name: true
+					}
+				},
+				images: {
+					select: {
+						id: true,
+						src: true,
+						alt: true,
+						width: true,
+						height: true
+					}
+				},
+				links: {
+					select: {
+						id: true,
+						url: true
 					}
 				},
 				_count: {
@@ -57,6 +115,27 @@ export class IdeaRepository {
 						id: true,
 						displayName: true,
 						icon: true
+					}
+				},
+				tags: {
+					select: {
+						id: true,
+						name: true
+					}
+				},
+				images: {
+					select: {
+						id: true,
+						src: true,
+						alt: true,
+						width: true,
+						height: true
+					}
+				},
+				links: {
+					select: {
+						id: true,
+						url: true
 					}
 				},
 				_count: {
@@ -107,6 +186,21 @@ export class IdeaRepository {
 							icon: true
 						}
 					},
+					tags: {
+						select: {
+							id: true,
+							name: true
+						}
+					},
+					images: {
+						select: {
+							id: true,
+							src: true,
+							alt: true,
+							width: true,
+							height: true
+						}
+					},
 					_count: {
 						select: {
 							likes: true,
@@ -128,13 +222,57 @@ export class IdeaRepository {
 	async update(id: string, data: UpdateIdeaInput) {
 		return this.prisma.idea.update({
 			where: { id },
-			data,
+			data: {
+				...data,
+				tags: data.tags ? {
+					deleteMany: {},
+					create: data.tags.map((tagName: string) => ({
+						name: tagName
+					}))
+				} : undefined,
+				images: data.images ? {
+					deleteMany: {},
+					create: data.images.map((image: any) => ({
+						src: image.src,
+						alt: image.alt,
+						width: image.width,
+						height: image.height
+					}))
+				} : undefined,
+				links: data.links ? {
+					deleteMany: {},
+					create: data.links.map((link: any) => ({
+						url: link.url
+					}))
+				} : undefined
+			},
 			include: {
 				author: {
 					select: {
 						id: true,
 						displayName: true,
 						icon: true
+					}
+				},
+				tags: {
+					select: {
+						id: true,
+						name: true
+					}
+				},
+				images: {
+					select: {
+						id: true,
+						src: true,
+						alt: true,
+						width: true,
+						height: true
+					}
+				},
+				links: {
+					select: {
+						id: true,
+						url: true
 					}
 				},
 				_count: {

@@ -2,11 +2,10 @@ import { Route, Tags, Controller, Body, Post, SuccessResponse, Security, Request
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime, UseInputDTO, UseOutputDTO } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators'
 import { CommentRepository } from '@shared/repositories/comment.repository'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { CreateCommentInput } from '@shared/types/dto-interfaces'
-import { CreateCommentInputDTO, CreateCommentResponseDTO } from '@shared/dto/simple.dto'
 
 @injectable()
 @Route('api/v1/comment')
@@ -87,8 +86,6 @@ export class CreateCommentController extends Controller {
 	 * ```
 	 */
 	@SuccessResponse(201, 'Comment created successfully')
-	@UseInputDTO(CreateCommentInputDTO)
-	@UseOutputDTO(CreateCommentResponseDTO)
 	@Post('/')
 	@LogResponseTime()
 	public async createComment(
@@ -96,18 +93,18 @@ export class CreateCommentController extends Controller {
 		@Request() request: any
 	): Promise<any> {
 		try {
-			const userId = request.user?.sub
-			if (!userId) {
+			const userProfileId = request.user?.userProfileId
+			if (!userProfileId) {
 				this.setStatus(401)
 				return 'UNAUTHORIZED'
 			}
 
 			// O middleware já validou e processou os dados de entrada
-			const inputDTO = request.getInputDTO?.() as CreateCommentInputDTO || body
+			const inputDTO = request.getInputDTO?.() as CreateCommentInput || body
 			const { ideaId, content, parentCommentId } = inputDTO
 
 			this.logger.info('Creating comment', { 
-				userId, 
+				userProfileId, 
 				ideaId, 
 				parentCommentId,
 				contentLength: content.length,
@@ -131,16 +128,16 @@ export class CreateCommentController extends Controller {
 			}
 
 			// Create comment in database
-		const newComment = await this.commentRepository.create({
-			ideaId,
-			content,
-			commentId: parentCommentId || undefined,
-			userProfileId: userId
-		})
+			const newComment = await this.commentRepository.create({
+				ideaId,
+				content,
+				commentId: parentCommentId || undefined,
+				userProfileId: userProfileId
+			})
 
 			this.logger.info('Comment created successfully', { 
 				commentId: newComment.id, 
-				userId, 
+				userProfileId, 
 				ideaId 
 			})
 
@@ -151,7 +148,7 @@ export class CreateCommentController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to create comment', { 
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userId: request.user?.sub,
+				userProfileId: request.user?.userProfileId,
 				ideaId: body.ideaId
 			})
 			

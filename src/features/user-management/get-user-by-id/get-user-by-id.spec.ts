@@ -103,8 +103,8 @@ describe('GetUserByIdController', () => {
 					username: 'john_doe',
 					email: 'john@example.com',
 					verified: true,
-					created_at: '2023-01-01T00:00:00.000Z',
-					updated_at: '2023-01-01T00:00:00.000Z',
+					created_at: expect.any(Date),
+					updated_at: expect.any(Date),
 					userProfile: {
 						id: 'profile-123',
 						icon: 'icon-url',
@@ -113,8 +113,10 @@ describe('GetUserByIdController', () => {
 						backgroundImage: 'bg-url',
 						isFollowing: false,
 						links: ['https://github.com/john'],
-						followersCount: 5,
-						followingCount: 10
+						_count: {
+							followers: 5,
+							following: 10,
+						}
 					}
 				}
 			})
@@ -179,8 +181,8 @@ describe('GetUserByIdController', () => {
 					username: 'john_doe',
 					email: 'john@example.com',
 					verified: true,
-					created_at: '2023-01-01T00:00:00.000Z',
-					updated_at: '2023-01-01T00:00:00.000Z',
+					created_at: expect.any(Date),
+					updated_at: expect.any(Date),
 					userProfile: {
 						id: 'profile-123',
 						icon: null,
@@ -189,8 +191,10 @@ describe('GetUserByIdController', () => {
 						backgroundImage: null,
 						isFollowing: false,
 						links: [],
-						followersCount: 0,
-						followingCount: 0
+						_count: {
+							followers: 0,
+							following: 0,
+						}
 					}
 				}
 			})

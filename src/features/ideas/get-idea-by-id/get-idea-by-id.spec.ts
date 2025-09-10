@@ -44,7 +44,7 @@ describe('GetIdeaByIdController', () => {
 			// Arrange
 			const ideaId = 'idea-uuid-123'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			const mockIdea = {
@@ -80,11 +80,11 @@ describe('GetIdeaByIdController', () => {
 				}
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Retrieving idea by ID', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Idea retrieved successfully', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId,
 				title: mockIdea.title
 			})
@@ -94,7 +94,7 @@ describe('GetIdeaByIdController', () => {
 			// Arrange
 			const ideaId = 'idea-inexistente'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			mockIdeaRepository.findById.mockResolvedValue(null)
@@ -105,7 +105,7 @@ describe('GetIdeaByIdController', () => {
 			// Assert
 			expect(result).toBe('IDEA_NOT_FOUND')
 			expect(mockLogger.info).toHaveBeenCalledWith('Retrieving idea by ID', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId
 			})
 		})
@@ -126,7 +126,7 @@ describe('GetIdeaByIdController', () => {
 			// Arrange
 			const ideaId = 'idea-uuid-123'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			mockIdeaRepository.findById.mockRejectedValue(new Error('Database connection failed'))
@@ -138,7 +138,7 @@ describe('GetIdeaByIdController', () => {
 			expect(result).toBe('Failed to retrieve idea')
 			expect(mockLogger.error).toHaveBeenCalledWith('Failed to retrieve idea', {
 				error: 'Database connection failed',
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId
 			})
 		})

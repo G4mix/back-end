@@ -45,7 +45,7 @@ describe('DeleteIdeaController', () => {
 			// Arrange
 			const ideaId = 'idea-uuid-123'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			const existingIdea = {
@@ -66,12 +66,12 @@ describe('DeleteIdeaController', () => {
 			// Assert
 			expect(result).toBe('Idea deleted successfully')
 			expect(mockLogger.info).toHaveBeenCalledWith('Deleting idea', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Idea deleted successfully', {
 				ideaId: ideaId,
-				userId: 'user-profile-123'
+				userProfileId: 'user-profile-123'
 			})
 			expect(mockIdeaRepository.delete).toHaveBeenCalledWith(ideaId)
 		})
@@ -80,7 +80,7 @@ describe('DeleteIdeaController', () => {
 			// Arrange
 			const ideaId = 'idea-uuid-123'
 			const mockRequest = {
-				user: { sub: 'user-profile-456' }
+				user: { userProfileId: 'user-profile-456' }
 			}
 
 			const existingIdea = {
@@ -100,7 +100,7 @@ describe('DeleteIdeaController', () => {
 			// Assert
 			expect(result).toBe('FORBIDDEN')
 			expect(mockLogger.info).toHaveBeenCalledWith('Deleting idea', {
-				userId: 'user-profile-456',
+				userProfileId: 'user-profile-456',
 				ideaId: ideaId
 			})
 			expect(mockIdeaRepository.delete).not.toHaveBeenCalled()
@@ -110,7 +110,7 @@ describe('DeleteIdeaController', () => {
 			// Arrange
 			const ideaId = 'idea-inexistente'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			mockIdeaRepository.findById.mockResolvedValue(null)
@@ -121,7 +121,7 @@ describe('DeleteIdeaController', () => {
 			// Assert
 			expect(result).toBe('IDEA_NOT_FOUND')
 			expect(mockLogger.info).toHaveBeenCalledWith('Deleting idea', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId
 			})
 			expect(mockIdeaRepository.delete).not.toHaveBeenCalled()
@@ -143,7 +143,7 @@ describe('DeleteIdeaController', () => {
 			// Arrange
 			const ideaId = 'idea-uuid-123'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			mockIdeaRepository.findById.mockRejectedValue(new Error('Database connection failed'))
@@ -155,7 +155,7 @@ describe('DeleteIdeaController', () => {
 			expect(result).toBe('Failed to delete idea')
 			expect(mockLogger.error).toHaveBeenCalledWith('Failed to delete idea', {
 				error: 'Database connection failed',
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId
 			})
 		})

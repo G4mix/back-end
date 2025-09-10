@@ -17,6 +17,8 @@ jest.mock('@shared/decorators', () => ({
 describe('RecordViewController', () => {
 	let controller: RecordViewController
 	let mockLogger: any
+	let mockViewRepository: any
+	let mockIdeaRepository: any
 
 	beforeEach(() => {
 		mockLogger = {
@@ -27,7 +29,16 @@ describe('RecordViewController', () => {
 			log: jest.fn()
 		}
 
-		controller = new RecordViewController(mockLogger)
+		mockViewRepository = {
+			createMany: jest.fn(),
+			getCount: jest.fn()
+		}
+
+		mockIdeaRepository = {
+			findById: jest.fn()
+		}
+
+		controller = new RecordViewController(mockLogger, mockViewRepository, mockIdeaRepository)
 	})
 
 	afterEach(() => {

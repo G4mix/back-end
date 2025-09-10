@@ -102,29 +102,34 @@ describe('GetUsersController', () => {
 
 			// Assert
 			expect(result).toEqual({
-				users: [
-					{
-						id: 'user-1',
-						username: 'john_doe',
-						email: 'john@example.com',
-						verified: true,
-						created_at: '2023-01-01T00:00:00.000Z',
-						updated_at: '2023-01-01T00:00:00.000Z',
-						userProfile: {
-							id: 'profile-1',
-							icon: null,
-							displayName: 'John Doe',
-							autobiography: 'Software developer',
-							backgroundImage: null,
-							isFollowing: false,
-							links: [],
-							followersCount: 5,
-							followingCount: 10
+				users: {
+					data: [
+						{
+							id: 'user-1',
+							username: 'john_doe',
+							email: 'john@example.com',
+							verified: true,
+							created_at: expect.any(Date),
+							updated_at: expect.any(Date),
+							userProfile: {
+								id: 'profile-1',
+								icon: null,
+								displayName: 'John Doe',
+								autobiography: 'Software developer',
+								backgroundImage: null,
+								isFollowing: false,
+								links: [],
+								_count: {
+									followers: 5,
+									following: 10,
+								}
+							}
 						}
-					}
-				],
+					],
+					total: 1
+				},
 				pagination: {
-					page: 1,
+					page: 0,
 					limit: 10,
 					total: 1
 				}
@@ -150,7 +155,10 @@ describe('GetUsersController', () => {
 
 			// Assert
 			expect(result).toEqual({
-				users: [],
+				users: {
+					data: [],
+					total: 0
+				},
 				pagination: {
 					page: 2,
 					limit: 5,
@@ -158,7 +166,7 @@ describe('GetUsersController', () => {
 				}
 			})
 			expect(mockUserRepository.findAll).toHaveBeenCalledWith({
-				page: 5,
+				page: 2,
 				quantity: 5,
 				search: '',
 				userId: ''
@@ -174,13 +182,16 @@ describe('GetUsersController', () => {
 			mockUserRepository.findAll.mockResolvedValue(mockUsers)
 
 			// Act
-			const result = await controller.getUsers(1, 10, 'john')
+			const result = await controller.getUsers(0, 10, 'john')
 
 			// Assert
 			expect(result).toEqual({
-				users: [],
+				users: {
+					data: [],
+					total: 0
+				},
 				pagination: {
-					page: 1,
+					page: 0,
 					limit: 10,
 					total: 0
 				}

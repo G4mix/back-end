@@ -241,6 +241,81 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"LinkResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"url": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"url",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GetLinksResponse": {
+				"properties": {
+					"links": {
+						"items": {
+							"$ref": "#/components/schemas/LinkResponse"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"links"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddLinkResponse": {
+				"properties": {
+					"link": {
+						"properties": {
+							"created_at": {
+								"type": "string"
+							},
+							"url": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"created_at",
+							"url",
+							"id"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"link"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddLinkInput": {
+				"properties": {
+					"url": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"url"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"ToggleLikeResponse": {
 				"properties": {
 					"liked": {
@@ -287,6 +362,74 @@
 							"created_at": {
 								"type": "string"
 							},
+							"links": {
+								"items": {
+									"properties": {
+										"url": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"url",
+										"id"
+									],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"images": {
+								"items": {
+									"properties": {
+										"height": {
+											"type": "number",
+											"format": "double"
+										},
+										"width": {
+											"type": "number",
+											"format": "double"
+										},
+										"alt": {
+											"type": "string"
+										},
+										"src": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"height",
+										"width",
+										"alt",
+										"src",
+										"id"
+									],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"tags": {
+								"items": {
+									"properties": {
+										"name": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"name",
+										"id"
+									],
+									"type": "object"
+								},
+								"type": "array"
+							},
 							"authorId": {
 								"type": "string"
 							},
@@ -326,6 +469,32 @@
 					},
 					"description": {
 						"type": "string"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"images": {
+						"items": {
+							"$ref": "#/components/schemas/Express.Multer.File"
+						},
+						"type": "array"
+					},
+					"links": {
+						"items": {
+							"properties": {
+								"url": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"url"
+							],
+							"type": "object"
+						},
+						"type": "array"
 					}
 				},
 				"type": "object",
@@ -425,6 +594,74 @@
 							"created_at": {
 								"type": "string"
 							},
+							"links": {
+								"items": {
+									"properties": {
+										"url": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"url",
+										"id"
+									],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"images": {
+								"items": {
+									"properties": {
+										"height": {
+											"type": "number",
+											"format": "double"
+										},
+										"width": {
+											"type": "number",
+											"format": "double"
+										},
+										"alt": {
+											"type": "string"
+										},
+										"src": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"height",
+										"width",
+										"alt",
+										"src",
+										"id"
+									],
+									"type": "object"
+								},
+								"type": "array"
+							},
+							"tags": {
+								"items": {
+									"properties": {
+										"name": {
+											"type": "string"
+										},
+										"id": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"name",
+										"id"
+									],
+									"type": "object"
+								},
+								"type": "array"
+							},
 							"authorId": {
 								"type": "string"
 							},
@@ -464,6 +701,32 @@
 					},
 					"description": {
 						"type": "string"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"images": {
+						"items": {
+							"$ref": "#/components/schemas/Express.Multer.File"
+						},
+						"type": "array"
+					},
+					"links": {
+						"items": {
+							"properties": {
+								"url": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"url"
+							],
+							"type": "object"
+						},
+						"type": "array"
 					}
 				},
 				"required": [
@@ -497,6 +760,186 @@
 				},
 				"required": [
 					"followingId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FollowingResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"followingUser": {
+						"properties": {
+							"username": {
+								"type": "string"
+							},
+							"icon": {
+								"type": "string",
+								"nullable": true
+							},
+							"displayName": {
+								"type": "string",
+								"nullable": true
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"id"
+						],
+						"type": "object"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"followingUser",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GetFollowingResponse": {
+				"properties": {
+					"following": {
+						"items": {
+							"$ref": "#/components/schemas/FollowingResponse"
+						},
+						"type": "array"
+					},
+					"pagination": {
+						"properties": {
+							"hasPrev": {
+								"type": "boolean"
+							},
+							"hasNext": {
+								"type": "boolean"
+							},
+							"totalPages": {
+								"type": "number",
+								"format": "double"
+							},
+							"total": {
+								"type": "number",
+								"format": "double"
+							},
+							"limit": {
+								"type": "number",
+								"format": "double"
+							},
+							"page": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"hasPrev",
+							"hasNext",
+							"totalPages",
+							"total",
+							"limit",
+							"page"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"following",
+					"pagination"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FollowerResponse": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"followerUser": {
+						"properties": {
+							"username": {
+								"type": "string"
+							},
+							"icon": {
+								"type": "string",
+								"nullable": true
+							},
+							"displayName": {
+								"type": "string",
+								"nullable": true
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"id"
+						],
+						"type": "object"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"followerUser",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GetFollowersResponse": {
+				"properties": {
+					"followers": {
+						"items": {
+							"$ref": "#/components/schemas/FollowerResponse"
+						},
+						"type": "array"
+					},
+					"pagination": {
+						"properties": {
+							"hasPrev": {
+								"type": "boolean"
+							},
+							"hasNext": {
+								"type": "boolean"
+							},
+							"totalPages": {
+								"type": "number",
+								"format": "double"
+							},
+							"total": {
+								"type": "number",
+								"format": "double"
+							},
+							"limit": {
+								"type": "number",
+								"format": "double"
+							},
+							"page": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"hasPrev",
+							"hasNext",
+							"totalPages",
+							"total",
+							"limit",
+							"page"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"followers",
+					"pagination"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1042,6 +1485,43 @@
 				"parameters": []
 			}
 		},
+		"/api/v1/user/links/{linkId}": {
+			"delete": {
+				"operationId": "RemoveLink",
+				"responses": {
+					"200": {
+						"description": "Link removed successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				},
+				"description": "Remove a personal link from user profile\r\n\r\nThis endpoint allows authenticated users to remove personal links from their profile.\r\nOnly the owner of the link can remove it.",
+				"tags": [
+					"User Links"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "- The ID of the link to remove",
+						"in": "path",
+						"name": "linkId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/v1/users/{userId}": {
 			"get": {
 				"operationId": "GetUserById",
@@ -1071,6 +1551,94 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/v1/user/links": {
+			"get": {
+				"operationId": "GetLinks",
+				"responses": {
+					"200": {
+						"description": "Links retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/GetLinksResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Get personal links of a user\r\n\r\nThis endpoint allows authenticated users to retrieve their personal links\r\nor view another user's public links.",
+				"tags": [
+					"User Links"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "- Optional user profile ID to get links for (defaults to current user)",
+						"in": "query",
+						"name": "userId",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "AddLink",
+				"responses": {
+					"201": {
+						"description": "Link added successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/AddLinkResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Add a personal link to user profile\r\n\r\nThis endpoint allows authenticated users to add personal links to their profile.\r\nLinks can be social media profiles, websites, portfolios, etc.",
+				"tags": [
+					"User Links"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "- Object containing the link URL",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddLinkInput",
+								"description": "- Object containing the link URL"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/v1/likes/toggle": {
@@ -1433,6 +2001,134 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/v1/follow/following": {
+			"get": {
+				"operationId": "GetFollowing",
+				"responses": {
+					"200": {
+						"description": "Following retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/GetFollowingResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Get who a user is following\r\n\r\nThis endpoint allows authenticated users to retrieve a paginated list of users\r\nthat a specific user profile is following.",
+				"tags": [
+					"Follows"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "- The user profile ID to get following for",
+						"in": "query",
+						"name": "userId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "- Page number (0-based)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "- Number of items per page",
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/follow/followers": {
+			"get": {
+				"operationId": "GetFollowers",
+				"responses": {
+					"200": {
+						"description": "Followers retrieved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/GetFollowersResponse"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Get followers of a user\r\n\r\nThis endpoint allows authenticated users to retrieve a paginated list of followers\r\nfor a specific user profile. Users can see who is following them.",
+				"tags": [
+					"Follows"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "- The user profile ID to get followers for",
+						"in": "query",
+						"name": "userId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "- Page number (0-based)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "- Number of items per page",
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
 		"/api/v1/comment": {

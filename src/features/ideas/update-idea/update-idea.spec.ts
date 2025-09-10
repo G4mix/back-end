@@ -18,6 +18,7 @@ describe('UpdateIdeaController', () => {
 	let controller: UpdateIdeaController
 	let mockLogger: any
 	let mockIdeaRepository: any
+	let mockIdeaGateway: any
 
 	beforeEach(() => {
 		mockLogger = {
@@ -33,7 +34,12 @@ describe('UpdateIdeaController', () => {
 			update: jest.fn()
 		}
 
-		controller = new UpdateIdeaController(mockLogger, mockIdeaRepository)
+		mockIdeaGateway = {
+			uploadIdeaImages: jest.fn(),
+			deleteIdeaImages: jest.fn()
+		}
+
+		controller = new UpdateIdeaController(mockLogger, mockIdeaRepository, mockIdeaGateway)
 	})
 
 	afterEach(() => {
@@ -49,7 +55,7 @@ describe('UpdateIdeaController', () => {
 				description: 'An updated description of the mobile app concept...'
 			}
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			const existingIdea = {
@@ -82,14 +88,14 @@ describe('UpdateIdeaController', () => {
 				}
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Updating idea', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId,
 				title: updateData.title,
 				descriptionLength: updateData.description?.length
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Idea updated successfully', {
 				ideaId: ideaId,
-				userId: 'user-profile-123'
+				userProfileId: 'user-profile-123'
 			})
 		})
 
@@ -100,7 +106,7 @@ describe('UpdateIdeaController', () => {
 				title: 'Updated Title'
 			}
 			const mockRequest = {
-				user: { sub: 'user-profile-456' }
+				user: { userProfileId: 'user-profile-456' }
 			}
 
 			const existingIdea = {
@@ -120,7 +126,7 @@ describe('UpdateIdeaController', () => {
 			// Assert
 			expect(result).toBe('FORBIDDEN')
 			expect(mockLogger.info).toHaveBeenCalledWith('Updating idea', {
-				userId: 'user-profile-456',
+				userProfileId: 'user-profile-456',
 				ideaId: ideaId,
 				title: updateData.title,
 				descriptionLength: undefined
@@ -134,7 +140,7 @@ describe('UpdateIdeaController', () => {
 				title: 'Updated Title'
 			}
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			mockIdeaRepository.findById.mockResolvedValue(null)
@@ -145,7 +151,7 @@ describe('UpdateIdeaController', () => {
 			// Assert
 			expect(result).toBe('IDEA_NOT_FOUND')
 			expect(mockLogger.info).toHaveBeenCalledWith('Updating idea', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId,
 				title: updateData.title,
 				descriptionLength: undefined
@@ -174,7 +180,7 @@ describe('UpdateIdeaController', () => {
 				title: 'Updated Title'
 			}
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			mockIdeaRepository.findById.mockRejectedValue(new Error('Database connection failed'))
@@ -186,7 +192,7 @@ describe('UpdateIdeaController', () => {
 			expect(result).toBe('Failed to update idea')
 			expect(mockLogger.error).toHaveBeenCalledWith('Failed to update idea', {
 				error: 'Database connection failed',
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId
 			})
 		})

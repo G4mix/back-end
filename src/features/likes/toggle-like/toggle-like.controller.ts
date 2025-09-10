@@ -4,6 +4,9 @@ import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators'
 import { ToggleLikeInput, ToggleLikeResponse } from './toggle-like.dto'
+import { LikeRepository } from '@shared/repositories/like.repository'
+import { IdeaRepository } from '@shared/repositories/idea.repository'
+import { CommentRepository } from '@shared/repositories/comment.repository'
 
 @injectable()
 @Route('api/v1/likes')
@@ -11,10 +14,16 @@ import { ToggleLikeInput, ToggleLikeResponse } from './toggle-like.dto'
 @Security('jwt')
 export class ToggleLikeController extends Controller {
 	constructor(
-		@inject('Logger') private logger: Logger
+		@inject('Logger') private logger: Logger,
+		@inject('LikeRepository') private likeRepository: LikeRepository,
+		@inject('IdeaRepository') private ideaRepository: IdeaRepository,
+		@inject('CommentRepository') private commentRepository: CommentRepository
 	) {
 		super()
 		void this.logger
+		void this.likeRepository
+		void this.ideaRepository
+		void this.commentRepository
 	}
 
 	/**
@@ -92,18 +101,65 @@ export class ToggleLikeController extends Controller {
 				action: commentId ? 'comment_like' : 'idea_like'
 			})
 
-			// TODO: Implement like toggle logic
-			// 1. Validate that idea (and comment if provided) exists
-			// 2. Check if user has already liked the content
-			// 3. Create or remove like accordingly
-			// 4. Update like count
-			// 5. Return current status
+			// Validate that idea exists
+			if (ideaId) {
+				const idea = await this.ideaRepository.findById(ideaId)
+				if (!idea) {
+					this.setStatus(404)
+					return 'IDEA_NOT_FOUND'
+				}
+			}
 
-			// Mock response - assuming like was added
-			const response = {
-				liked: true,
-				likeCount: 15,
-				message: 'Like added successfully'
+			// Validate that comment exists if provided
+			if (commentId) {
+				const comment = await this.commentRepository.findById(commentId)
+				if (!comment) {
+					this.setStatus(404)
+					return 'COMMENT_NOT_FOUND'
+				}
+			}
+
+			// Check if user has already liked the content
+			const existingLike = await this.likeRepository.findByUserAndContent({
+				ideaId,
+				commentId,
+				userProfileId
+			})
+
+			let response: ToggleLikeResponse
+
+			if (existingLike) {
+				// User has already liked, so remove the like
+				await this.likeRepository.deleteByUserAndContent({
+					ideaId,
+					commentId,
+					userProfileId
+				})
+
+				// Get updated like count
+				const likeCount = await this.likeRepository.getLikeCount({ ideaId, commentId })
+
+				response = {
+					liked: false,
+					likeCount,
+					message: 'Like removed successfully'
+				}
+			} else {
+				// User hasn't liked yet, so add the like
+				await this.likeRepository.create({
+					ideaId,
+					commentId,
+					userProfileId
+				})
+
+				// Get updated like count
+				const likeCount = await this.likeRepository.getLikeCount({ ideaId, commentId })
+
+				response = {
+					liked: true,
+					likeCount,
+					message: 'Like added successfully'
+				}
 			}
 
 			this.logger.info('Like toggled successfully', { 
@@ -120,7 +176,7 @@ export class ToggleLikeController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to toggle like', { 
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userProfileId: request.user?.sub,
+				userProfileId: request.user?.userProfileId,
 				ideaId: body.ideaId,
 				commentId: body.commentId
 			})

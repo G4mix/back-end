@@ -44,7 +44,7 @@ describe('GetCommentsController', () => {
 			// Arrange
 			const ideaId = 'idea-uuid-123'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			const mockComments = [
@@ -72,7 +72,7 @@ describe('GetCommentsController', () => {
 			mockCommentRepository.findByIdea.mockResolvedValue({ comments: mockComments, total })
 
 			// Act
-			const result = await controller.getComments(ideaId, 1, 10, undefined, mockRequest)
+			const result = await controller.getComments(ideaId, 0, 10, undefined, mockRequest)
 
 			// Assert
 			expect(result).toEqual({
@@ -93,14 +93,14 @@ describe('GetCommentsController', () => {
 				}
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Retrieving comments', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: ideaId,
 				page: 0,
 				limit: 10,
 				parentCommentId: undefined
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Comments retrieved successfully', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				count: 1,
 				total: 25,
 				page: 0
@@ -111,7 +111,7 @@ describe('GetCommentsController', () => {
 			// Arrange
 			const ideaId = 'idea-uuid-123'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			const mockComments: any[] = []
@@ -119,18 +119,18 @@ describe('GetCommentsController', () => {
 			mockCommentRepository.findByIdea.mockResolvedValue({ comments: mockComments, total })
 
 			// Act
-			const result = await controller.getComments(ideaId, 1, 5, undefined, mockRequest)
+			const result = await controller.getComments(ideaId, 0, 5, undefined, mockRequest)
 
 			// Assert
 			expect(result).toEqual({
 				comments: [],
 				pagination: {
-					page: 1,
+					page: 0,
 					limit: 5,
 					total: 0,
 					totalPages: 0,
 					hasNext: false,
-					hasPrev: true
+					hasPrev: false
 				}
 			})
 		})
@@ -140,7 +140,7 @@ describe('GetCommentsController', () => {
 			const ideaId = 'idea-uuid-123'
 			const parentCommentId = 'comment-uuid-456'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			const mockComments = [
@@ -168,7 +168,7 @@ describe('GetCommentsController', () => {
 			mockCommentRepository.findByIdea.mockResolvedValue({ comments: mockComments, total })
 
 			// Act
-			const result = await controller.getComments(ideaId, 1, 10, parentCommentId, mockRequest)
+			const result = await controller.getComments(ideaId, 0, 10, parentCommentId, mockRequest)
 
 			// Assert
 			expect(result).toEqual({
@@ -180,7 +180,7 @@ describe('GetCommentsController', () => {
 					}
 				],
 				pagination: {
-					page: 1,
+					page: 0,
 					limit: 10,
 					total: 1,
 					totalPages: 1,
@@ -196,7 +196,7 @@ describe('GetCommentsController', () => {
 			const mockRequest = {}
 
 			// Act
-			const result = await controller.getComments(ideaId, 1, 10, undefined, mockRequest)
+			const result = await controller.getComments(ideaId, 0, 10, undefined, mockRequest)
 
 			// Assert
 			expect(result).toBe('UNAUTHORIZED')
@@ -206,19 +206,19 @@ describe('GetCommentsController', () => {
 			// Arrange
 			const ideaId = 'idea-uuid-123'
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			mockCommentRepository.findByIdea.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act
-			const result = await controller.getComments(ideaId, 1, 10, undefined, mockRequest)
+			const result = await controller.getComments(ideaId, 0, 10, undefined, mockRequest)
 
 			// Assert
 			expect(result).toBe('Failed to retrieve comments')
 			expect(mockLogger.error).toHaveBeenCalledWith('Failed to retrieve comments', {
 				error: 'Database connection failed',
-				userId: 'user-profile-123'
+				userProfileId: 'user-profile-123'
 			})
 		})
 	})

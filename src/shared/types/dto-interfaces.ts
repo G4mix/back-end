@@ -13,8 +13,11 @@ export interface CreateCommentInput {
 export interface CreateIdeaInput {
 	title: string
 	description: string
-	summary: string
-	tags: string
+	tags?: string[]
+	images?: Express.Multer.File[]
+	links?: Array<{
+		url: string
+	}>
 }
 
 // Response interfaces
@@ -75,10 +78,23 @@ export interface Idea {
 	id: string
 	title: string
 	description: string
-	summary: string
-	tags: string
 	authorId: string
 	author: IdeaAuthor
+	tags?: Array<{
+		id: string
+		name: string
+	}>
+	images?: Array<{
+		id: string
+		src: string
+		alt: string
+		width: number
+		height: number
+	}>
+	links?: Array<{
+		id: string
+		url: string
+	}>
 	created_at: string
 	updated_at: string
 	_count: {

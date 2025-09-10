@@ -17,6 +17,9 @@ jest.mock('@shared/decorators', () => ({
 describe('ToggleLikeController', () => {
 	let controller: ToggleLikeController
 	let mockLogger: any
+	let mockLikeRepository: any
+	let mockIdeaRepository: any
+	let mockCommentRepository: any
 
 	beforeEach(() => {
 		mockLogger = {
@@ -27,7 +30,22 @@ describe('ToggleLikeController', () => {
 			log: jest.fn()
 		}
 
-		controller = new ToggleLikeController(mockLogger)
+		mockLikeRepository = {
+			findByUserAndContent: jest.fn(),
+			create: jest.fn(),
+			deleteByUserAndContent: jest.fn(),
+			getLikeCount: jest.fn()
+		}
+
+		mockIdeaRepository = {
+			findById: jest.fn()
+		}
+
+		mockCommentRepository = {
+			findById: jest.fn()
+		}
+
+		controller = new ToggleLikeController(mockLogger, mockLikeRepository, mockIdeaRepository, mockCommentRepository)
 	})
 
 	afterEach(() => {

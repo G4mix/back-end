@@ -100,7 +100,7 @@ export class GetIdeaByIdController extends Controller {
 		} catch (error) {
 			this.logger.error('Failed to retrieve idea', {
 				error: error instanceof Error ? error.message : 'Unknown error',
-				userProfileId: request.user?.sub,
+				userProfileId: request.user?.userProfileId,
 				ideaId: id
 			})
 			this.setStatus(500)

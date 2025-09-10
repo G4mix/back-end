@@ -5,7 +5,7 @@
  * que substitui todos os serializers manuais
  */
 
-import { Express } from 'express'
+import { Application } from 'express'
 import { SmartDTOMiddleware } from '@shared/middlewares'
 import { Logger } from '@shared/utils/logger'
 
@@ -18,7 +18,7 @@ import { Logger } from '@shared/utils/logger'
  * - Injeção de dados processados nos controllers
  * - Tratamento de erros centralizado
  */
-export function setupSmartDTOMiddleware(app: Express, logger: Logger) {
+export function setupSmartDTOMiddleware(app: Application, logger: Logger) {
 	const smartDTOMiddleware = new SmartDTOMiddleware(logger)
 
 	// Middleware principal (deve ser aplicado antes das rotas)

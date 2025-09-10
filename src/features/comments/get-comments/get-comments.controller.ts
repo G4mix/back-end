@@ -93,7 +93,7 @@ export class GetCommentsController extends Controller {
 
 			const queryParams = {
 				ideaId,
-				page: page || 0,
+				page: page || 0, // Repository expects 0-based page
 				limit: limit || 10,
 				parentCommentId
 			}
@@ -107,6 +107,7 @@ export class GetCommentsController extends Controller {
 			const { comments, total } = await this.commentRepository.findByIdea(queryParams)
 			
 			const totalPages = Math.ceil(total / (queryParams.limit || 10))
+			const currentPage = (page || 0)
 
 			const response = {
 				comments: comments.map((comment: any) => ({
@@ -125,12 +126,12 @@ export class GetCommentsController extends Controller {
 					_count: comment._count
 				})),
 				pagination: {
-					page: queryParams.page || 0,
+					page: currentPage,
 					limit: queryParams.limit || 10,
 					total,
 					totalPages,
-					hasNext: (queryParams.page || 0) < totalPages,
-					hasPrev: (queryParams.page || 0) > 0
+					hasNext: currentPage < totalPages - 1,
+					hasPrev: currentPage > 0
 				}
 			}
 
@@ -138,7 +139,7 @@ export class GetCommentsController extends Controller {
 				userProfileId, 
 				count: comments.length, 
 				total, 
-				page: queryParams.page || 0
+				page: currentPage
 			})
 
 			this.setStatus(200)

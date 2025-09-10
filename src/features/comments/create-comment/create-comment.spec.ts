@@ -50,7 +50,7 @@ describe('CreateCommentController', () => {
 				parentCommentId: undefined
 			}
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			const mockIdea = {
@@ -64,9 +64,9 @@ describe('CreateCommentController', () => {
 				content: commentData.content,
 				ideaId: commentData.ideaId,
 				parentCommentId: null,
-				authorId: mockRequest.user.sub,
+				authorId: mockRequest.user.userProfileId,
 				author: {
-					id: mockRequest.user.sub,
+					id: mockRequest.user.userProfileId,
 					displayName: 'John Doe',
 					icon: 'https://example.com/icon.jpg'
 				},
@@ -97,8 +97,8 @@ describe('CreateCommentController', () => {
 						displayName: 'John Doe',
 						icon: 'https://example.com/icon.jpg'
 					},
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created_at: expect.any(Date),
+					updated_at: expect.any(Date),
 					_count: {
 						likes: 0,
 						replies: 0
@@ -106,7 +106,7 @@ describe('CreateCommentController', () => {
 				}
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Creating comment', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: 'idea-uuid-123',
 				parentCommentId: undefined,
 				contentLength: commentData.content.length,
@@ -122,7 +122,7 @@ describe('CreateCommentController', () => {
 				parentCommentId: 'parent-comment-uuid-456'
 			}
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			const mockIdea = {
@@ -142,9 +142,9 @@ describe('CreateCommentController', () => {
 				content: commentData.content,
 				ideaId: commentData.ideaId,
 				parentCommentId: commentData.parentCommentId,
-				authorId: mockRequest.user.sub,
+				authorId: mockRequest.user.userProfileId,
 				author: {
-					id: mockRequest.user.sub,
+					id: mockRequest.user.userProfileId,
 					displayName: 'John Doe',
 					icon: 'https://example.com/icon.jpg'
 				},
@@ -176,8 +176,8 @@ describe('CreateCommentController', () => {
 						displayName: 'John Doe',
 						icon: 'https://example.com/icon.jpg'
 					},
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created_at: expect.any(Date),
+					updated_at: expect.any(Date),
 					_count: {
 						likes: 0,
 						replies: 0
@@ -185,7 +185,7 @@ describe('CreateCommentController', () => {
 				}
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Creating comment', {
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: 'idea-uuid-123',
 				parentCommentId: 'parent-comment-uuid-456',
 				contentLength: commentData.content.length,
@@ -235,7 +235,7 @@ describe('CreateCommentController', () => {
 				parentCommentId: undefined
 			}
 			const mockRequest = {
-				user: { sub: 'user-profile-123' }
+				user: { userProfileId: 'user-profile-123' }
 			}
 
 			// Mock repository to throw error
@@ -248,7 +248,7 @@ describe('CreateCommentController', () => {
 			expect(result).toBe('Failed to create comment')
 			expect(mockLogger.error).toHaveBeenCalledWith('Failed to create comment', {
 				error: 'Database connection failed',
-				userId: 'user-profile-123',
+				userProfileId: 'user-profile-123',
 				ideaId: 'idea-uuid-123'
 			})
 		})
@@ -261,7 +261,7 @@ describe('CreateCommentController', () => {
 				parentCommentId: undefined
 			}
 			const mockRequest = {
-				user: { sub: 'user-profile-789' }
+				user: { userProfileId: 'user-profile-789' }
 			}
 
 			const mockIdea = {
@@ -275,9 +275,9 @@ describe('CreateCommentController', () => {
 				content: commentData.content,
 				ideaId: commentData.ideaId,
 				parentCommentId: null,
-				authorId: mockRequest.user.sub,
+				authorId: mockRequest.user.userProfileId,
 				author: {
-					id: mockRequest.user.sub,
+					id: mockRequest.user.userProfileId,
 					displayName: 'John Doe',
 					icon: 'https://example.com/icon.jpg'
 				},
@@ -297,7 +297,7 @@ describe('CreateCommentController', () => {
 
 			// Assert
 			expect(mockLogger.info).toHaveBeenCalledWith('Creating comment', {
-				userId: 'user-profile-789',
+				userProfileId: 'user-profile-789',
 				ideaId: 'idea-uuid-789',
 				parentCommentId: undefined,
 				contentLength: commentData.content.length,
@@ -305,7 +305,7 @@ describe('CreateCommentController', () => {
 			})
 			expect(mockLogger.info).toHaveBeenCalledWith('Comment created successfully', {
 				commentId: 'comment-uuid-789',
-				userId: 'user-profile-789',
+				userProfileId: 'user-profile-789',
 				ideaId: 'idea-uuid-789'
 			})
 		})
