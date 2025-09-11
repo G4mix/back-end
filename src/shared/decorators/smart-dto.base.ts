@@ -86,7 +86,7 @@ export abstract class SmartDTO<T = any> {
 		for (const [property, transformer] of Object.entries(transforms)) {
 			const currentValue = (this as any)[property]
 			if (currentValue !== undefined) {
-				;(this as any)[property] = (transformer as (value: any) => any)(currentValue)
+				(this as any)[property] = (transformer as (value: any) => any)(currentValue)
 			}
 		}
 	}

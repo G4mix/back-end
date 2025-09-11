@@ -1,7 +1,7 @@
 export class GetIdeasQuery {
 	search?: string
 	authorId?: string
-	tags?: string
+	tags?: string[]
 	page?: number
 	limit?: number
 	sortBy?: 'created_at' | 'updated_at' | 'title'

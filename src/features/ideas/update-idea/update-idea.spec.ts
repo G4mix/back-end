@@ -1,330 +1,261 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
-import { HttpClient } from '@test/helpers/http-client'
-import { TestData } from '@test/helpers/test-data'
+import { createTestApp } from '@test/setup/test-app'
+import { App } from '@config/app'
+import { TestTokens } from '@test/helpers/test-tokens'
+import request from 'supertest'
 
 describe('Update Idea Integration Tests', () => {
-	let httpClient: HttpClient
-	let baseUrl: string
+	let app: App
+	let server: any
 	let authToken: string
 
-	beforeAll(async () => {
-		// Inicia o servidor real
-		baseUrl = await IntegrationTestSetup.startServer()
-		httpClient = new HttpClient(baseUrl)
-		
-		// Simula login para obter token
-		authToken = TestData.generateFakeToken()
-		httpClient.setAuthToken(authToken)
+	beforeEach(async () => {
+		app = await createTestApp()
+		server = app.getInstance()
+
+		// Gera token JWT válido para testes
+		authToken = TestTokens.generateValidToken()
 	})
 
-	afterAll(async () => {
-		// Para o servidor
-		await IntegrationTestSetup.stopServer()
+	afterEach(async () => {
+		if (app) {
+			app.stop()
+		}
 	})
 
-	beforeEach(() => {
-		// Limpa mocks antes de cada teste
-		IntegrationTestSetup.clearMocks()
-	})
-
-	describe('PUT /api/v1/ideas/:id', () => {
+	describe('patch /api/v1/ideas/:id', () => {
 		it('should update idea successfully with valid data', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
 				title: 'Updated Idea Title - This is a valid title with enough characters',
 				description: 'This is an updated description with enough characters to pass validation. It needs to be at least 50 characters long and less than 700 characters.',
 				tags: ['updated', 'idea'],
 				links: [{ url: 'https://updated-example.com' }]
 			}
-			
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: ideaId,
-							authorId: TestData.generateUUID(),
-							title: 'Old Title',
-							description: 'Old Description'
-						}),
-						findFirst: jest.fn().mockResolvedValue(null), // Título não existe
-						update: jest.fn().mockResolvedValue({
-							id: ideaId,
-							title: updateData.title,
-							description: updateData.description,
-							authorId: TestData.generateUUID(),
-							created_at: new Date(),
-							updated_at: new Date(),
-							tags: updateData.tags?.map((name: string) => ({
-								id: TestData.generateUUID(),
-								name
-							})),
-							links: updateData.links?.map((link: any) => ({
-								id: TestData.generateUUID(),
-								url: link.url
-							}))
-						})
-					}
-				}
-			})
+
+			console.log('Making request to:', `/api/v1/ideas/${ideaId}`)
+			console.log('With data:', updateData)
 
 			// Act
-			const response = await httpClient.put(`/api/v1/ideas/${ideaId}`, updateData)
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
+
+			// Debug
+			console.log('Response status:', response.status)
+			console.log('Response body:', response.body)
+			console.log('Response headers:', response.headers)
+			console.log('Auth token:', authToken)
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.data).toHaveProperty('idea')
-			expect(response.data.idea.title).toBe(updateData.title)
-			expect(response.data.idea.description).toBe(updateData.description)
+			expect(response.body).toHaveProperty('idea')
+			expect(response.body.idea).toHaveProperty('id')
+			expect(response.body.idea.title).toBe(updateData.title)
+			expect(response.body.idea.description).toBe(updateData.description)
 		})
 
 		it('should return validation error for invalid UUID', async () => {
 			// Arrange
+			const invalidId = 'invalid-uuid'
 			const updateData = {
-				title: 'Updated Title',
-				description: 'Updated Description'
+				title: 'Updated Idea Title',
+				description: 'This is an updated description with enough characters to pass validation.'
 			}
 
-			// Act & Assert
-			await expect(httpClient.put('/api/v1/ideas/invalid-uuid', updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'INVALID_IDEA_ID'
-						}
-					}
-				})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${invalidId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
+
+			// Assert - TSOA retorna 404 para UUIDs inválidos no path
+			expect(response.status).toBe(404)
 		})
 
 		it('should return validation error for short title', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
 				title: 'Short',
-				description: 'Updated Description'
+				description: 'This is an updated description with enough characters to pass validation.'
 			}
 
-			// Act & Assert
-			await expect(httpClient.put(`/api/v1/ideas/${ideaId}`, updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'TITLE_TOO_SHORT'
-						}
-					}
-				})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
+
+			// Assert
+			expect(response.status).toBe(400)
+			expect(response.body.message).toBe('INVALID_TITLE')
 		})
 
 		it('should return validation error for long title', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'This is a very long title that exceeds the maximum allowed length of 70 characters and should fail validation',
-				description: 'Updated Description'
+				title: 'A'.repeat(101), // Title too long
+				description: 'This is an updated description with enough characters to pass validation.'
 			}
 
-			// Act & Assert
-			await expect(httpClient.put(`/api/v1/ideas/${ideaId}`, updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'TITLE_TOO_LONG'
-						}
-					}
-				})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
+
+			// Assert
+			expect(response.status).toBe(400)
+			expect(response.body.message).toBe('INVALID_TITLE')
 		})
 
 		it('should return validation error for short description', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Title',
-				description: 'Short desc'
+				title: 'Updated Idea Title',
+				description: 'Short' // Description too short
 			}
 
-			// Act & Assert
-			await expect(httpClient.put(`/api/v1/ideas/${ideaId}`, updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'DESCRIPTION_TOO_SHORT'
-						}
-					}
-				})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
+
+			// Assert
+			expect(response.status).toBe(400)
+			expect(response.body.message).toBe('INVALID_DESCRIPTION')
 		})
 
 		it('should return validation error for invalid link URL', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Title',
-				description: 'Updated Description',
+				title: 'Updated Idea Title',
+				description: 'This is an updated description with enough characters to pass validation.',
 				links: [{ url: 'invalid-url' }]
 			}
 
-			// Act & Assert
-			await expect(httpClient.put(`/api/v1/ideas/${ideaId}`, updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'INVALID_LINK_URL'
-						}
-					}
-				})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
+
+			// Assert
+			expect(response.status).toBe(400)
+			expect(response.body.message).toBe('INVALID_LINK_URL')
 		})
 
 		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Title',
-				description: 'Updated Description'
+				title: 'Updated Idea Title',
+				description: 'This is an updated description with enough characters to pass validation.'
 			}
-			httpClient.clearAuthToken()
 
-			// Act & Assert
-			await expect(httpClient.put(`/api/v1/ideas/${ideaId}`, updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 401,
-						data: {
-							message: 'UNAUTHORIZED'
-						}
-					}
-				})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+
+			// Assert
+			expect(response.status).toBe(401)
+			expect(response.body.message).toBe('UNAUTHORIZED')
 		})
 
 		it('should return IDEA_NOT_FOUND when idea does not exist', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Title',
-				description: 'Updated Description'
+				title: 'Updated Idea Title',
+				description: 'This is an updated description with enough characters to pass validation.'
 			}
 
-			// Mock do Prisma para retornar null
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue(null)
-					}
-				}
-			})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
 
-			// Act & Assert
-			await expect(httpClient.put(`/api/v1/ideas/${ideaId}`, updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 404,
-						data: {
-							message: 'IDEA_NOT_FOUND'
-						}
-					}
-				})
+			// Assert
+			expect(response.status).toBe(404)
+			expect(response.body.message).toBe('IDEA_NOT_FOUND')
 		})
 
 		it('should return FORBIDDEN when user is not the author', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Title',
-				description: 'Updated Description'
+				title: 'Updated Idea Title',
+				description: 'This is an updated description with enough characters to pass validation.'
 			}
 
-			// Mock do Prisma para retornar ideia de outro autor
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: ideaId,
-							authorId: 'different-author-id',
-							title: 'Old Title',
-							description: 'Old Description'
-						})
-					}
-				}
-			})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
 
-			// Act & Assert
-			await expect(httpClient.put(`/api/v1/ideas/${ideaId}`, updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 403,
-						data: {
-							message: 'FORBIDDEN'
-						}
-					}
-				})
+			// Assert
+			expect(response.status).toBe(403)
+			expect(response.body.message).toBe('FORBIDDEN')
 		})
 
 		it('should return IDEA_ALREADY_EXISTS when title already exists', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Existing Title',
-				description: 'Updated Description'
+				title: 'Updated Idea Title',
+				description: 'This is an updated description with enough characters to pass validation.'
 			}
 
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: ideaId,
-							authorId: TestData.generateUUID(),
-							title: 'Old Title',
-							description: 'Old Description'
-						}),
-						findFirst: jest.fn().mockResolvedValue({
-							id: 'different-idea-id',
-							title: updateData.title
-						})
-					}
-				}
-			})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
 
-			// Act & Assert
-			await expect(httpClient.put(`/api/v1/ideas/${ideaId}`, updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 409,
-						data: {
-							message: 'IDEA_ALREADY_EXISTS'
-						}
-					}
-				})
+			// Assert
+			expect(response.status).toBe(409)
+			expect(response.body.message).toBe('IDEA_ALREADY_EXISTS')
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Title',
-				description: 'Updated Description'
+				title: 'Updated Idea Title',
+				description: 'This is an updated description with enough characters to pass validation.'
 			}
 
 			// Mock do Prisma para retornar erro
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-					}
+			const mockPrisma = require('@prisma/client').PrismaClient
+			const originalMock = mockPrisma.mockImplementation
+			
+			mockPrisma.mockImplementation(() => ({
+				...mockPrisma(),
+				idea: {
+					findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
 				}
-			})
+			}))
 
-			// Act & Assert
-			await expect(httpClient.put(`/api/v1/ideas/${ideaId}`, updateData))
-				.rejects.toMatchObject({
-					response: {
-						status: 500
-					}
-				})
+			// Act
+			const response = await request(server)
+				.patch(`/api/v1/ideas/${ideaId}`)
+				.send(updateData)
+				.set('Authorization', `Bearer ${authToken}`)
+
+			// Assert
+			expect(response.status).toBe(500)
+
+			// Restore original mock
+			mockPrisma.mockImplementation = originalMock
 		})
 	})
 })

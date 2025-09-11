@@ -1,5 +1,5 @@
-import { EXPIRATION_TIME_ACCESS_TOKEN } from '@shared/constants'
-import { env } from '@config'
+import { EXPIRATION_TIME_ACCESS_TOKEN } from '@shared/constants/jwt'
+import { env } from '@config/env'
 import jwt from 'jsonwebtoken'
 
 export type Claims = {

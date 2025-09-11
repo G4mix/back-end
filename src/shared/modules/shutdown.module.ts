@@ -41,7 +41,7 @@ export class ShutdownModule implements StartupModule {
 
 		const startTime = Date.now()
 		let cleanupSteps = 0
-		let totalSteps = 4
+		const totalSteps = 4
 
 		try {
 			// Step 1: Close database connections

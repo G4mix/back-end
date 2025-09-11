@@ -1,16 +1,13 @@
-import { Route, Tags, Controller, Body, SuccessResponse, Middlewares, Security, Request, Patch } from 'tsoa'
+import { Route, Tags, Controller, Body, SuccessResponse, Security, Request, Patch } from 'tsoa'
 import { injectable, inject } from 'tsyringe'
 import { UpdateUserInput, UpdateUserOutput } from '@shared/types/tsoa'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { UserGateway } from '@shared/gateways/user.gateway'
-import { schemaValidation } from '@shared/middlewares/schema-validation'
-import { updateUserSchema } from '@shared/schemas/user.schema'
-import { RequestHandler } from 'express'
-import { BCryptEncoder } from '@shared/utils'
-import { MAX_SIZE, SUPPORTED_IMAGES } from '@shared/constants'
+import { BCryptEncoder } from '@shared/utils/bcrypt-encoder'
+import { MAX_SIZE, SUPPORTED_IMAGES } from '@shared/constants/images'
 import { UserDTO } from '@shared/dto/simple.dto'
 import { TsoaRequest } from '@shared/types/tsoa'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { Logger } from '@shared/utils/logger'
 
 @injectable()
@@ -81,7 +78,6 @@ export class UpdateUserController extends Controller {
 	@SuccessResponse(200, 'User updated successfully')
 	@Patch()
 	@Security('jwt', [])
-	@Middlewares<RequestHandler>(schemaValidation(updateUserSchema))
 	@LogResponseTime()
 	public async updateUser(
 		@Body() body: UpdateUserInput,

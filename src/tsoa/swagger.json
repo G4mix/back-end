@@ -1069,7 +1069,6 @@
 				"additionalProperties": false
 			},
 			"CreateCommentInput": {
-				"description": "Interfaces simples para o TSOA\r\nOs DTOs reais estão em",
 				"properties": {
 					"ideaId": {
 						"type": "string"
@@ -1269,7 +1268,7 @@
 						}
 					}
 				},
-				"description": "Record a view for idea or comment\r\n\r\nThis endpoint allows authenticated users to record a view for ideas or comments.\r\nViews are tracked to provide analytics and engagement metrics. The system\r\nprevents duplicate views from the same user within a certain time period.\r\n\r\nView Recording Process:\r\n- Validates user authentication\r\n- Checks if user has already viewed the content recently\r\n- Records new view if not duplicate\r\n- Updates view count for the content\r\n- Returns current view status and count",
+				"description": "Record a view for idea or comment\n\nThis endpoint allows authenticated users to record a view for ideas or comments.\nViews are tracked to provide analytics and engagement metrics. The system\nprevents duplicate views from the same user within a certain time period.\n\nView Recording Process:\n- Validates user authentication\n- Checks if user has already viewed the content recently\n- Records new view if not duplicate\n- Updates view count for the content\n- Returns current view status and count",
 				"tags": [
 					"Views"
 				],
@@ -1412,7 +1411,7 @@
 						}
 					}
 				},
-				"description": "Retrieve paginated list of users with search functionality\r\n\r\nThis endpoint provides a paginated list of all users in the system with\r\noptional search functionality. It's useful for user discovery, admin\r\nmanagement, and general user browsing features.\r\n\r\nFeatures:\r\n- Pagination with configurable page size\r\n- Search functionality across user fields\r\n- Serialized user data with profile information\r\n- Comprehensive pagination metadata\r\n- Performance optimized queries",
+				"description": "Retrieve paginated list of users with search functionality\n\nThis endpoint provides a paginated list of all users in the system with\noptional search functionality. It's useful for user discovery, admin\nmanagement, and general user browsing features.\n\nFeatures:\n- Pagination with configurable page size\n- Search functionality across user fields\n- Serialized user data with profile information\n- Comprehensive pagination metadata\n- Performance optimized queries",
 				"tags": [
 					"User Management"
 				],
@@ -1473,7 +1472,7 @@
 						}
 					}
 				},
-				"description": "Permanently delete authenticated user's account and associated data\r\n\r\nThis endpoint allows authenticated users to permanently delete their account\r\nand all associated data. It performs comprehensive cleanup including user\r\nfiles, database records, and external service data. This action is irreversible.\r\n\r\nDeletion Process:\r\n- Validates user authentication and ownership\r\n- Retrieves user file information (profile images, etc.)\r\n- Deletes user files from cloud storage (S3)\r\n- Removes all user data from database\r\n- Cleans up related records and associations\r\n- Comprehensive error handling and rollback\r\n\r\nSecurity Features:\r\n- JWT token validation required\r\n- User can only delete their own account\r\n- Comprehensive data cleanup\r\n- Secure file deletion from cloud storage",
+				"description": "Permanently delete authenticated user's account and associated data\n\nThis endpoint allows authenticated users to permanently delete their account\nand all associated data. It performs comprehensive cleanup including user\nfiles, database records, and external service data. This action is irreversible.\n\nDeletion Process:\n- Validates user authentication and ownership\n- Retrieves user file information (profile images, etc.)\n- Deletes user files from cloud storage (S3)\n- Removes all user data from database\n- Cleans up related records and associations\n- Comprehensive error handling and rollback\n\nSecurity Features:\n- JWT token validation required\n- User can only delete their own account\n- Comprehensive data cleanup\n- Secure file deletion from cloud storage",
 				"tags": [
 					"User Management"
 				],
@@ -1500,7 +1499,7 @@
 						}
 					}
 				},
-				"description": "Remove a personal link from user profile\r\n\r\nThis endpoint allows authenticated users to remove personal links from their profile.\r\nOnly the owner of the link can remove it.",
+				"description": "Remove a personal link from user profile\n\nThis endpoint allows authenticated users to remove personal links from their profile.\nOnly the owner of the link can remove it.",
 				"tags": [
 					"User Links"
 				],
@@ -1535,7 +1534,7 @@
 						}
 					}
 				},
-				"description": "Retrieve specific user by ID with complete profile information\r\n\r\nThis endpoint retrieves detailed information about a specific user by their ID.\r\nIt returns complete user data including profile information, links, and\r\nfollower/following counts. Useful for user profiles, user details pages,\r\nand user lookup functionality.\r\n\r\nFeatures:\r\n- Complete user profile information\r\n- Social links and connections data\r\n- Follower and following counts\r\n- Serialized user data format\r\n- Proper error handling for non-existent users",
+				"description": "Retrieve specific user by ID with complete profile information\n\nThis endpoint retrieves detailed information about a specific user by their ID.\nIt returns complete user data including profile information, links, and\nfollower/following counts. Useful for user profiles, user details pages,\nand user lookup functionality.\n\nFeatures:\n- Complete user profile information\n- Social links and connections data\n- Follower and following counts\n- Serialized user data format\n- Proper error handling for non-existent users",
 				"tags": [
 					"User Management"
 				],
@@ -1575,7 +1574,7 @@
 						}
 					}
 				},
-				"description": "Get personal links of a user\r\n\r\nThis endpoint allows authenticated users to retrieve their personal links\r\nor view another user's public links.",
+				"description": "Get personal links of a user\n\nThis endpoint allows authenticated users to retrieve their personal links\nor view another user's public links.",
 				"tags": [
 					"User Links"
 				],
@@ -1617,7 +1616,7 @@
 						}
 					}
 				},
-				"description": "Add a personal link to user profile\r\n\r\nThis endpoint allows authenticated users to add personal links to their profile.\r\nLinks can be social media profiles, websites, portfolios, etc.",
+				"description": "Add a personal link to user profile\n\nThis endpoint allows authenticated users to add personal links to their profile.\nLinks can be social media profiles, websites, portfolios, etc.",
 				"tags": [
 					"User Links"
 				],
@@ -1663,7 +1662,7 @@
 						}
 					}
 				},
-				"description": "Toggle like on idea or comment\r\n\r\nThis endpoint allows authenticated users to like or unlike ideas and comments.\r\nIf the user hasn't liked the content before, it will create a like. If they\r\nhave already liked it, it will remove the like (toggle behavior).\r\n\r\nLike Toggle Process:\r\n- Validates user authentication\r\n- Checks if user has already liked the content\r\n- Creates like if not exists, removes if exists\r\n- Updates like count for the content\r\n- Returns current like status and count",
+				"description": "Toggle like on idea or comment\n\nThis endpoint allows authenticated users to like or unlike ideas and comments.\nIf the user hasn't liked the content before, it will create a like. If they\nhave already liked it, it will remove the like (toggle behavior).\n\nLike Toggle Process:\n- Validates user authentication\n- Checks if user has already liked the content\n- Creates like if not exists, removes if exists\n- Updates like count for the content\n- Returns current like status and count",
 				"tags": [
 					"Likes"
 				],
@@ -1709,7 +1708,7 @@
 						}
 					}
 				},
-				"description": "Update an existing idea\r\n\r\nThis endpoint allows authenticated users to update their own ideas.\r\nOnly the author of the idea can update it.",
+				"description": "Update an existing idea\n\nThis endpoint allows authenticated users to update their own ideas.\nOnly the author of the idea can update it.",
 				"tags": [
 					"Ideas"
 				],
@@ -1763,7 +1762,7 @@
 						}
 					}
 				},
-				"description": "Get a specific idea by ID\r\n\r\nThis endpoint allows authenticated users to retrieve a specific idea by its ID.\r\nThe response includes the idea details, author information, and engagement metrics.",
+				"description": "Get a specific idea by ID\n\nThis endpoint allows authenticated users to retrieve a specific idea by its ID.\nThe response includes the idea details, author information, and engagement metrics.",
 				"tags": [
 					"Ideas"
 				],
@@ -1798,7 +1797,7 @@
 						}
 					}
 				},
-				"description": "Delete an existing idea\r\n\r\nThis endpoint allows authenticated users to delete their own ideas.\r\nOnly the author of the idea can delete it. This action is irreversible.",
+				"description": "Delete an existing idea\n\nThis endpoint allows authenticated users to delete their own ideas.\nOnly the author of the idea can delete it. This action is irreversible.",
 				"tags": [
 					"Ideas"
 				],
@@ -1833,7 +1832,7 @@
 						}
 					}
 				},
-				"description": "Get list of ideas with filtering and pagination\r\n\r\nThis endpoint allows authenticated users to retrieve a paginated list of ideas\r\nwith various filtering options. Users can search by title/description, filter\r\nby author, tags, and sort by different criteria.\r\n\r\nIdeas Retrieval Process:\r\n- Validates query parameters (pagination, filters, sorting)\r\n- Applies search filters if provided\r\n- Retrieves ideas from database with pagination\r\n- Includes author information and engagement metrics\r\n- Returns paginated results with metadata",
+				"description": "Get list of ideas with filtering and pagination\n\nThis endpoint allows authenticated users to retrieve a paginated list of ideas\nwith various filtering options. Users can search by title/description, filter\nby author, tags, and sort by different criteria.\n\nIdeas Retrieval Process:\n- Validates query parameters (pagination, filters, sorting)\n- Applies search filters if provided\n- Retrieves ideas from database with pagination\n- Includes author information and engagement metrics\n- Returns paginated results with metadata",
 				"tags": [
 					"Ideas"
 				],
@@ -1864,7 +1863,10 @@
 						"name": "tags",
 						"required": false,
 						"schema": {
-							"type": "string"
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
 						}
 					},
 					{
@@ -1933,7 +1935,7 @@
 						}
 					}
 				},
-				"description": "Create a new idea\r\n\r\nThis endpoint allows authenticated users to create new ideas. The idea will be\r\nassociated with the authenticated user's profile and will be visible to other\r\nusers based on the platform's visibility rules.\r\n\r\nIdea Creation Process:\r\n- Validates input data (title, description, summary, tags)\r\n- Associates idea with authenticated user's profile\r\n- Creates idea record in database\r\n- Returns created idea with generated ID and timestamps",
+				"description": "Create a new idea\n\nThis endpoint allows authenticated users to create new ideas. The idea will be\nassociated with the authenticated user's profile and will be visible to other\nusers based on the platform's visibility rules.\n\nIdea Creation Process:\n- Validates input data (title, description, summary, tags)\n- Associates idea with authenticated user's profile\n- Creates idea record in database\n- Returns created idea with generated ID and timestamps",
 				"tags": [
 					"Ideas"
 				],
@@ -1979,7 +1981,7 @@
 						}
 					}
 				},
-				"description": "Toggle follow relationship with user\r\n\r\nThis endpoint allows authenticated users to follow or unfollow other users.\r\nIf the user isn't following the target, it will create a follow relationship.\r\nIf they are already following, it will remove the relationship.\r\n\r\nFollow Toggle Process:\r\n- Validates user authentication\r\n- Checks if user is trying to follow themselves (not allowed)\r\n- Validates that target user exists\r\n- Creates or removes follow relationship\r\n- Returns current follow status",
+				"description": "Toggle follow relationship with user\n\nThis endpoint allows authenticated users to follow or unfollow other users.\nIf the user isn't following the target, it will create a follow relationship.\nIf they are already following, it will remove the relationship.\n\nFollow Toggle Process:\n- Validates user authentication\n- Checks if user is trying to follow themselves (not allowed)\n- Validates that target user exists\n- Creates or removes follow relationship\n- Returns current follow status",
 				"tags": [
 					"Follows"
 				],
@@ -2025,7 +2027,7 @@
 						}
 					}
 				},
-				"description": "Get who a user is following\r\n\r\nThis endpoint allows authenticated users to retrieve a paginated list of users\r\nthat a specific user profile is following.",
+				"description": "Get who a user is following\n\nThis endpoint allows authenticated users to retrieve a paginated list of users\nthat a specific user profile is following.",
 				"tags": [
 					"Follows"
 				],
@@ -2089,7 +2091,7 @@
 						}
 					}
 				},
-				"description": "Get followers of a user\r\n\r\nThis endpoint allows authenticated users to retrieve a paginated list of followers\r\nfor a specific user profile. Users can see who is following them.",
+				"description": "Get followers of a user\n\nThis endpoint allows authenticated users to retrieve a paginated list of followers\nfor a specific user profile. Users can see who is following them.",
 				"tags": [
 					"Follows"
 				],
@@ -2153,7 +2155,7 @@
 						}
 					}
 				},
-				"description": "Get comments for an idea with pagination\r\n\r\nThis endpoint allows authenticated users to retrieve comments for a specific idea.\r\nComments are returned in a paginated format and can be filtered by parent comment.",
+				"description": "Get comments for an idea with pagination\n\nThis endpoint allows authenticated users to retrieve comments for a specific idea.\nComments are returned in a paginated format and can be filtered by parent comment.",
 				"tags": [
 					"Comment"
 				],
@@ -2215,7 +2217,7 @@
 						}
 					}
 				},
-				"description": "Create a new comment on an idea\r\n\r\nThis endpoint allows authenticated users to create comments on ideas or reply\r\nto existing comments. Comments support nested replies through parentCommentId.\r\n\r\nComment Creation Process:\r\n- Validates user authentication\r\n- Validates that the target idea exists\r\n- Validates parent comment if replying to a comment\r\n- Creates comment in database with author information\r\n- Returns created comment with engagement metrics",
+				"description": "Create a new comment on an idea\n\nThis endpoint allows authenticated users to create comments on ideas or reply\nto existing comments. Comments support nested replies through parentCommentId.\n\nComment Creation Process:\n- Validates user authentication\n- Validates that the target idea exists\n- Validates parent comment if replying to a comment\n- Creates comment in database with author information\n- Returns created comment with engagement metrics",
 				"tags": [
 					"Comment"
 				],
@@ -2247,7 +2249,7 @@
 						"description": ""
 					}
 				},
-				"description": "Handle OAuth callback from social providers\r\n\r\nThis endpoint processes the OAuth callback from social login providers (Google,\r\nLinkedIn, GitHub) after the user has authenticated with the external service.\r\nIt exchanges the authorization code for access tokens and completes the login process.\r\n\r\nOAuth Callback Process:\r\n- Receives authorization code from provider\r\n- Exchanges code for access tokens via AuthGateway\r\n- Retrieves user profile information\r\n- Creates or updates user account\r\n- Generates application authentication tokens",
+				"description": "Handle OAuth callback from social providers\n\nThis endpoint processes the OAuth callback from social login providers (Google,\nLinkedIn, GitHub) after the user has authenticated with the external service.\nIt exchanges the authorization code for access tokens and completes the login process.\n\nOAuth Callback Process:\n- Receives authorization code from provider\n- Exchanges code for access tokens via AuthGateway\n- Retrieves user profile information\n- Creates or updates user account\n- Generates application authentication tokens",
 				"tags": [
 					"Authentication"
 				],
@@ -2310,7 +2312,7 @@
 						}
 					}
 				},
-				"description": "Authenticate user with social provider token\r\n\r\nThis endpoint authenticates users using tokens obtained from social providers\r\n(Google, LinkedIn, GitHub). It validates the social token, retrieves user profile\r\ninformation, and either signs in existing users or creates new accounts.\r\n\r\nSocial Authentication Process:\r\n- Validates social provider token via AuthGateway\r\n- Retrieves user profile from social provider\r\n- Checks if user already exists by email\r\n- Creates new account or links to existing account\r\n- Generates application authentication tokens\r\n- Updates refresh token in database",
+				"description": "Authenticate user with social provider token\n\nThis endpoint authenticates users using tokens obtained from social providers\n(Google, LinkedIn, GitHub). It validates the social token, retrieves user profile\ninformation, and either signs in existing users or creates new accounts.\n\nSocial Authentication Process:\n- Validates social provider token via AuthGateway\n- Retrieves user profile from social provider\n- Checks if user already exists by email\n- Creates new account or links to existing account\n- Generates application authentication tokens\n- Updates refresh token in database",
 				"tags": [
 					"Authentication"
 				],
@@ -2383,7 +2385,7 @@
 						}
 					}
 				},
-				"description": "Link additional OAuth provider to existing account\r\n\r\nThis endpoint allows authenticated users to link additional social providers\r\n(Google, LinkedIn, GitHub) to their existing account. This enables users to\r\nsign in with multiple social accounts using the same application account.\r\n\r\nProvider Linking Process:\r\n- Validates user authentication via JWT token\r\n- Validates social provider token via AuthGateway\r\n- Retrieves user profile from social provider\r\n- Checks if provider is already linked to another account\r\n- Links provider to current user account",
+				"description": "Link additional OAuth provider to existing account\n\nThis endpoint allows authenticated users to link additional social providers\n(Google, LinkedIn, GitHub) to their existing account. This enables users to\nsign in with multiple social accounts using the same application account.\n\nProvider Linking Process:\n- Validates user authentication via JWT token\n- Validates social provider token via AuthGateway\n- Retrieves user profile from social provider\n- Checks if provider is already linked to another account\n- Links provider to current user account",
 				"tags": [
 					"Authentication"
 				],
@@ -2452,7 +2454,7 @@
 						}
 					}
 				},
-				"description": "Register a new user account\r\n\r\nThis endpoint creates a new user account in the system. It performs comprehensive\r\nvalidation including email uniqueness check, email identity verification through AWS SES,\r\nand secure password hashing. Upon successful registration, the user is automatically\r\nsigned in with generated access and refresh tokens.\r\n\r\nRegistration Process:\r\n- Validates email uniqueness\r\n- Verifies email identity through AWS SES\r\n- Hashes password with bcrypt\r\n- Creates user profile with default settings\r\n- Generates authentication tokens\r\n- Updates refresh token in database",
+				"description": "Register a new user account\n\nThis endpoint creates a new user account in the system. It performs comprehensive\nvalidation including email uniqueness check, email identity verification through AWS SES,\nand secure password hashing. Upon successful registration, the user is automatically\nsigned in with generated access and refresh tokens.\n\nRegistration Process:\n- Validates email uniqueness\n- Verifies email identity through AWS SES\n- Hashes password with bcrypt\n- Creates user profile with default settings\n- Generates authentication tokens\n- Updates refresh token in database",
 				"tags": [
 					"Authentication"
 				],
@@ -2548,7 +2550,7 @@
 						}
 					}
 				},
-				"description": "Refresh authentication tokens using refresh token\r\n\r\nThis endpoint allows users to obtain new access and refresh tokens using their\r\ncurrent refresh token. It validates the refresh token, verifies the user exists,\r\nand generates a new token pair. This is essential for maintaining user sessions\r\nwithout requiring re-authentication.\r\n\r\nToken Refresh Process:\r\n- Validates refresh token signature and expiration\r\n- Extracts user ID from token payload\r\n- Verifies user exists and is active\r\n- Generates new access and refresh tokens\r\n- Updates refresh token in database",
+				"description": "Refresh authentication tokens using refresh token\n\nThis endpoint allows users to obtain new access and refresh tokens using their\ncurrent refresh token. It validates the refresh token, verifies the user exists,\nand generates a new token pair. This is essential for maintaining user sessions\nwithout requiring re-authentication.\n\nToken Refresh Process:\n- Validates refresh token signature and expiration\n- Extracts user ID from token payload\n- Verifies user exists and is active\n- Generates new access and refresh tokens\n- Updates refresh token in database",
 				"tags": [
 					"Authentication"
 				],
@@ -2606,7 +2608,7 @@
 						}
 					}
 				},
-				"description": "Send password recovery email with verification code\r\n\r\nThis endpoint initiates the password recovery process by sending a verification\r\ncode to the user's email address. The code is generated randomly and stored\r\nin the user's account for verification in the next step.\r\n\r\nRecovery Process:\r\n- Validates user exists by email\r\n- Generates secure random verification code\r\n- Sends email via AWS SES with recovery template\r\n- Stores code in user account for verification\r\n- Code expires after 10 minutes",
+				"description": "Send password recovery email with verification code\n\nThis endpoint initiates the password recovery process by sending a verification\ncode to the user's email address. The code is generated randomly and stored\nin the user's account for verification in the next step.\n\nRecovery Process:\n- Validates user exists by email\n- Generates secure random verification code\n- Sends email via AWS SES with recovery template\n- Stores code in user account for verification\n- Code expires after 10 minutes",
 				"tags": [
 					"Authentication"
 				],
@@ -2664,7 +2666,7 @@
 						}
 					}
 				},
-				"description": "Verify recovery code and generate temporary access token\r\n\r\nThis endpoint verifies the recovery code sent to the user's email and generates\r\na temporary access token that allows the user to change their password. The\r\ncode must be used within 10 minutes of generation.\r\n\r\nVerification Process:\r\n- Validates user exists by email\r\n- Checks code expiration (10 minutes)\r\n- Verifies provided code matches stored code\r\n- Generates temporary access token for password change\r\n- Clears recovery code from user account",
+				"description": "Verify recovery code and generate temporary access token\n\nThis endpoint verifies the recovery code sent to the user's email and generates\na temporary access token that allows the user to change their password. The\ncode must be used within 10 minutes of generation.\n\nVerification Process:\n- Validates user exists by email\n- Checks code expiration (10 minutes)\n- Verifies provided code matches stored code\n- Generates temporary access token for password change\n- Clears recovery code from user account",
 				"tags": [
 					"Authentication"
 				],
@@ -2718,7 +2720,7 @@
 						}
 					}
 				},
-				"description": "Change user password and generate new authentication tokens\r\n\r\nThis endpoint allows authenticated users to change their current password.\r\nUpon successful password change, new access and refresh tokens are automatically\r\ngenerated and the refresh token is updated in the database.",
+				"description": "Change user password and generate new authentication tokens\n\nThis endpoint allows authenticated users to change their current password.\nUpon successful password change, new access and refresh tokens are automatically\ngenerated and the refresh token is updated in the database.",
 				"tags": [
 					"Authentication"
 				],

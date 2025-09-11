@@ -3,9 +3,9 @@ import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { SESGateway } from '@shared/gateways/ses.gateway'
-import { generateRandomCode } from '@shared/utils'
+import { generateRandomCode } from '@shared/utils/generate-random-code'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 
 @injectable()
 @Route('api/v1/auth')
@@ -136,7 +136,7 @@ export class RecoverEmailController extends Controller {
 		if (isCodeExpired()) return 'CODE_EXPIRED'
 		if (user.userCode.code !== normalizedCode) return 'CODE_NOT_EQUALS'
 
-		const { JwtManager } = await import('@shared/utils')
+		const { JwtManager } = await import('@shared/utils/jwt-manager')
 		return { 
 			accessToken: JwtManager.generateToken({
 				sub: user.id,

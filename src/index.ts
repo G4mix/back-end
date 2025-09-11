@@ -1,6 +1,7 @@
 import 'reflect-metadata'
-import { S3ClientOptions, SESClientOptions } from '@shared/constants'
-import { App, processWatcher } from '@config'
+import { S3ClientOptions, SESClientOptions } from '@shared/constants/aws'
+import { App } from '@config/app'
+import { processWatcher } from '@config/processWatcher'
 import { PrismaClient } from '@prisma/client'
 import { container } from '@ioc'
 import { S3Client } from '@aws-sdk/client-s3'
@@ -31,9 +32,11 @@ import { UserGateway } from '@shared/gateways/user.gateway'
 import { SESGateway } from '@shared/gateways/ses.gateway'
 import { S3Gateway } from '@shared/gateways/s3.gateway'
 
-import { Logger, RouteLister } from '@shared/utils'
+import { Logger } from '@shared/utils/logger'
+import { RouteLister } from '@shared/utils/route-lister'
 
-import { AppModule, StartupModuleManager } from '@shared/modules'
+import { AppModule } from '@shared/modules/app.module'
+import { StartupModuleManager } from '@shared/modules/startup.module'
 
 container
 	.register('AuthGateway', { useClass: AuthGateway })
@@ -54,7 +57,7 @@ try {
 	app.start().then(() => {
 		console.log('🎯 Application startup completed successfully!')
 		processWatcher(app)
-	}).catch(error => {
+	}).catch((error: any) => {
 		console.error('❌ Failed to start application:', error)
 		console.error('🚨 Application startup failed - exiting...')
 		process.exit(1)

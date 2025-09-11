@@ -2,7 +2,7 @@ import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
-describe('Toggle Like Integration Tests', () => {
+describe('Create Comment Integration Tests', () => {
 	let httpClient: HttpClient
 	let baseUrl: string
 	let authToken: string
@@ -46,7 +46,7 @@ describe('Toggle Like Integration Tests', () => {
 		authToken = signupResponse.data.accessToken
 		httpClient.setAuthToken(authToken)
 		
-		// Cria uma ideia para dar like
+		// Cria uma ideia para comentar
 		const ideaData = TestData.createIdea()
 		ideaId = TestData.generateUUID()
 		IntegrationTestSetup.setupMocks({
@@ -96,70 +96,77 @@ describe('Toggle Like Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('POST /api/v1/likes', () => {
-		it('should create like successfully when not liked before', async () => {
+	describe('POST /api/v1/comments', () => {
+		it('should create comment successfully with valid data', async () => {
 			// Arrange
-			const likeData = { ideaId }
+			const commentData = TestData.createComment({ ideaId })
 			
 			// Mock do Prisma para retornar sucesso
 			IntegrationTestSetup.setupMocks({
 				prisma: {
-					like: {
-						findFirst: jest.fn().mockResolvedValue(null), // Não tem like ainda
+					comment: {
 						create: jest.fn().mockResolvedValue({
 							id: TestData.generateUUID(),
-							ideaId: likeData.ideaId,
-							userId: TestData.generateUUID(),
-							created_at: new Date()
+							content: commentData.content,
+							ideaId: commentData.ideaId,
+							authorId: TestData.generateUUID(),
+							created_at: new Date(),
+							updated_at: new Date(),
+							author: {
+								id: TestData.generateUUID(),
+								username: 'testuser',
+								email: 'test@example.com',
+								userProfile: {
+									id: TestData.generateUUID(),
+									name: 'Test User',
+									bio: null,
+									icon: null
+								}
+							},
+							idea: {
+								id: ideaId,
+								title: 'Test Idea',
+								description: 'Test Description'
+							}
 						})
 					}
 				}
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/likes', likeData)
+			const response = await httpClient.post('/api/v1/comments', commentData)
 
 			// Assert
 			expect(response.status).toBe(201)
 			expect(response.data).toHaveProperty('id')
-			expect(response.data.ideaId).toBe(likeData.ideaId)
+			expect(response.data.content).toBe(commentData.content)
+			expect(response.data.ideaId).toBe(commentData.ideaId)
+			expect(response.data).toHaveProperty('author')
 			expect(response.data).toHaveProperty('created_at')
 		})
 
-		it('should remove like successfully when already liked', async () => {
+		it('should return validation error for empty content', async () => {
 			// Arrange
-			const likeData = { ideaId }
-			const existingLike = {
-				id: TestData.generateUUID(),
-				ideaId: likeData.ideaId,
-				userId: TestData.generateUUID(),
-				created_at: new Date()
-			}
-			
-			// Mock do Prisma para retornar like existente e depois deletar
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					like: {
-						findFirst: jest.fn().mockResolvedValue(existingLike),
-						delete: jest.fn().mockResolvedValue(existingLike)
+			const commentData = TestData.createComment({ ideaId, content: '' })
+
+			// Act & Assert
+			await expect(httpClient.post('/api/v1/comments', commentData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_CONTENT'
+						}
 					}
-				}
-			})
-
-			// Act
-			const response = await httpClient.post('/api/v1/likes', likeData)
-
-			// Assert
-			expect(response.status).toBe(200)
-			expect(response.data.message).toBe('Like removed successfully')
+				})
 		})
 
 		it('should return validation error for invalid ideaId', async () => {
 			// Arrange
-			const likeData = { ideaId: 'invalid-uuid' }
+			const commentData = TestData.createComment({ ideaId: 'invalid-uuid' })
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/likes', likeData))
+			await expect(httpClient.post('/api/v1/comments', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -172,11 +179,11 @@ describe('Toggle Like Integration Tests', () => {
 
 		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
-			const likeData = { ideaId }
+			const commentData = TestData.createComment({ ideaId })
 			const clientWithoutAuth = new HttpClient(baseUrl)
 
 			// Act & Assert
-			await expect(clientWithoutAuth.post('/api/v1/likes', likeData))
+			await expect(clientWithoutAuth.post('/api/v1/comments', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -189,7 +196,7 @@ describe('Toggle Like Integration Tests', () => {
 
 		it('should return IDEA_NOT_FOUND when idea does not exist', async () => {
 			// Arrange
-			const likeData = { ideaId: TestData.generateUUID() }
+			const commentData = TestData.createComment({ ideaId: TestData.generateUUID() })
 			
 			// Mock do Prisma para retornar ideia não encontrada
 			IntegrationTestSetup.setupMocks({
@@ -201,7 +208,7 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/likes', likeData))
+			await expect(httpClient.post('/api/v1/comments', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -214,19 +221,19 @@ describe('Toggle Like Integration Tests', () => {
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const likeData = { ideaId }
+			const commentData = TestData.createComment({ ideaId })
 			
 			// Mock do Prisma para retornar erro
 			IntegrationTestSetup.setupMocks({
 				prisma: {
-					like: {
-						findFirst: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+					comment: {
+						create: jest.fn().mockRejectedValue(new Error('Database connection failed'))
 					}
 				}
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/likes', likeData))
+			await expect(httpClient.post('/api/v1/comments', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

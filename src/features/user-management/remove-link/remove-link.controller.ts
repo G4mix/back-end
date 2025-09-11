@@ -2,8 +2,8 @@ import { Route, Tags, Controller, Delete, SuccessResponse, Security, Request, Pa
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
-import { LinkRepository } from '@shared/repositories'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
+import { LinkRepository } from '@shared/repositories/link.repository'
 
 @injectable()
 @Route('api/v1/user/links')

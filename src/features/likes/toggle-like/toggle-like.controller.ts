@@ -2,7 +2,7 @@ import { Route, Tags, Controller, Body, Post, SuccessResponse, Security, Request
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { ToggleLikeInput, ToggleLikeResponse } from './toggle-like.dto'
 import { LikeRepository } from '@shared/repositories/like.repository'
 import { IdeaRepository } from '@shared/repositories/idea.repository'

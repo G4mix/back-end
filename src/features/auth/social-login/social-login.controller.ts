@@ -4,12 +4,14 @@ import { injectable } from 'tsyringe'
 import { SigninOutput } from '@shared/types/tsoa'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { AuthGateway } from '@shared/gateways/auth.gateway'
-import { BCryptEncoder, JwtManager, generateRandomPassword } from '@shared/utils'
-import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants'
+import { JwtManager } from '@shared/utils/jwt-manager'
+import { BCryptEncoder } from '@shared/utils/bcrypt-encoder'
+import { generateRandomPassword } from '@shared/utils/generate-random-password'
+import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants/jwt'
 import { UserWithProfile, UserDTO } from '@shared/dto/simple.dto'
 import { TsoaRequest } from '@shared/types/tsoa'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 
 @injectable()
 @Route('api/v1/auth')
@@ -238,7 +240,8 @@ export class SocialLoginController extends Controller {
 		return { success: true }
 	}
 
-	private async handleCallbackUrl(_params: { provider: 'google' | 'github' | 'linkedin'; code?: string; codeVerifier?: string; }) {
+	private async handleCallbackUrl(params: { provider: 'google' | 'github' | 'linkedin'; code?: string; codeVerifier?: string; }) {
+		console.log(params)
 		return null
 	}
 }

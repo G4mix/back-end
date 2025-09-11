@@ -32,7 +32,7 @@ export interface UpdateIdeaInput {
 export interface GetIdeasInput {
 	search?: string
 	authorId?: string
-	tags?: string
+	tags?: string[]
 	page?: number
 	limit?: number
 	sortBy?: 'created_at' | 'updated_at' | 'title'
@@ -157,7 +157,6 @@ export class IdeaRepository {
 
 	async findAll(params: GetIdeasInput) {
 		const { search, authorId, tags, page = 0, limit = 10, sortBy = 'created_at', sortOrder = 'desc' } = params
-		console.log('params', params)
 		const where: any = {}
 		
 		if (search) {
@@ -171,8 +170,14 @@ export class IdeaRepository {
 			where.authorId = authorId
 		}
 		
-		if (tags) {
-			where.tags = { contains: tags, mode: 'insensitive' }
+		if (tags && tags.length > 0) {
+			where.tags = {
+				some: {
+					name: {
+						in: tags
+					}
+				}
+			}
 		}
 
 		const [ideas, total] = await Promise.all([

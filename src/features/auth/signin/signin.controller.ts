@@ -1,15 +1,13 @@
-import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares } from 'tsoa'
+import { Route, Tags, Controller, Body, Post, SuccessResponse } from 'tsoa'
 import { injectable, inject } from 'tsyringe'
 import { SigninInput, SigninOutput } from '@shared/types/tsoa'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { SESGateway } from '@shared/gateways/ses.gateway'
-import { schemaValidation } from '@shared/middlewares/schema-validation'
-import { signinSchema } from '@shared/schemas/user.schema'
-import { RequestHandler } from 'express'
-import { BCryptEncoder, JwtManager } from '@shared/utils'
-import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants'
+import { BCryptEncoder } from '@shared/utils/bcrypt-encoder'
+import { JwtManager } from '@shared/utils/jwt-manager'
+import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants/jwt'
 import { UserDTO } from '@shared/dto/simple.dto'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { Logger } from '@shared/utils/logger'
 
 @injectable()
@@ -72,7 +70,6 @@ export class SigninController extends Controller {
 	 */
 	@SuccessResponse(200, 'User signed in successfully')
 	@Post('/signin')
-	@Middlewares<RequestHandler>(schemaValidation(signinSchema))
 	@LogResponseTime()
 	public async signin(@Body() body: SigninInput): Promise<SigninOutput | string> {
 		const { email, password } = body
@@ -83,6 +80,7 @@ export class SigninController extends Controller {
 		let user = await this.userRepository.findByEmail({ email: normalizedEmail })
 		if (!user) {
 			this.logger.warn('Signin failed - user not found', { email: normalizedEmail })
+			this.setStatus(404)
 			return 'USER_NOT_FOUND'
 		}
 
@@ -104,6 +102,7 @@ export class SigninController extends Controller {
 		if (moreThanFiveAttempts) {
 			if (blockedByTime) {
 				this.logger.warn('Signin blocked - too many attempts', { userId: user.id, attempts })
+				this.setStatus(429)
 				return 'EXCESSIVE_LOGIN_ATTEMPTS'
 			}
 			attempts = 0
@@ -133,6 +132,7 @@ export class SigninController extends Controller {
 				'WRONG_PASSWORD_FOUR_TIMES',
 				'WRONG_PASSWORD_FIVE_TIMES',
 			]
+			this.setStatus(401)
 			return possibleErrors[attempts - 1]
 		}
 

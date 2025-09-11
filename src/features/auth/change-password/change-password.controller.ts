@@ -1,17 +1,15 @@
-import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares, Security, Request } from 'tsoa'
+import { Route, Tags, Controller, Body, Post, SuccessResponse, Security, Request } from 'tsoa'
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { SigninOutput } from '@shared/types/tsoa'
 import { UserRepository } from '@shared/repositories/user.repository'
-import { schemaValidation } from '@shared/middlewares/schema-validation'
-import { userChangePasswordSchema } from '@shared/schemas/user.schema'
-import { RequestHandler } from 'express'
-import { BCryptEncoder, JwtManager } from '@shared/utils'
-import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants'
+import { BCryptEncoder } from '@shared/utils/bcrypt-encoder'
+import { JwtManager } from '@shared/utils/jwt-manager'
+import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants/jwt'
 import { UserDTO } from '@shared/dto/simple.dto'
 import { TsoaRequest } from '@shared/types/tsoa'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 
 @injectable()
 @Route('api/v1/auth')
@@ -60,7 +58,6 @@ export class ChangePasswordController extends Controller {
 	@SuccessResponse(200)
 	@Post('/change-password')
 	@Security('jwt', [])
-	@Middlewares<RequestHandler>(schemaValidation(userChangePasswordSchema))
 	@LogResponseTime()
 	public async changePassword(
 		@Body() body: { password: string }, 

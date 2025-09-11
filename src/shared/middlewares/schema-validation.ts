@@ -4,7 +4,7 @@ import type {
 	NextFunction
 } from 'express'
 import type { ZodTypeAny } from 'zod'
-import { messages, ApiMessage } from '@shared/constants'
+import { messages, ApiMessage } from '@shared/constants/messages'
 
 export const schemaValidation = (schema: ZodTypeAny, type: 'body' | 'query' | 'params' = 'body') =>
 	async (req: ExRequest, res: ExResponse, next: NextFunction) => {

@@ -1,5 +1,5 @@
 import { injectable, singleton } from 'tsyringe'
-import { socialLoginRequests } from '@shared/utils'
+import { socialLoginRequests } from '@shared/utils/social-login-requests'
 
 @injectable()
 @singleton()

@@ -52,7 +52,7 @@ import { RefreshTokenController } from './../features/auth/refresh-token/refresh
 import { RecoverEmailController } from './../features/auth/recover-email/recover-email.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ChangePasswordController } from './../features/auth/change-password/change-password.controller';
-import { expressAuthentication } from './../shared/middlewares/security/index';
+import { expressAuthentication } from './../shared/middlewares/security';
 // @ts-ignore - no great way to install types from subpackage
 import { iocContainer } from './../config/ioc';
 import type { IocContainer, IocContainerFactory } from '@tsoa/runtime';
@@ -736,7 +736,7 @@ export function RegisterRoutes(app: Router) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     search: {"in":"query","name":"search","dataType":"string"},
                     authorId: {"in":"query","name":"authorId","dataType":"string"},
-                    tags: {"in":"query","name":"tags","dataType":"string"},
+                    tags: {"in":"query","name":"tags","dataType":"array","array":{"dataType":"string"}},
                     page: {"in":"query","name":"page","dataType":"double"},
                     limit: {"in":"query","name":"limit","dataType":"double"},
                     sortBy: {"in":"query","name":"sortBy","dataType":"union","subSchemas":[{"dataType":"enum","enums":["created_at"]},{"dataType":"enum","enums":["updated_at"]},{"dataType":"enum","enums":["title"]}]},

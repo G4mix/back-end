@@ -8,10 +8,10 @@ import express, {
 } from 'express'
 import { RegisterRoutes } from '@tsoa-build/routes'
 import { singleton, inject } from 'tsyringe'
-import { env } from '@config'
+import { env } from '@config/env'
 import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
-import { AppModule } from '@shared/modules'
+import { AppModule } from '@shared/modules/app.module'
 import { setupAutoValidationMiddleware } from '@shared/middlewares/auto-validation.middleware'
 import { Logger } from '@shared/utils/logger'
 

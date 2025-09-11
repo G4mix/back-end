@@ -2,7 +2,7 @@ import { Route, Tags, Controller, Body, Post, SuccessResponse, Security, Request
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { CreateIdeaInput, CreateIdeaResponse } from './create-idea.dto'
 import { IdeaGateway } from '@shared/gateways/idea.gateway'

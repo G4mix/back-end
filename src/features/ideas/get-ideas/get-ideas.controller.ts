@@ -2,7 +2,7 @@ import { Route, Tags, Controller, Query, Get, SuccessResponse, Security, Request
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 
 @injectable()
@@ -96,7 +96,7 @@ export class GetIdeasController extends Controller {
 	public async getIdeas(
 		@Query() search?: string,
 		@Query() authorId?: string,
-		@Query() tags?: string,
+		@Query() tags?: string[],
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() sortBy?: 'created_at' | 'updated_at' | 'title',

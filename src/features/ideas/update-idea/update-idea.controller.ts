@@ -1,7 +1,7 @@
 import { Route, Tags, Controller, Path, Patch, Body, SuccessResponse, Security, Request } from 'tsoa'
 import { inject, injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { UpdateIdeaInput, UpdateIdeaResponse } from './update-idea.dto'
 import { IdeaGateway } from '@shared/gateways/idea.gateway'
@@ -61,7 +61,7 @@ export class UpdateIdeaController extends Controller {
 		@Request() request: any
 	): Promise<UpdateIdeaResponse | string> {
 		try {
-			const userProfileId = request.user?.userProfileId
+			const userProfileId = request?.user?.userProfileId
 			if (!userProfileId) {
 				this.setStatus(401)
 				return 'UNAUTHORIZED'

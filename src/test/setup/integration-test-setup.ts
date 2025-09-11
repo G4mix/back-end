@@ -1,5 +1,13 @@
 import { App } from '@config/app'
 import { container } from 'tsyringe'
+import { AppModule } from '@shared/modules/app.module'
+import { Logger } from '@shared/utils/logger'
+import { StartupModuleManager } from '@shared/modules/startup.module'
+import { PrismaClient } from '@prisma/client'
+import { S3Client } from '@aws-sdk/client-s3'
+import { SESClient } from '@aws-sdk/client-ses'
+import { S3ClientOptions, SESClientOptions } from '@shared/constants/aws'
+import { RouteLister } from '@shared/utils/route-lister'
 
 // Mock do Prisma
 jest.mock('@prisma/client', () => ({
@@ -107,7 +115,8 @@ jest.mock('@prisma/client', () => ({
 		},
 		$transaction: jest.fn(),
 		$connect: jest.fn(),
-		$disconnect: jest.fn()
+		$disconnect: jest.fn(),
+		$queryRaw: jest.fn()
 	}))
 }))
 
@@ -152,6 +161,33 @@ export class IntegrationTestSetup {
 		// Gera uma porta aleatória para evitar conflitos
 		this.port = Math.floor(Math.random() * 10000) + 3000
 		this.baseUrl = `http://localhost:${this.port}`
+
+		// Limpa o container antes de registrar
+		container.clearInstances()
+
+		// Cria instâncias mockadas
+		const mockPrismaClient = new PrismaClient()
+		const mockS3Client = new S3Client(S3ClientOptions)
+		const mockSESClient = new SESClient(SESClientOptions)
+
+		// Configura mocks específicos do Prisma
+		mockPrismaClient.$queryRaw = jest.fn()
+			.mockResolvedValueOnce([{ test: 1 }]) // Para o primeiro $queryRaw (SELECT 1 as test)
+			.mockResolvedValueOnce([{ // Para o segundo $queryRaw (database info)
+				database_name: 'test_db',
+				current_user: 'test_user',
+				postgres_version: 'PostgreSQL 15.0'
+			}])
+
+		// Registra as dependências necessárias
+		container
+			.register<PrismaClient>('PostgresqlClient', { useValue: mockPrismaClient })
+			.register('S3Client', { useValue: mockS3Client })
+			.register('SESClient', { useValue: mockSESClient })
+			.register('RouteLister', { useClass: RouteLister })
+			.register('StartupModuleManager', { useClass: StartupModuleManager })
+			.register('AppModule', { useClass: AppModule })
+			.register('Logger', { useClass: Logger })
 
 		// Cria instância do App
 		this.app = new App(

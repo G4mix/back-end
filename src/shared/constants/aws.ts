@@ -1,4 +1,4 @@
-import { env } from '@config'
+import { env } from '@config/env'
 
 export const S3ClientOptions = {
 	credentials: {

@@ -82,7 +82,7 @@ const ROUTE_SCHEMAS: Record<string, {
 		query: z.object({
 			search: z.string().optional(),
 			authorId: z.string().uuid('INVALID_AUTHOR_ID').optional(),
-			tags: z.string().optional(),
+			tags: z.array(z.string()).optional(),
 			page: z.coerce.number().int().min(0, 'INVALID_PAGE').optional(),
 			limit: z.coerce.number().int().min(1, 'INVALID_LIMIT').max(100, 'LIMIT_TOO_LARGE').optional(),
 			sortBy: z.enum(['created_at', 'updated_at', 'title']).optional(),
@@ -234,17 +234,14 @@ export class AutoValidationMiddleware {
 			try {
 				// Identifica a rota
 				const routeKey = `${req.method} ${req.route?.path || req.path}`
-				const schema = this.getSchemaForRoute(routeKey, req.path)
+				const schema = this.getSchemaForRoute(routeKey)
 
 				if (!schema) {
 					return next()
 				}
 
-				// Processa entrada (body, query, params)
-				const inputData = this.processInput(req, schema)
-				
-				// Injeta dados processados no request
-				req.validatedData = inputData
+				// Processa entrada (body, query, params) e injeta diretamente no request
+				this.processInput(req, schema)
 
 				// Intercepta resposta para serialização
 				this.interceptResponse(res, schema)
@@ -257,39 +254,93 @@ export class AutoValidationMiddleware {
 	}
 
 	/**
-	 * Processa dados de entrada (body, query, params)
+	 * Extrai o código de erro específico dos issues do Zod
 	 */
-	private processInput(req: Request, schema: any): any {
-		const inputData: any = {}
+	private extractErrorCode(issues: any[], fallbackCode: string): string {
+		// Procura por erros com mensagens customizadas primeiro
+		for (const issue of issues) {
+			if (issue.message && issue.message !== 'Required' && issue.message !== 'Invalid input') {
+				return issue.message
+			}
+		}
 
+		// Se não encontrou mensagem customizada, tenta inferir pelo tipo de erro
+		for (const issue of issues) {
+			switch (issue.code) {
+			case 'invalid_type':
+				if (issue.expected === 'string' && issue.received === 'undefined') {
+					return 'REQUIRED_FIELD'
+				}
+				return 'INVALID_TYPE'
+			case 'too_small':
+				if (issue.type === 'string') {
+					return 'TOO_SHORT'
+				}
+				return 'TOO_SMALL'
+			case 'too_big':
+				if (issue.type === 'string') {
+					return 'TOO_LONG'
+				}
+				return 'TOO_BIG'
+			case 'invalid_string':
+				if (issue.validation === 'email') {
+					return 'INVALID_EMAIL'
+				}
+				if (issue.validation === 'url') {
+					return 'INVALID_URL'
+				}
+				return 'INVALID_STRING'
+			case 'invalid_enum_value':
+				return 'INVALID_ENUM'
+			case 'invalid_literal':
+				return 'INVALID_VALUE'
+			case 'custom':
+				return issue.message || 'CUSTOM_ERROR'
+			default:
+				continue
+			}
+		}
+
+		// Se não conseguiu determinar, usa o fallback
+		return fallbackCode
+	}
+
+	/**
+	 * Processa dados de entrada (body, query, params) e injeta diretamente no request
+	 */
+	private processInput(req: Request, schema: any): void {
 		// Processa body se schema de input existir
 		if (schema.input) {
 			const bodyResult = schema.input.safeParse(req.body)
 			if (!bodyResult.success) {
-				throw new ValidationError('INVALID_BODY', bodyResult.error.issues)
+				const errorCode = this.extractErrorCode(bodyResult.error.issues, 'INVALID_BODY')
+				throw new ValidationError(errorCode, bodyResult.error.issues)
 			}
-			inputData.body = bodyResult.data
+			// Injeta dados validados diretamente no body
+			req.body = bodyResult.data
 		}
 
 		// Processa query se schema de query existir
 		if (schema.query) {
 			const queryResult = schema.query.safeParse(req.query)
 			if (!queryResult.success) {
-				throw new ValidationError('INVALID_QUERY', queryResult.error.issues)
+				const errorCode = this.extractErrorCode(queryResult.error.issues, 'INVALID_QUERY')
+				throw new ValidationError(errorCode, queryResult.error.issues)
 			}
-			inputData.query = queryResult.data
+			// Injeta dados validados diretamente no query
+			req.query = queryResult.data
 		}
 
 		// Processa params se schema de params existir
 		if (schema.params) {
 			const paramsResult = schema.params.safeParse(req.params)
 			if (!paramsResult.success) {
-				throw new ValidationError('INVALID_PARAMS', paramsResult.error.issues)
+				const errorCode = this.extractErrorCode(paramsResult.error.issues, 'INVALID_PARAMS')
+				throw new ValidationError(errorCode, paramsResult.error.issues)
 			}
-			inputData.params = paramsResult.data
+			// Injeta dados validados diretamente no params
+			req.params = paramsResult.data
 		}
-
-		return inputData
 	}
 
 	/**
@@ -358,7 +409,7 @@ export class AutoValidationMiddleware {
 	/**
 	 * Obtém schema para a rota específica
 	 */
-	private getSchemaForRoute(routeKey: string, _path: string): any {
+	private getSchemaForRoute(routeKey: string): any {
 		// Tenta encontrar schema exato primeiro
 		if (ROUTE_SCHEMAS[routeKey]) {
 			return ROUTE_SCHEMAS[routeKey]
@@ -455,17 +506,4 @@ export function setupAutoValidationMiddleware(app: any, logger: Logger) {
 	app.use(autoValidationMiddleware.process())
 	
 	logger.info('AutoValidationMiddleware configured successfully')
-}
-
-// Extensão da interface Request para incluir dados validados
-declare global {
-	namespace Express {
-		interface Request {
-			validatedData?: {
-				body?: any
-				query?: any
-				params?: any
-			}
-		}
-	}
 }

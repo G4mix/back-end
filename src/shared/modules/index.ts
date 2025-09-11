@@ -1,7 +1,0 @@
-export * from './startup.module'
-export * from './express.module'
-export * from './routes.module'
-export * from './routes-info.module'
-export * from './database.module'
-export * from './shutdown.module'
-export * from './app.module'

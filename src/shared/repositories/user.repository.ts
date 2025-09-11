@@ -1,9 +1,9 @@
 import { inject, injectable, singleton } from 'tsyringe'
 import { Prisma, PrismaClient } from '@prisma/client'
-import { AuthInput, UpdateInput } from '@shared/types'
-import { Id } from '@shared/types'
+import { AuthInput, UpdateInput } from '@shared/types/auth'
+import { Id } from '@shared/types/general'
 import { UserWithProfile, UserDTO } from '@shared/dto/simple.dto'
-import { generateRandomCode } from '@shared/utils'
+import { generateRandomCode } from '@shared/utils/generate-random-code'
 
 @injectable()
 @singleton()

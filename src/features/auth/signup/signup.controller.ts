@@ -1,17 +1,15 @@
-import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares } from 'tsoa'
+import { Route, Tags, Controller, Body, Post, SuccessResponse } from 'tsoa'
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { CreateUserInput, SigninOutput } from '@shared/types/tsoa'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { SESGateway } from '@shared/gateways/ses.gateway'
-import { schemaValidation } from '@shared/middlewares/schema-validation'
-import { createUserSchema } from '@shared/schemas/user.schema'
-import { RequestHandler } from 'express'
-import { BCryptEncoder, JwtManager } from '@shared/utils'
-import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants'
+import { BCryptEncoder } from '@shared/utils/bcrypt-encoder'
+import { JwtManager } from '@shared/utils/jwt-manager'
+import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants/jwt'
 import { UserWithProfile, UserDTO } from '@shared/dto/simple.dto'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 
 @injectable()
 @Route('api/v1/auth')
@@ -75,7 +73,6 @@ export class SignupController extends Controller {
 	 */
 	@SuccessResponse(201)
 	@Post('/signup')
-	@Middlewares<RequestHandler>(schemaValidation(createUserSchema))
 	@LogResponseTime()
 	public async signup(@Body() body: CreateUserInput): Promise<SigninOutput | string> {
 		const { email, password, username } = body

@@ -2,10 +2,15 @@ import { Route, Tags, Controller, Body, Post, SuccessResponse, Security, Request
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { CommentRepository } from '@shared/repositories/comment.repository'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
-import { CreateCommentInput } from '@shared/types/dto-interfaces'
+
+export interface CreateCommentInput {
+	ideaId: string
+	content: string
+	parentCommentId?: string
+}
 
 @injectable()
 @Route('api/v1/comment')

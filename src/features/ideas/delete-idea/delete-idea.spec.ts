@@ -1,208 +1,136 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
-import { HttpClient } from '@test/helpers/http-client'
-import { TestData } from '@test/helpers/test-data'
+import { createTestApp } from '@test/setup/test-app'
+import { App } from '@config/app'
+import { TestTokens } from '@test/helpers/test-tokens'
+import request from 'supertest'
 
 describe('Delete Idea Integration Tests', () => {
-	let httpClient: HttpClient
-	let baseUrl: string
+	let app: App
+	let server: any
 	let authToken: string
 
-	beforeAll(async () => {
-		// Inicia o servidor real
-		baseUrl = await IntegrationTestSetup.startServer()
-		httpClient = new HttpClient(baseUrl)
-		
-		// Simula login para obter token
-		authToken = TestData.generateFakeToken()
-		httpClient.setAuthToken(authToken)
+	beforeEach(async () => {
+		app = await createTestApp()
+		server = app.getInstance()
+
+		// Gera token JWT válido para testes
+		authToken = TestTokens.generateValidToken()
 	})
 
-	afterAll(async () => {
-		// Para o servidor
-		await IntegrationTestSetup.stopServer()
-	})
-
-	beforeEach(() => {
-		// Limpa mocks antes de cada teste
-		IntegrationTestSetup.clearMocks()
+	afterEach(async () => {
+		if (app) {
+			app.stop()
+		}
 	})
 
 	describe('DELETE /api/v1/ideas/:id', () => {
 		it('should delete idea successfully', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
-			
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: ideaId,
-							authorId: TestData.generateUUID(),
-							title: 'Test Idea',
-							description: 'Test Description'
-						}),
-						delete: jest.fn().mockResolvedValue({
-							id: ideaId
-						})
-					}
-				}
-			})
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
 			// Act
-			const response = await httpClient.delete(`/api/v1/ideas/${ideaId}`)
+			const response = await request(server)
+				.delete(`/api/v1/ideas/${ideaId}`)
+				.set('Authorization', `Bearer ${authToken}`)
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.data).toHaveProperty('message')
+			expect(response.body.message).toBe('IDEA_DELETED')
 		})
 
 		it('should return validation error for invalid UUID', async () => {
-			// Act & Assert
-			await expect(httpClient.delete('/api/v1/ideas/invalid-uuid'))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'INVALID_IDEA_ID'
-						}
-					}
-				})
+			// Arrange
+			const invalidId = 'invalid-uuid'
+
+			// Act
+			const response = await request(server)
+				.delete(`/api/v1/ideas/${invalidId}`)
+				.set('Authorization', `Bearer ${authToken}`)
+
+			// Assert
+			expect(response.status).toBe(400)
+			expect(response.body.message).toBe('INVALID_IDEA_ID')
 		})
 
 		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
-			httpClient.clearAuthToken()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
-			// Act & Assert
-			await expect(httpClient.delete(`/api/v1/ideas/${ideaId}`))
-				.rejects.toMatchObject({
-					response: {
-						status: 401,
-						data: {
-							message: 'UNAUTHORIZED'
-						}
-					}
-				})
+			// Act
+			const response = await request(server)
+				.delete(`/api/v1/ideas/${ideaId}`)
+
+			// Assert
+			expect(response.status).toBe(401)
+			expect(response.body.message).toBe('UNAUTHORIZED')
 		})
 
 		it('should return IDEA_NOT_FOUND when idea does not exist', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
-			// Mock do Prisma para retornar null
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue(null)
-					}
-				}
-			})
+			// Act
+			const response = await request(server)
+				.delete(`/api/v1/ideas/${ideaId}`)
+				.set('Authorization', `Bearer ${authToken}`)
 
-			// Act & Assert
-			await expect(httpClient.delete(`/api/v1/ideas/${ideaId}`))
-				.rejects.toMatchObject({
-					response: {
-						status: 404,
-						data: {
-							message: 'IDEA_NOT_FOUND'
-						}
-					}
-				})
+			// Assert
+			expect(response.status).toBe(404)
+			expect(response.body.message).toBe('IDEA_NOT_FOUND')
 		})
 
 		it('should return FORBIDDEN when user is not the author', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
-			// Mock do Prisma para retornar ideia de outro autor
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: ideaId,
-							authorId: 'different-author-id',
-							title: 'Test Idea',
-							description: 'Test Description'
-						})
-					}
-				}
-			})
+			// Act
+			const response = await request(server)
+				.delete(`/api/v1/ideas/${ideaId}`)
+				.set('Authorization', `Bearer ${authToken}`)
 
-			// Act & Assert
-			await expect(httpClient.delete(`/api/v1/ideas/${ideaId}`))
-				.rejects.toMatchObject({
-					response: {
-						status: 403,
-						data: {
-							message: 'FORBIDDEN'
-						}
-					}
-				})
+			// Assert
+			expect(response.status).toBe(403)
+			expect(response.body.message).toBe('FORBIDDEN')
 		})
 
 		it('should delete idea with all related data', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
-			
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: ideaId,
-							authorId: TestData.generateUUID(),
-							title: 'Test Idea',
-							description: 'Test Description',
-							tags: [
-								{ name: 'react' },
-								{ name: 'typescript' }
-							],
-							images: [
-								{ url: 'https://example.com/image1.jpg' },
-								{ url: 'https://example.com/image2.jpg' }
-							],
-							links: [
-								{ url: 'https://github.com/example' },
-								{ url: 'https://example.com' }
-							]
-						}),
-						delete: jest.fn().mockResolvedValue({
-							id: ideaId
-						})
-					}
-				}
-			})
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
 			// Act
-			const response = await httpClient.delete(`/api/v1/ideas/${ideaId}`)
+			const response = await request(server)
+				.delete(`/api/v1/ideas/${ideaId}`)
+				.set('Authorization', `Bearer ${authToken}`)
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.data).toHaveProperty('message')
+			expect(response.body.message).toBe('IDEA_DELETED')
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			const ideaId = TestData.generateUUID()
+			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
 			// Mock do Prisma para retornar erro
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-					}
+			const mockPrisma = require('@prisma/client').PrismaClient
+			const originalMock = mockPrisma.mockImplementation
+			
+			mockPrisma.mockImplementation(() => ({
+				...mockPrisma(),
+				idea: {
+					findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
 				}
-			})
+			}))
 
-			// Act & Assert
-			await expect(httpClient.delete(`/api/v1/ideas/${ideaId}`))
-				.rejects.toMatchObject({
-					response: {
-						status: 500
-					}
-				})
+			// Act
+			const response = await request(server)
+				.delete(`/api/v1/ideas/${ideaId}`)
+				.set('Authorization', `Bearer ${authToken}`)
+
+			// Assert
+			expect(response.status).toBe(500)
+
+			// Restore original mock
+			mockPrisma.mockImplementation = originalMock
 		})
 	})
 })

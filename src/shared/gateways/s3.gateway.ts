@@ -1,6 +1,6 @@
 import { CreateBucketCommand, DeleteObjectsCommand, ListBucketsCommand, PutBucketPolicyCommand, PutObjectCommand, PutPublicAccessBlockCommand, S3Client } from '@aws-sdk/client-s3'
 import { inject, injectable, singleton } from 'tsyringe'
-import { generateRandomCode } from '@shared/utils'
+import { generateRandomCode } from '@shared/utils/generate-random-code'
 
 @injectable()
 @singleton()

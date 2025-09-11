@@ -1,6 +1,6 @@
 import { inject, injectable, singleton } from 'tsyringe'
 import { PrismaClient } from '@prisma/client'
-import { Id } from '@shared/types'
+import { Id } from '@shared/types/general'
 
 @injectable()
 @singleton()

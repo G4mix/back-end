@@ -1,6 +1,0 @@
-export * from './user.schema'
-export * from './idea.schema'
-export * from './comment.schema'
-export * from './engagement.schema'
-export * from './follow.schema'
-export * from './link.schema'

@@ -1,6 +1,6 @@
 module.exports = {
-	displayName: 'Integration Tests',
-	testMatch: ['<rootDir>/src/**/*.spec.ts'],
+	displayName: 'Gamix Tests',
+  testMatch: ['<rootDir>/src/**/*.spec.ts'],
 	preset: 'ts-jest',
 	testEnvironment: 'node',
 	roots: ['<rootDir>/src'],
@@ -13,18 +13,17 @@ module.exports = {
 		'^@tsoa-build/(.*)$': '<rootDir>/src/tsoa/$1',
 		'^@ioc$': '<rootDir>/src/config/ioc.ts'
 	},
-	setupFilesAfterEnv: ['<rootDir>/src/test/setup/jest.setup.ts'],
+	setupFilesAfterEnv: ['<rootDir>/src/test/setup/jest.e2e.setup.ts'],
 	collectCoverageFrom: [
 		'src/**/*.ts',
 		'!src/**/*.spec.ts',
-		'!src/**/*.integration.spec.ts',
-		'!src/test/**/*',
-		'!src/**/*.d.ts'
+		'!src/**/*.e2e-spec.ts',
+		'!src/test/**/*.ts',
+		'!src/tsoa/**/*.ts'
 	],
-	coverageDirectory: 'coverage/integration',
-	coverageReporters: ['text', 'lcov', 'html'],
-	testTimeout: 30000, // 30 segundos para testes de integração
-	maxWorkers: 1, // Executa um teste por vez para evitar conflitos de porta
+	coverageDirectory: 'coverage/e2e',
+	testTimeout: 30000,
+	maxWorkers: 1,
 	verbose: true,
 	forceExit: true,
 	detectOpenHandles: true

@@ -1,7 +1,7 @@
 import { Route, Tags, Controller, Path, Delete, SuccessResponse, Security, Request } from 'tsoa'
 import { inject, injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 
 @injectable()

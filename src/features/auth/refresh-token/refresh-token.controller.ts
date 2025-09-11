@@ -2,10 +2,10 @@ import { Route, Tags, Controller, Body, Post, SuccessResponse } from 'tsoa'
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { UserRepository } from '@shared/repositories/user.repository'
-import { JwtManager } from '@shared/utils'
-import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants'
+import { JwtManager } from '@shared/utils/jwt-manager'
+import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants/jwt'
 import { Logger } from '@shared/utils/logger'
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 
 @injectable()
 @Route('api/v1/auth')
