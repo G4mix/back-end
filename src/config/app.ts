@@ -33,8 +33,9 @@ export class App {
 		try {
 			await this.appModule.initialize()
 			
-			App.server = App.instance.listen(env['PORT'] as string, () => {
-				this.logger.log(`🌐 Server listening on port ${env['PORT']} - http://localhost:${env.PORT}/docs`)
+			const serverPort = env['PORT'] || 8080
+			App.server = App.instance.listen(serverPort, () => {
+				this.logger.log(`🌐 Server listening on port ${serverPort} - http://localhost:${serverPort}/docs`)
 			})
 		} catch (error) {
 			this.logger.error('❌ Failed to start application:', error)

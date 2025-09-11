@@ -27,7 +27,7 @@ describe('Record View Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('POST /api/v1/views/record', () => {
+	describe('POST /v1/views/record', () => {
 		it('should record view for idea successfully', async () => {
 			// Arrange
 			const viewData = {
@@ -50,7 +50,7 @@ describe('Record View Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/views/record', viewData)
+			const response = await httpClient.post('/v1/views/record', viewData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -78,7 +78,7 @@ describe('Record View Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/views/record', viewData)
+			const response = await httpClient.post('/v1/views/record', viewData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -107,7 +107,7 @@ describe('Record View Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/views/record', viewData)
+			const response = await httpClient.post('/v1/views/record', viewData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -121,7 +121,7 @@ describe('Record View Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/views/record', viewData))
+			await expect(httpClient.post('/v1/views/record', viewData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -139,7 +139,7 @@ describe('Record View Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/views/record', viewData))
+			await expect(httpClient.post('/v1/views/record', viewData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -158,7 +158,7 @@ describe('Record View Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/views/record', viewData))
+			await expect(httpClient.post('/v1/views/record', viewData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -185,7 +185,7 @@ describe('Record View Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/views/record', viewData))
+			await expect(httpClient.post('/v1/views/record', viewData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500
@@ -215,7 +215,7 @@ describe('Record View Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/views/record', viewData)
+			const response = await httpClient.post('/v1/views/record', viewData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -229,7 +229,7 @@ describe('Record View Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/views/record', viewData))
+			await expect(httpClient.post('/v1/views/record', viewData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -247,7 +247,7 @@ describe('Record View Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/views/record', viewData))
+			await expect(httpClient.post('/v1/views/record', viewData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,

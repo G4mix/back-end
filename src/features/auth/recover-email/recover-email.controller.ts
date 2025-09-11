@@ -8,7 +8,7 @@ import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 
 @injectable()
-@Route('api/v1/auth')
+@Route('/v1/auth')
 @Tags('Authentication')
 export class RecoverEmailController extends Controller {
 	constructor(

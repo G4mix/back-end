@@ -6,7 +6,7 @@ import { Logger } from '@shared/utils/logger'
 import { TsoaRequest } from '@shared/types/tsoa'
 
 @injectable()
-@Route('api/v1/users')
+@Route('/v1/users')
 @Tags('User Management')
 export class DeleteUserController extends Controller {
 	constructor(
@@ -45,7 +45,7 @@ export class DeleteUserController extends Controller {
 	 * 
 	 * @example
 	 * ```typescript
-	 * // URL: /api/v1/users/uuid-123
+	 * // URL: /v1/users/uuid-123
 	 * // Headers: Authorization: Bearer jwt_token
 	 * 
 	 * // Success response (200)

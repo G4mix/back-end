@@ -13,7 +13,7 @@ module.exports = {
 		'^@tsoa-build/(.*)$': '<rootDir>/src/tsoa/$1',
 		'^@ioc$': '<rootDir>/src/config/ioc.ts'
 	},
-	setupFilesAfterEnv: ['<rootDir>/src/test/setup/jest.e2e.setup.ts'],
+	setupFilesAfterEnv: ['<rootDir>/src/test/jest.setup.ts'],
 	collectCoverageFrom: [
 		'src/**/*.ts',
 		'!src/**/*.spec.ts',

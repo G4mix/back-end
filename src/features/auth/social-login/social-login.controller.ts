@@ -14,7 +14,7 @@ import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 
 @injectable()
-@Route('api/v1/auth')
+@Route('/v1/auth')
 @Tags('Authentication')
 export class SocialLoginController extends Controller {
 	constructor(
@@ -48,7 +48,7 @@ export class SocialLoginController extends Controller {
 	 * 
 	 * @example
 	 * ```typescript
-	 * // URL: /api/v1/auth/callback/google?code=abc123&state=xyz789
+	 * // URL: /v1/auth/callback/google?code=abc123&state=xyz789
 	 * 
 	 * // Success response (200)
 	 * {

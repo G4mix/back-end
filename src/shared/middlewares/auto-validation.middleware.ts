@@ -11,41 +11,41 @@ const ROUTE_SCHEMAS: Record<string, {
 	output?: z.ZodSchema
 }> = {
 	// Auth routes
-	'POST /api/v1/auth/signup': {
+	'POST /v1/auth/signup': {
 		input: z.object({
 			username: z.string().regex(/^[^{}]{3,255}$/, 'INVALID_NAME'),
 			email: z.string().email('INVALID_EMAIL'),
 			password: z.string().regex(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, 'INVALID_PASSWORD')
 		})
 	},
-	'POST /api/v1/auth/signin': {
+	'POST /v1/auth/signin': {
 		input: z.object({
 			email: z.string().email('INVALID_EMAIL'),
 			password: z.string().min(1, 'PASSWORD_REQUIRED')
 		})
 	},
-	'POST /api/v1/auth/change-password': {
+	'POST /v1/auth/change-password': {
 		input: z.object({
 			password: z.string().regex(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, 'INVALID_PASSWORD')
 		})
 	},
-	'POST /api/v1/auth/recover-email/send': {
+	'POST /v1/auth/recover-email/send': {
 		input: z.object({
 			email: z.string().email('INVALID_EMAIL')
 		})
 	},
-	'POST /api/v1/auth/recover-email/verify': {
+	'POST /v1/auth/recover-email/verify': {
 		input: z.object({
 			email: z.string().email('INVALID_EMAIL'),
 			code: z.string().min(1, 'CODE_REQUIRED')
 		})
 	},
-	'POST /api/v1/auth/refresh-token': {
+	'POST /v1/auth/refresh-token': {
 		input: z.object({
 			refreshToken: z.string().min(1, 'REFRESH_TOKEN_REQUIRED')
 		})
 	},
-	'POST /api/v1/auth/social-login': {
+	'POST /v1/auth/social-login': {
 		input: z.object({
 			provider: z.enum(['google', 'facebook', 'github']),
 			token: z.string().min(1, 'TOKEN_REQUIRED')
@@ -53,7 +53,7 @@ const ROUTE_SCHEMAS: Record<string, {
 	},
 
 	// Ideas routes
-	'POST /api/v1/ideas': {
+	'POST /v1/ideas': {
 		input: z.object({
 			title: z.string().min(10, 'TITLE_TOO_SHORT').max(70, 'TITLE_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_TITLE'),
 			description: z.string().min(50, 'DESCRIPTION_TOO_SHORT').max(700, 'DESCRIPTION_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_DESCRIPTION'),
@@ -64,7 +64,7 @@ const ROUTE_SCHEMAS: Record<string, {
 			})).optional()
 		})
 	},
-	'PUT /api/v1/ideas/:id': {
+	'PATCH /v1/ideas/:id': {
 		input: z.object({
 			title: z.string().min(10, 'TITLE_TOO_SHORT').max(70, 'TITLE_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_TITLE').optional(),
 			description: z.string().min(50, 'DESCRIPTION_TOO_SHORT').max(700, 'DESCRIPTION_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_DESCRIPTION').optional(),
@@ -78,7 +78,7 @@ const ROUTE_SCHEMAS: Record<string, {
 			id: z.string().uuid('INVALID_IDEA_ID')
 		})
 	},
-	'GET /api/v1/ideas': {
+	'GET /v1/ideas': {
 		query: z.object({
 			search: z.string().optional(),
 			authorId: z.string().uuid('INVALID_AUTHOR_ID').optional(),
@@ -89,26 +89,26 @@ const ROUTE_SCHEMAS: Record<string, {
 			sortOrder: z.enum(['asc', 'desc']).optional()
 		})
 	},
-	'GET /api/v1/ideas/:id': {
+	'GET /v1/ideas/:id': {
 		params: z.object({
 			id: z.string().uuid('INVALID_IDEA_ID')
 		})
 	},
-	'DELETE /api/v1/ideas/:id': {
+	'DELETE /v1/ideas/:id': {
 		params: z.object({
 			id: z.string().uuid('INVALID_IDEA_ID')
 		})
 	},
 
 	// Comments routes
-	'POST /api/v1/comments': {
+	'POST /v1/comments': {
 		input: z.object({
 			ideaId: z.string().uuid('INVALID_IDEA_ID'),
 			content: z.string().min(1, 'CONTENT_REQUIRED').max(200, 'CONTENT_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_CONTENT'),
 			parentCommentId: z.string().uuid('INVALID_PARENT_COMMENT_ID').optional()
 		})
 	},
-	'GET /api/v1/comments': {
+	'GET /v1/comments': {
 		query: z.object({
 			ideaId: z.string().uuid('INVALID_IDEA_ID'),
 			page: z.coerce.number().int().min(0, 'INVALID_PAGE').optional(),
@@ -118,7 +118,7 @@ const ROUTE_SCHEMAS: Record<string, {
 	},
 
 	// Likes routes
-	'POST /api/v1/likes/toggle': {
+	'POST /v1/likes/toggle': {
 		input: z.object({
 			ideaId: z.string().uuid('INVALID_IDEA_ID').optional(),
 			commentId: z.string().uuid('INVALID_COMMENT_ID').optional()
@@ -128,7 +128,7 @@ const ROUTE_SCHEMAS: Record<string, {
 	},
 
 	// Views routes
-	'POST /api/v1/views': {
+	'POST /v1/views': {
 		input: z.object({
 			ideas: z.array(z.string().uuid('INVALID_IDEA_ID'))
 				.min(1, 'IDEAS_REQUIRED')
@@ -137,12 +137,12 @@ const ROUTE_SCHEMAS: Record<string, {
 	},
 
 	// Follow routes
-	'POST /api/v1/follow/toggle': {
+	'POST /v1/follow/toggle': {
 		input: z.object({
 			followingId: z.string().uuid('INVALID_USER_ID')
 		})
 	},
-	'GET /api/v1/follow/followers/:userId': {
+	'GET /v1/follow/followers/:userId': {
 		params: z.object({
 			userId: z.string().uuid('INVALID_USER_ID')
 		}),
@@ -151,7 +151,7 @@ const ROUTE_SCHEMAS: Record<string, {
 			limit: z.coerce.number().int().min(1, 'INVALID_LIMIT').max(100, 'LIMIT_TOO_LARGE').optional()
 		})
 	},
-	'GET /api/v1/follow/following/:userId': {
+	'GET /v1/follow/following/:userId': {
 		params: z.object({
 			userId: z.string().uuid('INVALID_USER_ID')
 		}),
@@ -162,7 +162,7 @@ const ROUTE_SCHEMAS: Record<string, {
 	},
 
 	// User management routes
-	'PUT /api/v1/users/:id': {
+	'PUT /v1/users/:id': {
 		input: z.object({
 			username: z.string().regex(/^[^{}]{3,255}$/, 'INVALID_NAME').optional(),
 			email: z.string().email('INVALID_EMAIL').optional(),
@@ -173,36 +173,36 @@ const ROUTE_SCHEMAS: Record<string, {
 			id: z.string().uuid('INVALID_USER_ID')
 		})
 	},
-	'GET /api/v1/users': {
+	'GET /v1/users': {
 		query: z.object({
 			page: z.coerce.number().int().min(0, 'INVALID_PAGE').optional(),
 			limit: z.coerce.number().int().min(1, 'INVALID_LIMIT').max(100, 'LIMIT_TOO_LARGE').optional(),
 			search: z.string().optional()
 		})
 	},
-	'GET /api/v1/users/:id': {
+	'GET /v1/users/:id': {
 		params: z.object({
 			id: z.string().uuid('INVALID_USER_ID')
 		})
 	},
-	'DELETE /api/v1/users/:id': {
+	'DELETE /v1/users/:id': {
 		params: z.object({
 			id: z.string().uuid('INVALID_USER_ID')
 		})
 	},
 
 	// Personal links routes
-	'POST /api/v1/users/links': {
+	'POST /v1/users/links': {
 		input: z.object({
 			url: z.string().url('INVALID_URL').max(700, 'URL_TOO_LONG').regex(/^https?:\/\//, 'URL_MUST_START_WITH_HTTP')
 		})
 	},
-	'GET /api/v1/users/links': {
+	'GET /v1/users/links': {
 		query: z.object({
 			userId: z.string().uuid('INVALID_USER_ID').optional()
 		})
 	},
-	'DELETE /api/v1/users/links/:linkId': {
+	'DELETE /v1/users/links/:linkId': {
 		params: z.object({
 			linkId: z.string().uuid('INVALID_LINK_ID')
 		})
@@ -235,6 +235,7 @@ export class AutoValidationMiddleware {
 				// Identifica a rota
 				const routeKey = `${req.method} ${req.route?.path || req.path}`
 				const schema = this.getSchemaForRoute(routeKey)
+
 
 				if (!schema) {
 					return next()
@@ -333,7 +334,13 @@ export class AutoValidationMiddleware {
 
 		// Processa params se schema de params existir
 		if (schema.params) {
-			const paramsResult = schema.params.safeParse(req.params)
+			// Extrai parâmetros da URL manualmente se req.params estiver vazio
+			let params = req.params
+			if (Object.keys(params).length === 0) {
+				params = this.extractParamsFromUrl(req.path)
+			}
+			
+			const paramsResult = schema.params.safeParse(params)
 			if (!paramsResult.success) {
 				const errorCode = this.extractErrorCode(paramsResult.error.issues, 'INVALID_PARAMS')
 				throw new ValidationError(errorCode, paramsResult.error.issues)
@@ -341,6 +348,61 @@ export class AutoValidationMiddleware {
 			// Injeta dados validados diretamente no params
 			req.params = paramsResult.data
 		}
+	}
+
+	/**
+	 * Extrai parâmetros da URL manualmente
+	 */
+	private extractParamsFromUrl(path: string): any {
+		const params: any = {}
+		
+		// Para PATCH /v1/ideas/:id, extrai o ID da URL
+		if (path.includes('/v1/ideas/') && path !== '/v1/ideas') {
+			const pathParts = path.split('/')
+			const idIndex = pathParts.findIndex(part => part === 'ideas') + 1
+			if (idIndex < pathParts.length) {
+				params.id = pathParts[idIndex]
+			}
+		}
+		
+		// Para outras rotas com parâmetros dinâmicos, adicione lógica similar
+		// GET /v1/users/:id
+		if (path.includes('/v1/users/') && path !== '/v1/users') {
+			const pathParts = path.split('/')
+			const idIndex = pathParts.findIndex(part => part === 'users') + 1
+			if (idIndex < pathParts.length) {
+				params.id = pathParts[idIndex]
+			}
+		}
+		
+		// GET /v1/follow/followers/:userId
+		if (path.includes('/v1/follow/followers/')) {
+			const pathParts = path.split('/')
+			const userIdIndex = pathParts.findIndex(part => part === 'followers') + 1
+			if (userIdIndex < pathParts.length) {
+				params.userId = pathParts[userIdIndex]
+			}
+		}
+		
+		// GET /v1/follow/following/:userId
+		if (path.includes('/v1/follow/following/')) {
+			const pathParts = path.split('/')
+			const userIdIndex = pathParts.findIndex(part => part === 'following') + 1
+			if (userIdIndex < pathParts.length) {
+				params.userId = pathParts[userIdIndex]
+			}
+		}
+		
+		// DELETE /v1/users/links/:linkId
+		if (path.includes('/v1/users/links/')) {
+			const pathParts = path.split('/')
+			const linkIdIndex = pathParts.findIndex(part => part === 'links') + 1
+			if (linkIdIndex < pathParts.length) {
+				params.linkId = pathParts[linkIdIndex]
+			}
+		}
+		
+		return params
 	}
 
 	/**
@@ -412,12 +474,14 @@ export class AutoValidationMiddleware {
 	private getSchemaForRoute(routeKey: string): any {
 		// Tenta encontrar schema exato primeiro
 		if (ROUTE_SCHEMAS[routeKey]) {
+			console.log('✅ Schema encontrado por match exato:', routeKey)
 			return ROUTE_SCHEMAS[routeKey]
 		}
 
 		// Tenta encontrar schema por padrão (com parâmetros dinâmicos)
 		for (const [key, schema] of Object.entries(ROUTE_SCHEMAS)) {
-			if (this.matchesRoutePattern(key, routeKey)) {
+			const matches = this.matchesRoutePattern(key, routeKey)
+			if (matches) {
 				return schema
 			}
 		}
@@ -432,12 +496,46 @@ export class AutoValidationMiddleware {
 		const patternParts = pattern.split(' ')
 		const routeParts = route.split(' ')
 
-		if (patternParts.length !== routeParts.length) return false
+		if (patternParts.length !== routeParts.length) {
+			return false
+		}
 
 		for (let i = 0; i < patternParts.length; i++) {
+			// Verifica se é um parâmetro dinâmico (começa com /:)
 			if (patternParts[i].startsWith('/:') && routeParts[i].startsWith('/')) {
 				continue // Parâmetro dinâmico
 			}
+			// Verifica se é um parâmetro dinâmico sem barra inicial (apenas :id)
+			if (patternParts[i].startsWith(':') && !patternParts[i].startsWith('/:')) {
+				continue // Parâmetro dinâmico
+			}
+			
+			// Compara caminhos dividindo por /
+			if (patternParts[i].includes('/') && routeParts[i].includes('/')) {
+				const patternPathParts = patternParts[i].split('/')
+				const routePathParts = routeParts[i].split('/')
+				
+				if (patternPathParts.length !== routePathParts.length) {
+					return false
+				}
+				
+				let pathMatches = true
+				for (let j = 0; j < patternPathParts.length; j++) {
+					if (patternPathParts[j].startsWith(':')) {
+						continue // Parâmetro dinâmico no caminho
+					}
+					if (patternPathParts[j] !== routePathParts[j]) {
+						pathMatches = false
+						break
+					}
+				}
+				
+				if (!pathMatches) {
+					return false
+				}
+				continue
+			}
+			
 			if (patternParts[i] !== routeParts[i]) {
 				return false
 			}

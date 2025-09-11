@@ -9,6 +9,7 @@ export async function expressAuthentication(
 ): Promise<any> {
 	const res = req.res as express.Response
 	const token = req.headers['authorization']?.substring(7)
+	console.log('Passou no middleware')
 
 	if (token) {
 		let claims: Claims

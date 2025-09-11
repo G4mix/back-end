@@ -1,28 +1,22 @@
-import { createTestApp } from '@test/setup/test-app'
-import { App } from '@config/app'
+import { IntegrationTestSetup } from '@test/jest.setup'
+import { HttpClient } from '@test/helpers/http-client'
 import { TestTokens } from '@test/helpers/test-tokens'
-import request from 'supertest'
+import { container } from 'tsyringe'
 
 describe('Create Idea Integration Tests', () => {
-	let app: App
-	let server: any
+	let httpClient: HttpClient
+	let baseUrl: string
 	let authToken: string
 
-	beforeEach(async () => {
-		app = await createTestApp()
-		server = app.getInstance()
-
+	beforeAll(async () => {
+		baseUrl = IntegrationTestSetup.getBaseUrl()
+		httpClient = new HttpClient(baseUrl)
+		
 		// Gera token JWT válido para testes
 		authToken = TestTokens.generateValidToken()
 	})
 
-	afterEach(async () => {
-		if (app) {
-			app.stop()
-		}
-	})
-
-	describe('POST /api/v1/ideas', () => {
+	describe('POST /v1/ideas', () => {
 		it('should create idea successfully with valid data', async () => {
 			// Arrange
 			const ideaData = {
@@ -33,24 +27,65 @@ describe('Create Idea Integration Tests', () => {
 				links: []
 			}
 
+			// Mock do Prisma
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
+			// Mock das operações de ideia
+			mockPrismaClient.idea.findFirst.mockResolvedValue(null) // Nenhuma ideia com esse título (findByTitle)
+			mockPrismaClient.idea.create.mockResolvedValue({
+				id: 'idea-123',
+				title: ideaData.title,
+				description: ideaData.description,
+				tags: ideaData.tags,
+				images: ideaData.images,
+				links: ideaData.links,
+				author_id: 'user-123',
+				created_at: new Date(),
+				updated_at: new Date(),
+				author: {
+					id: 'user-123',
+					username: 'testuser',
+					userProfile: {
+						displayName: 'Test User'
+					}
+				}
+			})
+			
+			// Mock do IdeaGateway
+			const mockIdeaGateway = container.resolve('IdeaGateway') as any
+			jest.spyOn(mockIdeaGateway, 'uploadIdeaImages').mockResolvedValue([]) // Nenhuma imagem processada
+
 			// Act
-			const response = await request(server)
-				.post('/api/v1/ideas')
-				.send(ideaData)
-				.set('Authorization', `Bearer ${authToken}`)
+			httpClient.setAuthToken(authToken)
+			const response = await httpClient.post('/v1/ideas', ideaData)
 
 			// Debug
 			console.log('Response status:', response.status)
-			console.log('Response body:', response.body)
+			console.log('Response body:', response.data)
 
 			// Assert
 			expect(response.status).toBe(201)
-			expect(response.body).toHaveProperty('idea')
-			expect(response.body.idea).toHaveProperty('id')
-			expect(response.body.idea.title).toBe(ideaData.title)
-			expect(response.body.idea.description).toBe(ideaData.description)
-			expect(response.body.idea).toHaveProperty('author')
-			expect(response.body.idea).toHaveProperty('created_at')
+			expect(response.data).toHaveProperty('idea')
+			expect(response.data.idea).toHaveProperty('id')
+			expect(response.data.idea.title).toBe(ideaData.title)
+			expect(response.data.idea.description).toBe(ideaData.description)
+			expect(response.data.idea).toHaveProperty('author')
+			expect(response.data.idea).toHaveProperty('created_at')
 		})
 
 		it('should return validation error for empty title', async () => {
@@ -63,15 +98,17 @@ describe('Create Idea Integration Tests', () => {
 				links: []
 			}
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/ideas')
-				.send(ideaData)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('TITLE_TOO_SHORT')
+			// Act & Assert
+			httpClient.setAuthToken(authToken)
+			await expect(httpClient.post('/v1/ideas', ideaData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'TITLE_TOO_SHORT'
+						}
+					}
+				})
 		})
 
 		it('should return validation error for empty description', async () => {
@@ -84,15 +121,17 @@ describe('Create Idea Integration Tests', () => {
 				links: []
 			}
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/ideas')
-				.send(ideaData)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('DESCRIPTION_TOO_SHORT')
+			// Act & Assert
+			httpClient.setAuthToken(authToken)
+			await expect(httpClient.post('/v1/ideas', ideaData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'DESCRIPTION_TOO_SHORT'
+						}
+					}
+				})
 		})
 
 		it('should return UNAUTHORIZED when no token provided', async () => {
@@ -105,14 +144,17 @@ describe('Create Idea Integration Tests', () => {
 				links: []
 			}
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/ideas')
-				.send(ideaData)
-
-			// Assert
-			expect(response.status).toBe(401)
-			expect(response.body.message).toBe('UNAUTHORIZED')
+			// Act & Assert
+			httpClient.setAuthToken('') // Remove token
+			await expect(httpClient.post('/v1/ideas', ideaData))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
 		})
 
 		it('should handle database errors gracefully', async () => {
@@ -125,28 +167,19 @@ describe('Create Idea Integration Tests', () => {
 				links: []
 			}
 
-			// Mock do Prisma para retornar erro
-			const mockPrisma = require('@prisma/client').PrismaClient
-			const originalMock = mockPrisma.mockImplementation
-			
-			mockPrisma.mockImplementation(() => ({
-				...mockPrisma(),
-				idea: {
-					create: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-				}
-			}))
+			// Mock do Prisma para simular erro
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			mockPrismaClient.idea.findFirst.mockRejectedValue(new Error('Database connection failed'))
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/ideas')
-				.send(ideaData)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert
-			expect(response.status).toBe(500)
-
-			// Restore original mock
-			mockPrisma.mockImplementation = originalMock
+			// Act & Assert
+			httpClient.setAuthToken(authToken)
+			await expect(httpClient.post('/v1/ideas', ideaData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500,
+						data: 'Failed to create idea'
+					}
+				})
 		})
 	})
 })

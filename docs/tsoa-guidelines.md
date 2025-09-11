@@ -166,7 +166,7 @@ import { createUserSchema } from '@shared/schemas/user.schema'
 import { RequestHandler } from 'express'
 
 @injectable()
-@Route('api/v1/users')
+@Route('/v1/users')
 @Tags('User Management')
 export class CreateUserController extends Controller {
 	constructor(
@@ -605,7 +605,7 @@ describe('/v1/users (POST)', () => {
 
 	it('should return 400 when required fields are missing', async () => {
 		const response = await request(app.getHttpServer())
-			.post('/api/v1/users')
+			.post('/v1/users')
 			.send({
 				username: 'testuser'
 				// Missing required fields
@@ -617,7 +617,7 @@ describe('/v1/users (POST)', () => {
 
 	it('should return 400 when password is too weak', async () => {
 		const response = await request(app.getHttpServer())
-			.post('/api/v1/users')
+			.post('/v1/users')
 			.send({
 				username: 'testuser',
 				email: 'test@example.com',
@@ -631,7 +631,7 @@ describe('/v1/users (POST)', () => {
 
 	it('should return 400 when passwords do not match', async () => {
 		const response = await request(app.getHttpServer())
-			.post('/api/v1/users')
+			.post('/v1/users')
 			.send({
 				username: 'testuser',
 				email: 'test@example.com',
@@ -652,7 +652,7 @@ describe('/v1/users (POST)', () => {
 		}
 
 		const response = await request(app.getHttpServer())
-			.post('/api/v1/users')
+			.post('/v1/users')
 			.send(userData)
 
 		const body = response.body as User
@@ -703,7 +703,7 @@ A documentação da feature descreve a funcionalidade em linguagem natural, util
 - Então deve retornar um erro com status code 400
 
 ```bash
-POST /api/v1/users
+POST /v1/users
 --header 'Content-Type: application/json'
 --body
 {
@@ -725,7 +725,7 @@ POST /api/v1/users
 - Então deve retornar um erro com status code 400
 
 ```bash
-POST /api/v1/users
+POST /v1/users
 --header 'Content-Type: application/json'
 --body
 {
@@ -749,7 +749,7 @@ POST /api/v1/users
 - Então deve retornar um erro com status code 400
 
 ```bash
-POST /api/v1/users
+POST /v1/users
 --header 'Content-Type: application/json'
 --body
 {
@@ -773,7 +773,7 @@ POST /api/v1/users
 - Então deve retornar status 201 com os dados do usuário criado
 
 ```bash
-POST /api/v1/users
+POST /v1/users
 --header 'Content-Type: application/json'
 --body
 {
@@ -920,7 +920,7 @@ Descrição da funcionalidade em português.
 ### Cenário: Nome do cenário em português
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição POST para "/api/v1/endpoint" com:
+Quando envio uma requisição POST para "/v1/endpoint" com:
   | Campo | Valor |
   | field | "value" |
 Então devo receber uma resposta 200 com:
@@ -1008,8 +1008,8 @@ import { RouteLister } from '@shared/utils/route-lister'
 // No startup da aplicação
 const routeLister = container.resolve(RouteLister)
 const routes = [
-	{ method: 'POST', path: '/api/v1/users', controller: 'CreateUserController', action: 'createUser', tags: ['User Management'] },
-	{ method: 'GET', path: '/api/v1/users', controller: 'GetUsersController', action: 'getUsers', tags: ['User Management'] },
+	{ method: 'POST', path: '/v1/users', controller: 'CreateUserController', action: 'createUser', tags: ['User Management'] },
+	{ method: 'GET', path: '/v1/users', controller: 'GetUsersController', action: 'getUsers', tags: ['User Management'] },
 	// ... outras rotas
 ]
 
@@ -1113,7 +1113,7 @@ export class CreateUserController {
 
 ### 4.1. Estratégia de Versionamento
 
-- **Versionamento por URL**: Use `/api/v1/`, `/api/v2/` para diferentes versões.
+- **Versionamento por URL**: Use `/v1/`, `/api/v2/` para diferentes versões.
 - **Estrutura de Pastas**: Cada versão tem sua própria pasta `v1/`, `v2/`.
 - **Backward Compatibility**: Mantenha versões antigas funcionando durante transições.
 - **Deprecation**: Documente e comunique deprecações com antecedência.

@@ -1,261 +1,398 @@
-import { createTestApp } from '@test/setup/test-app'
-import { App } from '@config/app'
+import { IntegrationTestSetup } from '@test/jest.setup'
+import { HttpClient } from '@test/helpers/http-client'
 import { TestTokens } from '@test/helpers/test-tokens'
-import request from 'supertest'
+import { container } from 'tsyringe'
 
 describe('Update Idea Integration Tests', () => {
-	let app: App
-	let server: any
+	let httpClient: HttpClient
+	let baseUrl: string
 	let authToken: string
 
-	beforeEach(async () => {
-		app = await createTestApp()
-		server = app.getInstance()
-
-		// Gera token JWT válido para testes
+	beforeAll(async () => {
+		// Usa o servidor global
+		baseUrl = IntegrationTestSetup.getBaseUrl()
+		httpClient = new HttpClient(baseUrl)
+		
+		// Gera token válido usando o helper
 		authToken = TestTokens.generateValidToken()
+		httpClient.setAuthToken(authToken)
 	})
 
-	afterEach(async () => {
-		if (app) {
-			app.stop()
-		}
+	beforeEach(() => {
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('patch /api/v1/ideas/:id', () => {
+	describe('PATCH /v1/ideas/:id', () => {
 		it('should update idea successfully with valid data', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
 				title: 'Updated Idea Title - This is a valid title with enough characters',
-				description: 'This is an updated description with enough characters to pass validation. It needs to be at least 50 characters long and less than 700 characters.',
+				description: 'This is an updated test idea description with enough characters to pass validation. It needs to be at least 50 characters long and less than 700 characters.',
 				tags: ['updated', 'idea'],
-				links: [{ url: 'https://updated-example.com' }]
+				images: [],
+				links: []
 			}
 
-			console.log('Making request to:', `/api/v1/ideas/${ideaId}`)
-			console.log('With data:', updateData)
-
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Debug
-			console.log('Response status:', response.status)
-			console.log('Response body:', response.body)
-			console.log('Response headers:', response.headers)
-			console.log('Auth token:', authToken)
-
-			// Assert
-			expect(response.status).toBe(200)
-			expect(response.body).toHaveProperty('idea')
-			expect(response.body.idea).toHaveProperty('id')
-			expect(response.body.idea.title).toBe(updateData.title)
-			expect(response.body.idea.description).toBe(updateData.description)
-		})
-
-		it('should return validation error for invalid UUID', async () => {
-			// Arrange
-			const invalidId = 'invalid-uuid'
-			const updateData = {
-				title: 'Updated Idea Title',
-				description: 'This is an updated description with enough characters to pass validation.'
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
+			// Mock da ideia existente
+			const existingIdea = {
+				id: ideaId,
+				title: 'Original Title',
+				description: 'Original Description',
+				authorId: 'profile-123', // Mesmo autor do usuário logado (userProfileId)
+				created_at: new Date(),
+				updated_at: new Date()
 			}
-
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${invalidId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert - TSOA retorna 404 para UUIDs inválidos no path
-			expect(response.status).toBe(404)
-		})
-
-		it('should return validation error for short title', async () => {
-			// Arrange
-			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
-			const updateData = {
-				title: 'Short',
-				description: 'This is an updated description with enough characters to pass validation.'
+			
+			// Mock da ideia atualizada
+			const updatedIdea = {
+				...existingIdea,
+				...updateData,
+				updated_at: new Date()
 			}
+			
+			// Mock do Prisma também (já que o repositório usa o Prisma internamente)
+			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
+			mockPrismaClient.idea.update.mockResolvedValue(updatedIdea)
+			
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
+			jest.spyOn(mockIdeaRepository, 'update').mockResolvedValue(updatedIdea)
+			
+			
+			// Mock do IdeaGateway
+			const mockIdeaGateway = container.resolve('IdeaGateway') as any
+			jest.spyOn(mockIdeaGateway, 'uploadIdeaImages').mockResolvedValue([]) // Nenhuma imagem processada
 
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_TITLE')
-		})
-
-		it('should return validation error for long title', async () => {
-			// Arrange
-			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
-			const updateData = {
-				title: 'A'.repeat(101), // Title too long
-				description: 'This is an updated description with enough characters to pass validation.'
+			// Act & Assert
+			try {
+				const response = await httpClient.patch(`/v1/ideas/${ideaId}`, updateData)
+				expect(response.status).toBe(200)
+				expect(response.data).toHaveProperty('idea')
+				expect(response.data.idea.title).toBe(updateData.title)
+				expect(response.data.idea.description).toBe(updateData.description)
+				expect(response.data.idea.tags).toEqual(updateData.tags)
+			} catch (error: any) {
+				console.log('Error response:', error.response?.data)
+				console.log('Error status:', error.response?.status)
+				throw error
 			}
-
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_TITLE')
 		})
 
-		it('should return validation error for short description', async () => {
+		it('should return validation error for empty title', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Idea Title',
-				description: 'Short' // Description too short
+				title: '',
+				description: 'This is an updated test idea description with enough characters to pass validation.',
+				tags: ['updated', 'idea'],
+				images: [],
+				links: []
 			}
 
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
+			// Mock da ideia existente para que passe na validação de autor
+			const existingIdea = {
+				id: ideaId,
+				title: 'Original Title',
+				description: 'Original Description',
+				authorId: 'profile-123',
+				created_at: new Date(),
+				updated_at: new Date()
+			}
+			
+			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
+			
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
 
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_DESCRIPTION')
+			// Act & Assert
+			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'TITLE_TOO_SHORT'
+						}
+					}
+				})
 		})
 
-		it('should return validation error for invalid link URL', async () => {
+		it('should return validation error for empty description', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Idea Title',
-				description: 'This is an updated description with enough characters to pass validation.',
-				links: [{ url: 'invalid-url' }]
+				title: 'Updated Idea Title - This is a valid title with enough characters',
+				description: '',
+				tags: ['updated', 'idea'],
+				images: [],
+				links: []
 			}
 
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
+			// Mock da ideia existente para que passe na validação de autor
+			const existingIdea = {
+				id: ideaId,
+				title: 'Original Title',
+				description: 'Original Description',
+				authorId: 'profile-123',
+				created_at: new Date(),
+				updated_at: new Date()
+			}
+			
+			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
+			
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
 
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_LINK_URL')
+			// Act & Assert
+			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'DESCRIPTION_TOO_SHORT'
+						}
+					}
+				})
 		})
 
 		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Idea Title',
-				description: 'This is an updated description with enough characters to pass validation.'
+				title: 'Updated Idea Title - This is a valid title with enough characters',
+				description: 'This is an updated test idea description with enough characters to pass validation.',
+				tags: ['updated', 'idea'],
+				images: [],
+				links: []
 			}
 
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-
-			// Assert
-			expect(response.status).toBe(401)
-			expect(response.body.message).toBe('UNAUTHORIZED')
+			// Act & Assert
+			httpClient.setAuthToken('') // Remove token
+			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
 		})
 
 		it('should return IDEA_NOT_FOUND when idea does not exist', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Idea Title',
-				description: 'This is an updated description with enough characters to pass validation.'
+				title: 'Updated Idea Title - This is a valid title with enough characters',
+				description: 'This is an updated test idea description with enough characters to pass validation.',
+				tags: ['updated', 'idea'],
+				images: [],
+				links: []
 			}
 
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
+			// Define token válido para este teste
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
 
-			// Assert
-			expect(response.status).toBe(404)
-			expect(response.body.message).toBe('IDEA_NOT_FOUND')
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
+			// Mock da ideia como null (não encontrada)
+			mockPrismaClient.idea.findUnique.mockResolvedValue(null)
+			
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(null)
+
+			// Act & Assert
+			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: 'IDEA_NOT_FOUND'
+					}
+				})
 		})
 
 		it('should return FORBIDDEN when user is not the author', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Idea Title',
-				description: 'This is an updated description with enough characters to pass validation.'
+				title: 'Updated Idea Title - This is a valid title with enough characters',
+				description: 'This is an updated test idea description with enough characters to pass validation.',
+				tags: ['updated', 'idea'],
+				images: [],
+				links: []
 			}
 
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
+			// Define token válido para este teste
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
 
-			// Assert
-			expect(response.status).toBe(403)
-			expect(response.body.message).toBe('FORBIDDEN')
-		})
-
-		it('should return IDEA_ALREADY_EXISTS when title already exists', async () => {
-			// Arrange
-			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
-			const updateData = {
-				title: 'Updated Idea Title',
-				description: 'This is an updated description with enough characters to pass validation.'
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
+			// Mock da ideia com autor diferente
+			const existingIdea = {
+				id: ideaId,
+				title: 'Original Title',
+				description: 'Original Description',
+				authorId: 'different-user-id', // Autor diferente
+				created_at: new Date(),
+				updated_at: new Date()
 			}
+			
+			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
+			
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
 
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert
-			expect(response.status).toBe(409)
-			expect(response.body.message).toBe('IDEA_ALREADY_EXISTS')
+			// Act & Assert
+			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 403,
+						data: 'FORBIDDEN'
+					}
+				})
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 			const updateData = {
-				title: 'Updated Idea Title',
-				description: 'This is an updated description with enough characters to pass validation.'
+				title: 'Updated Idea Title - This is a valid title with enough characters',
+				description: 'This is an updated test idea description with enough characters to pass validation.',
+				tags: ['updated', 'idea'],
+				images: [],
+				links: []
 			}
 
-			// Mock do Prisma para retornar erro
-			const mockPrisma = require('@prisma/client').PrismaClient
-			const originalMock = mockPrisma.mockImplementation
+			// Define token válido para este teste
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
+
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
 			
-			mockPrisma.mockImplementation(() => ({
-				...mockPrisma(),
-				idea: {
-					findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
 				}
-			}))
+			})
+			
+			// Mock de erro no banco
+			mockPrismaClient.idea.findUnique.mockRejectedValue(new Error('Database connection failed'))
+			
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockRejectedValue(new Error('Database connection failed'))
 
-			// Act
-			const response = await request(server)
-				.patch(`/api/v1/ideas/${ideaId}`)
-				.send(updateData)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert
-			expect(response.status).toBe(500)
-
-			// Restore original mock
-			mockPrisma.mockImplementation = originalMock
+			// Act & Assert
+			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

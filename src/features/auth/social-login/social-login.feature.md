@@ -16,7 +16,7 @@ Permite que usuários façam login ou se registrem usando contas de redes sociai
 ### Cenário: Login social bem-sucedido para novo usuário
 ```gherkin
 Dado que não existe usuário com email "social@example.com"
-Quando envio uma requisição POST para "/api/v1/auth/social-login/google" com:
+Quando envio uma requisição POST para "/v1/auth/social-login/google" com:
   | Campo | Valor |
   | token | "valid_google_token" |
 Então devo receber uma resposta 200 com:
@@ -31,7 +31,7 @@ E o provider OAuth deve ser linkado
 ### Cenário: Login social bem-sucedido para usuário existente
 ```gherkin
 Dado que existe um usuário com conta Google linkada "social@example.com"
-Quando envio uma requisição POST para "/api/v1/auth/social-login/google" com:
+Quando envio uma requisição POST para "/v1/auth/social-login/google" com:
   | Campo | Valor |
   | token | "valid_google_token" |
 Então devo receber uma resposta 200 com:
@@ -44,7 +44,7 @@ Então devo receber uma resposta 200 com:
 ### Cenário: Login social com email existente mas sem provider linkado
 ```gherkin
 Dado que existe um usuário com email "social@example.com" mas sem conta Google linkada
-Quando envio uma requisição POST para "/api/v1/auth/social-login/google" com:
+Quando envio uma requisição POST para "/v1/auth/social-login/google" com:
   | Campo | Valor |
   | token | "valid_google_token" |
 Então devo receber uma resposta 400 com erro "PROVIDER_NOT_LINKED"
@@ -52,7 +52,7 @@ Então devo receber uma resposta 400 com erro "PROVIDER_NOT_LINKED"
 
 ### Cenário: Login social com token inválido
 ```gherkin
-Quando envio uma requisição POST para "/api/v1/auth/social-login/google" com:
+Quando envio uma requisição POST para "/v1/auth/social-login/google" com:
   | Campo | Valor |
   | token | "invalid_token" |
 Então devo receber uma resposta 404 com erro "USER_NOT_FOUND"
@@ -61,7 +61,7 @@ Então devo receber uma resposta 404 com erro "USER_NOT_FOUND"
 ### Cenário: Linkar novo provider OAuth com sucesso
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição POST para "/api/v1/auth/link-new-oauth-provider/linkedin" com:
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/linkedin" com:
   | Campo | Valor |
   | token | "valid_linkedin_token" |
 Então devo receber uma resposta 200 com:
@@ -73,7 +73,7 @@ E o provider LinkedIn deve ser linkado à minha conta
 ### Cenário: Linkar provider já linkado
 ```gherkin
 Dado que sou um usuário autenticado com conta LinkedIn linkada
-Quando envio uma requisição POST para "/api/v1/auth/link-new-oauth-provider/linkedin" com:
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/linkedin" com:
   | Campo | Valor |
   | token | "valid_linkedin_token" |
 Então devo receber uma resposta 400 com erro "PROVIDER_ALREADY_LINKED"
@@ -82,7 +82,7 @@ Então devo receber uma resposta 400 com erro "PROVIDER_ALREADY_LINKED"
 ### Cenário: Redirecionamento de callback de login social
 ```gherkin
 Dado que um usuário inicia o fluxo OAuth com Google
-Quando acesso "/api/v1/auth/callback/google" com código válido
+Quando acesso "/v1/auth/callback/google" com código válido
 Então devo ser redirecionado para o app móvel com token ou erro
 ```
 

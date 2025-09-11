@@ -42,7 +42,7 @@ describe('Toggle Like Integration Tests', () => {
 			}
 		})
 		
-		const signupResponse = await httpClient.post('/api/v1/auth/signup', userData)
+		const signupResponse = await httpClient.post('/v1/auth/signup', userData)
 		authToken = signupResponse.data.accessToken
 		httpClient.setAuthToken(authToken)
 		
@@ -83,7 +83,7 @@ describe('Toggle Like Integration Tests', () => {
 			}
 		})
 		
-		await httpClient.post('/api/v1/ideas', ideaData)
+		await httpClient.post('/v1/ideas', ideaData)
 	})
 
 	afterAll(async () => {
@@ -96,7 +96,7 @@ describe('Toggle Like Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('POST /api/v1/likes', () => {
+	describe('POST /v1/likes', () => {
 		it('should create like successfully when not liked before', async () => {
 			// Arrange
 			const likeData = { ideaId }
@@ -117,7 +117,7 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/likes', likeData)
+			const response = await httpClient.post('/v1/likes', likeData)
 
 			// Assert
 			expect(response.status).toBe(201)
@@ -147,7 +147,7 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/likes', likeData)
+			const response = await httpClient.post('/v1/likes', likeData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -159,7 +159,7 @@ describe('Toggle Like Integration Tests', () => {
 			const likeData = { ideaId: 'invalid-uuid' }
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/likes', likeData))
+			await expect(httpClient.post('/v1/likes', likeData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -176,7 +176,7 @@ describe('Toggle Like Integration Tests', () => {
 			const clientWithoutAuth = new HttpClient(baseUrl)
 
 			// Act & Assert
-			await expect(clientWithoutAuth.post('/api/v1/likes', likeData))
+			await expect(clientWithoutAuth.post('/v1/likes', likeData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -201,7 +201,7 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/likes', likeData))
+			await expect(httpClient.post('/v1/likes', likeData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -226,7 +226,7 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/likes', likeData))
+			await expect(httpClient.post('/v1/likes', likeData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -22,7 +22,7 @@ describe('Social Login Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('POST /api/v1/auth/social-login', () => {
+	describe('POST /v1/auth/social-login', () => {
 		it('should login with Google successfully', async () => {
 			// Arrange
 			const socialLoginData = {
@@ -58,7 +58,7 @@ describe('Social Login Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/auth/social-login', socialLoginData)
+			const response = await httpClient.post('/v1/auth/social-login', socialLoginData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -102,7 +102,7 @@ describe('Social Login Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/auth/social-login', socialLoginData)
+			const response = await httpClient.post('/v1/auth/social-login', socialLoginData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -119,7 +119,7 @@ describe('Social Login Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/social-login', socialLoginData))
+			await expect(httpClient.post('/v1/auth/social-login', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -138,7 +138,7 @@ describe('Social Login Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/social-login', socialLoginData))
+			await expect(httpClient.post('/v1/auth/social-login', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -157,7 +157,7 @@ describe('Social Login Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/social-login', socialLoginData))
+			await expect(httpClient.post('/v1/auth/social-login', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -185,7 +185,7 @@ describe('Social Login Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/social-login', socialLoginData))
+			await expect(httpClient.post('/v1/auth/social-login', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -213,7 +213,7 @@ describe('Social Login Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/social-login', socialLoginData))
+			await expect(httpClient.post('/v1/auth/social-login', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -241,7 +241,7 @@ describe('Social Login Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/social-login', socialLoginData))
+			await expect(httpClient.post('/v1/auth/social-login', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

@@ -8,21 +8,21 @@ Esta feature permite que usuários autenticados criem novas ideias no sistema. A
 ### Cenário 1: Criar ideia com sucesso
 **Dado** que um usuário está autenticado
 **E** possui dados válidos para uma nova ideia
-**Quando** o usuário envia uma requisição POST para `/api/v1/ideas/`
+**Quando** o usuário envia uma requisição POST para `/v1/ideas/`
 **Então** a ideia deve ser criada com sucesso
 **E** deve retornar status 201
 **E** deve retornar os dados da ideia criada incluindo ID e timestamps
 
 ### Cenário 2: Tentar criar ideia sem autenticação
 **Dado** que um usuário não está autenticado
-**Quando** o usuário tenta enviar uma requisição POST para `/api/v1/ideas/`
+**Quando** o usuário tenta enviar uma requisição POST para `/v1/ideas/`
 **Então** deve retornar status 401
 **E** deve retornar mensagem "UNAUTHORIZED"
 
 ### Cenário 3: Criar ideia com dados inválidos
 **Dado** que um usuário está autenticado
 **E** envia dados inválidos (título muito curto, descrição muito longa, etc.)
-**Quando** o usuário envia uma requisição POST para `/api/v1/ideas/`
+**Quando** o usuário envia uma requisição POST para `/v1/ideas/`
 **Então** deve retornar status 400
 **E** deve retornar mensagem "VALIDATION_ERROR"
 **E** deve incluir detalhes dos erros de validação
@@ -31,7 +31,7 @@ Esta feature permite que usuários autenticados criem novas ideias no sistema. A
 **Dado** que um usuário está autenticado
 **E** envia dados válidos
 **E** ocorre um erro interno no servidor
-**Quando** o usuário envia uma requisição POST para `/api/v1/ideas/`
+**Quando** o usuário envia uma requisição POST para `/v1/ideas/`
 **Então** deve retornar status 500
 **E** deve retornar mensagem "DATABASE_ERROR"
 

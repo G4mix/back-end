@@ -1246,7 +1246,7 @@
 		"contact": {}
 	},
 	"paths": {
-		"/api/v1/views/record": {
+		"/v1/views/record": {
 			"post": {
 				"operationId": "RecordView",
 				"responses": {
@@ -1292,7 +1292,7 @@
 				}
 			}
 		},
-		"/api/v1/users": {
+		"/v1/users": {
 			"patch": {
 				"operationId": "UpdateUser",
 				"responses": {
@@ -1369,36 +1369,8 @@
 											"type": "object"
 										},
 										"users": {
-											"properties": {
-												"data": {
-													"items": {},
-													"type": "array"
-												},
-												"total": {
-													"type": "number",
-													"format": "double"
-												},
-												"pages": {
-													"type": "number",
-													"format": "double"
-												},
-												"nextPage": {
-													"type": "number",
-													"format": "double"
-												},
-												"page": {
-													"type": "number",
-													"format": "double"
-												}
-											},
-											"required": [
-												"data",
-												"total",
-												"pages",
-												"nextPage",
-												"page"
-											],
-											"type": "object"
+											"items": {},
+											"type": "array"
 										}
 									},
 									"required": [
@@ -1484,7 +1456,7 @@
 				"parameters": []
 			}
 		},
-		"/api/v1/user/links/{linkId}": {
+		"/v1/user/links/{linkId}": {
 			"delete": {
 				"operationId": "RemoveLink",
 				"responses": {
@@ -1521,7 +1493,7 @@
 				]
 			}
 		},
-		"/api/v1/users/{userId}": {
+		"/v1/users/{userId}": {
 			"get": {
 				"operationId": "GetUserById",
 				"responses": {
@@ -1552,7 +1524,7 @@
 				]
 			}
 		},
-		"/api/v1/user/links": {
+		"/v1/user/links": {
 			"get": {
 				"operationId": "GetLinks",
 				"responses": {
@@ -1640,7 +1612,7 @@
 				}
 			}
 		},
-		"/api/v1/likes/toggle": {
+		"/v1/likes/toggle": {
 			"post": {
 				"operationId": "ToggleLike",
 				"responses": {
@@ -1686,7 +1658,7 @@
 				}
 			}
 		},
-		"/api/v1/ideas/{id}": {
+		"/v1/ideas/{id}": {
 			"patch": {
 				"operationId": "UpdateIdea",
 				"responses": {
@@ -1819,7 +1791,7 @@
 				]
 			}
 		},
-		"/api/v1/ideas": {
+		"/v1/ideas": {
 			"get": {
 				"operationId": "GetIdeas",
 				"responses": {
@@ -1959,7 +1931,7 @@
 				}
 			}
 		},
-		"/api/v1/follow/toggle": {
+		"/v1/follow/toggle": {
 			"post": {
 				"operationId": "ToggleFollow",
 				"responses": {
@@ -2005,7 +1977,7 @@
 				}
 			}
 		},
-		"/api/v1/follow/following": {
+		"/v1/follow/following": {
 			"get": {
 				"operationId": "GetFollowing",
 				"responses": {
@@ -2069,7 +2041,7 @@
 				]
 			}
 		},
-		"/api/v1/follow/followers": {
+		"/v1/follow/followers": {
 			"get": {
 				"operationId": "GetFollowers",
 				"responses": {
@@ -2133,7 +2105,7 @@
 				]
 			}
 		},
-		"/api/v1/comment": {
+		"/v1/comment": {
 			"get": {
 				"operationId": "GetComments",
 				"responses": {
@@ -2241,7 +2213,7 @@
 				}
 			}
 		},
-		"/api/v1/auth/callback/{provider}": {
+		"/v1/auth/callback/{provider}": {
 			"get": {
 				"operationId": "CallbackSocialLoginGet",
 				"responses": {
@@ -2290,7 +2262,7 @@
 				]
 			}
 		},
-		"/api/v1/auth/social-login/{provider}": {
+		"/v1/auth/social-login/{provider}": {
 			"post": {
 				"operationId": "SocialLogin",
 				"responses": {
@@ -2355,7 +2327,7 @@
 				}
 			}
 		},
-		"/api/v1/auth/link-new-oauth-provider/{provider}": {
+		"/v1/auth/link-new-oauth-provider/{provider}": {
 			"post": {
 				"operationId": "LinkNewOAuthProvider",
 				"responses": {
@@ -2432,7 +2404,7 @@
 				}
 			}
 		},
-		"/api/v1/auth/signup": {
+		"/v1/auth/signup": {
 			"post": {
 				"operationId": "Signup",
 				"responses": {
@@ -2474,7 +2446,7 @@
 				}
 			}
 		},
-		"/api/v1/auth/signin": {
+		"/v1/auth/signin": {
 			"post": {
 				"operationId": "Signin",
 				"responses": {
@@ -2516,7 +2488,7 @@
 				}
 			}
 		},
-		"/api/v1/auth/refresh-token": {
+		"/v1/auth/refresh-token": {
 			"post": {
 				"operationId": "RefreshToken",
 				"responses": {
@@ -2578,7 +2550,7 @@
 				}
 			}
 		},
-		"/api/v1/auth/send-recover-email": {
+		"/v1/auth/send-recover-email": {
 			"post": {
 				"operationId": "SendRecoverEmail",
 				"responses": {
@@ -2636,7 +2608,7 @@
 				}
 			}
 		},
-		"/api/v1/auth/verify-email-code": {
+		"/v1/auth/verify-email-code": {
 			"post": {
 				"operationId": "VerifyEmailCode",
 				"responses": {
@@ -2698,7 +2670,7 @@
 				}
 			}
 		},
-		"/api/v1/auth/change-password": {
+		"/v1/auth/change-password": {
 			"post": {
 				"operationId": "ChangePassword",
 				"responses": {

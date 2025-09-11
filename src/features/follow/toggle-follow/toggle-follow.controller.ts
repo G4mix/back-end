@@ -8,7 +8,7 @@ import { FollowRepository } from '@shared/repositories/follow.repository'
 import { UserRepository } from '@shared/repositories/user.repository'
 
 @injectable()
-@Route('api/v1/follow')
+@Route('/v1/follow')
 @Tags('Follows')
 @Security('jwt')
 export class ToggleFollowController extends Controller {

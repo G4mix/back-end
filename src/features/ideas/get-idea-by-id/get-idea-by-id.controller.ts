@@ -6,7 +6,7 @@ import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { GetIdeaByIdResponse } from './get-idea-by-id.dto'
 
 @injectable()
-@Route('api/v1/ideas')
+@Route('/v1/ideas')
 @Tags('Ideas')
 @Security('jwt')
 export class GetIdeaByIdController extends Controller {

@@ -16,7 +16,7 @@ Permite que novos usuários se registrem no sistema criando uma conta com email,
 ### Cenário: Cadastro de usuário bem-sucedido
 ```gherkin
 Dado que não existe usuário com email "newuser@example.com"
-Quando envio uma requisição POST para "/api/v1/auth/signup" com:
+Quando envio uma requisição POST para "/v1/auth/signup" com:
   | Campo | Valor |
   | email | "newuser@example.com" |
   | password | "SecurePass123!" |
@@ -33,7 +33,7 @@ E a verificação de email deve ser iniciada
 ### Cenário: Cadastro com email existente
 ```gherkin
 Dado que existe um usuário com email "existing@example.com"
-Quando envio uma requisição POST para "/api/v1/auth/signup" com:
+Quando envio uma requisição POST para "/v1/auth/signup" com:
   | Campo | Valor |
   | email | "existing@example.com" |
   | password | "SecurePass123!" |
@@ -43,7 +43,7 @@ Então devo receber uma resposta 409 com erro "USER_ALREADY_EXISTS"
 
 ### Cenário: Cadastro com senha fraca
 ```gherkin
-Quando envio uma requisição POST para "/api/v1/auth/signup" com:
+Quando envio uma requisição POST para "/v1/auth/signup" com:
   | Campo | Valor |
   | email | "user@example.com" |
   | password | "weak" |
@@ -53,7 +53,7 @@ Então devo receber uma resposta 400 com erro de validação
 
 ### Cenário: Cadastro com formato de email inválido
 ```gherkin
-Quando envio uma requisição POST para "/api/v1/auth/signup" com:
+Quando envio uma requisição POST para "/v1/auth/signup" com:
   | Campo | Valor |
   | email | "invalid-email" |
   | password | "SecurePass123!" |
@@ -63,7 +63,7 @@ Então devo receber uma resposta 400 com erro de validação
 
 ### Cenário: Cadastro com username inválido
 ```gherkin
-Quando envio uma requisição POST para "/api/v1/auth/signup" com:
+Quando envio uma requisição POST para "/v1/auth/signup" com:
   | Campo | Valor |
   | email | "user@example.com" |
   | password | "SecurePass123!" |
@@ -74,7 +74,7 @@ Então devo receber uma resposta 400 com erro de validação
 ### Cenário: Cadastro com falha na verificação de email
 ```gherkin
 Dado que a verificação de email falha para "user@example.com"
-Quando envio uma requisição POST para "/api/v1/auth/signup" com:
+Quando envio uma requisição POST para "/v1/auth/signup" com:
   | Campo | Valor |
   | email | "user@example.com" |
   | password | "SecurePass123!" |

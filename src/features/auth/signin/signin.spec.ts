@@ -1,44 +1,78 @@
-import { createTestApp } from '@test/setup/test-app'
-import { App } from '@config/app'
-import request from 'supertest'
+import { IntegrationTestSetup } from '@test/jest.setup'
+import { HttpClient } from '@test/helpers/http-client'
+import { container } from 'tsyringe'
+import { BCryptEncoder } from '@shared/utils/bcrypt-encoder'
 
 describe('Signin Integration Tests', () => {
-	let app: App
-	let server: any
+	let httpClient: HttpClient
+	let baseUrl: string
 
-	beforeEach(async () => {
-		app = await createTestApp()
-		server = app.getInstance()
+	beforeAll(async () => {
+		// Usa o servidor global já iniciado
+		baseUrl = IntegrationTestSetup.getBaseUrl()
+		httpClient = new HttpClient(baseUrl)
 	})
 
-	afterEach(async () => {
-		if (app) {
-			app.stop()
-		}
-	})
-
-	describe('POST /api/v1/auth/signin', () => {
+	describe('POST /v1/auth/signin', () => {
 		it('should signin user successfully with valid credentials', async () => {
 			// Arrange
 			const signinData = {
 				email: 'test@example.com',
 				password: 'ValidPassword123!'
 			}
+			
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				password: BCryptEncoder.encode('ValidPassword123!'), // Hash mockado
+				verified: true,
+				loginAttempts: 0,
+				blockedUntil: null,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					user_id: 'user-123',
+					name: 'Test User',
+					displayName: 'Test User',
+					bio: 'Test bio',
+					backgroundImage: null,
+					created_at: new Date(),
+					updated_at: new Date(),
+					links: [],
+					_count: {
+						following: 0,
+						followers: 0
+					}
+				},
+				userCode: null
+			})
+			console.log('✅ Prisma mock configured')
 
 			// Act
-			const response = await request(server)
-				.post('/api/v1/auth/signin')
-				.send(signinData)
+			try {
+				console.log('🚀 Making request to /v1/auth/signin...')
+				const response = await httpClient.post('/v1/auth/signin', signinData)
 
-			// Debug
-			console.log('Response status:', response.status)
-			console.log('Response body:', response.body)
+				// Debug
+				console.log('✅ Response status:', response.status)
+				console.log('✅ Response body:', response.data)
 
-			// Assert
-			expect(response.status).toBe(200)
-			expect(response.body).toHaveProperty('accessToken')
-			expect(response.body).toHaveProperty('refreshToken')
-			expect(response.body).toHaveProperty('user')
+				// Assert
+				expect(response.status).toBe(200)
+				expect(response.data).toHaveProperty('accessToken')
+				expect(response.data).toHaveProperty('refreshToken')
+				expect(response.data).toHaveProperty('user')
+			} catch (error: any) {
+				console.log('❌ Error details:')
+				console.log('  Status:', error.response?.status)
+				console.log('  Data:', error.response?.data)
+				console.log('  Message:', error.message)
+				throw error
+			}
 		})
 
 		it('should return validation error for invalid email format', async () => {
@@ -48,14 +82,16 @@ describe('Signin Integration Tests', () => {
 				password: 'ValidPassword123!'
 			}
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/auth/signin')
-				.send(signinData)
-
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_EMAIL')
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/signin', signinData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_EMAIL'
+						}
+					}
+				})
 		})
 
 		it('should return validation error for empty email', async () => {
@@ -65,14 +101,16 @@ describe('Signin Integration Tests', () => {
 				password: 'ValidPassword123!'
 			}
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/auth/signin')
-				.send(signinData)
-
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_EMAIL')
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/signin', signinData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_EMAIL'
+						}
+					}
+				})
 		})
 
 		it('should return validation error for empty password', async () => {
@@ -82,14 +120,16 @@ describe('Signin Integration Tests', () => {
 				password: ''
 			}
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/auth/signin')
-				.send(signinData)
-
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('PASSWORD_REQUIRED')
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/signin', signinData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'PASSWORD_REQUIRED'
+						}
+					}
+				})
 		})
 
 		it('should return USER_NOT_FOUND when user does not exist', async () => {
@@ -99,18 +139,23 @@ describe('Signin Integration Tests', () => {
 				password: 'ValidPassword123!'
 			}
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/auth/signin')
-				.send(signinData)
+			// Mock do Prisma para retornar null (usuário não encontrado)
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue(null)
+					}
+				}
+			})
 
-			// Debug
-			console.log('Response status:', response.status)
-			console.log('Response body:', response.body)
-
-			// Assert
-			expect(response.status).toBe(404)
-			expect(response.body).toBe('USER_NOT_FOUND')
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/signin', signinData))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: 'USER_NOT_FOUND'
+					}
+				})
 		})
 
 		it('should return WRONG_PASSWORD_ONCE when password is wrong', async () => {
@@ -120,14 +165,50 @@ describe('Signin Integration Tests', () => {
 				password: 'WrongPassword123!'
 			}
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/auth/signin')
-				.send(signinData)
+			// Mock do Prisma para retornar usuário com senha diferente
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockResolvedValue({
+							id: 'user-123',
+							userProfileId: 'profile-123',
+							email: 'test@example.com',
+							username: 'testuser',
+							password: '$2b$10$different.hash', // Hash diferente
+							verified: true,
+							loginAttempts: 0,
+							blockedUntil: null,
+							created_at: new Date(),
+							updated_at: new Date(),
+							userProfile: {
+								id: 'profile-123',
+								user_id: 'user-123',
+								name: 'Test User',
+								displayName: 'Test User',
+								bio: 'Test bio',
+								backgroundImage: null,
+								created_at: new Date(),
+								updated_at: new Date(),
+								links: [],
+								_count: {
+									following: 0,
+									followers: 0
+								}
+							},
+							userCode: null
+						})
+					}
+				}
+			})
 
-			// Assert
-			expect(response.status).toBe(401)
-			expect(response.body).toBe('WRONG_PASSWORD_ONCE')
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/signin', signinData))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: 'WRONG_PASSWORD_ONCE'
+					}
+				})
 		})
 
 		it('should signin unverified user successfully (auto-verification)', async () => {
@@ -137,22 +218,94 @@ describe('Signin Integration Tests', () => {
 				password: 'ValidPassword123!'
 			}
 
+			// Mock do Prisma para retornar usuário não verificado
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			const mockSESClient = container.resolve('SESClient') as any
+			
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-456',
+				userProfileId: 'profile-456',
+				email: 'unverified@example.com',
+				username: 'unverifieduser',
+				password: BCryptEncoder.encode('ValidPassword123!'), // Hash válido
+				verified: false, // Usuário não verificado
+				loginAttempts: 0,
+				blockedUntil: null,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-456',
+					user_id: 'user-456',
+					name: 'Unverified User',
+					displayName: 'Unverified User',
+					bio: 'Test bio',
+					backgroundImage: null,
+					created_at: new Date(),
+					updated_at: new Date(),
+					links: [],
+					_count: {
+						following: 0,
+						followers: 0
+					}
+				},
+				userCode: null
+			})
+			
+			// Mock do update para retornar usuário verificado
+			mockPrismaClient.user.update.mockResolvedValue({
+				id: 'user-456',
+				userProfileId: 'profile-456',
+				email: 'unverified@example.com',
+				username: 'unverifieduser',
+				password: BCryptEncoder.encode('ValidPassword123!'),
+				verified: true, // Será verificado automaticamente
+				loginAttempts: 0,
+				blockedUntil: null,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-456',
+					user_id: 'user-456',
+					name: 'Unverified User',
+					displayName: 'Unverified User',
+					bio: 'Test bio',
+					backgroundImage: null,
+					created_at: new Date(),
+					updated_at: new Date(),
+					links: [],
+					_count: {
+						following: 0,
+						followers: 0
+					}
+				},
+				userCode: null
+			})
+			
+			// Mock do SES para simular verificação de email bem-sucedida
+			mockSESClient.send
+				.mockResolvedValueOnce({ // Para checkEmailStatus
+					VerificationAttributes: {
+						'unverified@example.com': {
+							VerificationStatus: 'Success'
+						}
+					}
+				})
+				.mockResolvedValueOnce({ // Para sendEmail
+					MessageId: 'test-message-id'
+				})
+
 			// Act
-			const response = await request(server)
-				.post('/api/v1/auth/signin')
-				.send(signinData)
+			const response = await httpClient.post('/v1/auth/signin', signinData)
 
 			// Debug
 			console.log('Response status:', response.status)
-			console.log('Response body:', response.body)
+			console.log('Response body:', response.data)
 
-			// Assert - Temporariamente esperando 200, mas pode retornar 500 devido a problemas no mock
-			expect([200, 500]).toContain(response.status)
-			if (response.status === 200) {
-				expect(response.body).toHaveProperty('accessToken')
-				expect(response.body).toHaveProperty('refreshToken')
-				expect(response.body).toHaveProperty('user')
-			}
+			// Assert
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('accessToken')
+			expect(response.data).toHaveProperty('refreshToken')
+			expect(response.data).toHaveProperty('user')
 		})
 
 		it('should handle database errors gracefully', async () => {
@@ -162,19 +315,22 @@ describe('Signin Integration Tests', () => {
 				password: 'ValidPassword123!'
 			}
 
-			// Act
-			const response = await request(server)
-				.post('/api/v1/auth/signin')
-				.send(signinData)
+			// Mock do Prisma para simular erro de banco
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockRejectedValue(new Error('Database connection error'))
+					}
+				}
+			})
 
-			// Debug
-			console.log('Response status:', response.status)
-			console.log('Response body:', response.body)
-
-			// Assert - O teste atual não consegue simular erro de banco facilmente
-			// Vamos aceitar que funcione normalmente por enquanto
-			expect(response.status).toBe(200)
-			expect(response.body).toHaveProperty('accessToken')
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/signin', signinData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

@@ -13,7 +13,7 @@ export interface CreateCommentInput {
 }
 
 @injectable()
-@Route('api/v1/comment')
+@Route('/v1/comment')
 @Tags('Comment')
 @Security('jwt')
 export class CreateCommentController extends Controller {

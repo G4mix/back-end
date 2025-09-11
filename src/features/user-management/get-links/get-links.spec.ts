@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -27,7 +27,7 @@ describe('Get Links Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('GET /api/v1/users/links', () => {
+	describe('GET /v1/users/links', () => {
 		it('should get personal links successfully', async () => {
 			// Arrange
 			const mockLinks = [
@@ -61,7 +61,7 @@ describe('Get Links Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.get('/api/v1/users/links')
+			const response = await httpClient.get('/v1/users/links')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -84,7 +84,7 @@ describe('Get Links Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.get('/api/v1/users/links')
+			const response = await httpClient.get('/v1/users/links')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -96,7 +96,7 @@ describe('Get Links Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.get('/api/v1/users/links'))
+			await expect(httpClient.get('/v1/users/links'))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -134,7 +134,7 @@ describe('Get Links Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.get('/api/v1/users/links')
+			const response = await httpClient.get('/v1/users/links')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -155,7 +155,7 @@ describe('Get Links Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.get('/api/v1/users/links'))
+			await expect(httpClient.get('/v1/users/links'))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

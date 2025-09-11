@@ -1,5 +1,6 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
+import { TestTokens } from '@test/helpers/test-tokens'
 import { TestData } from '@test/helpers/test-data'
 
 describe('Get Idea By ID Integration Tests', () => {
@@ -8,18 +9,13 @@ describe('Get Idea By ID Integration Tests', () => {
 	let authToken: string
 
 	beforeAll(async () => {
-		// Inicia o servidor real
-		baseUrl = await IntegrationTestSetup.startServer()
+		// Usa o servidor global
+		baseUrl = IntegrationTestSetup.getBaseUrl()
 		httpClient = new HttpClient(baseUrl)
 		
-		// Simula login para obter token
-		authToken = TestData.generateFakeToken()
+		// Gera token válido usando o helper
+		authToken = TestTokens.generateValidToken()
 		httpClient.setAuthToken(authToken)
-	})
-
-	afterAll(async () => {
-		// Para o servidor
-		await IntegrationTestSetup.stopServer()
 	})
 
 	beforeEach(() => {
@@ -27,7 +23,7 @@ describe('Get Idea By ID Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('GET /api/v1/ideas/:id', () => {
+	describe('GET /v1/ideas/:id', () => {
 		it('should get idea by id successfully', async () => {
 			// Arrange
 			const ideaId = TestData.generateUUID()
@@ -57,17 +53,29 @@ describe('Get Idea By ID Integration Tests', () => {
 				}
 			}
 
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue(mockIdea)
-					}
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
 				}
 			})
+			
+			// Mock da ideia
+			mockPrismaClient.idea.findUnique.mockResolvedValue(mockIdea)
 
 			// Act
-			const response = await httpClient.get(`/api/v1/ideas/${ideaId}`)
+			const response = await httpClient.get(`/v1/ideas/${ideaId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -80,13 +88,36 @@ describe('Get Idea By ID Integration Tests', () => {
 		})
 
 		it('should return validation error for invalid UUID', async () => {
+			// Arrange - Mock do usuário para o middleware de segurança
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+
 			// Act & Assert
-			await expect(httpClient.get('/api/v1/ideas/invalid-uuid'))
+			await expect(httpClient.get('/v1/ideas/invalid-uuid'))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
 						data: {
-							message: 'INVALID_IDEA_ID'
+							message: 'INVALID_IDEA_ID',
+							details: [
+								{
+									field: 'id',
+									message: 'INVALID_IDEA_ID',
+									code: 'invalid_string'
+								}
+							]
 						}
 					}
 				})
@@ -96,23 +127,33 @@ describe('Get Idea By ID Integration Tests', () => {
 			// Arrange
 			const ideaId = TestData.generateUUID()
 
-			// Mock do Prisma para retornar null
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue(null)
-					}
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
 				}
 			})
+			
+			// Mock da ideia como null (não encontrada)
+			mockPrismaClient.idea.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
-			await expect(httpClient.get(`/api/v1/ideas/${ideaId}`))
+			await expect(httpClient.get(`/v1/ideas/${ideaId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: {
-							message: 'IDEA_NOT_FOUND'
-						}
+						data: 'IDEA_NOT_FOUND'
 					}
 				})
 		})
@@ -169,7 +210,7 @@ describe('Get Idea By ID Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.get(`/api/v1/ideas/${ideaId}`)
+			const response = await httpClient.get(`/v1/ideas/${ideaId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -197,7 +238,7 @@ describe('Get Idea By ID Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.get(`/api/v1/ideas/${ideaId}`))
+			await expect(httpClient.get(`/v1/ideas/${ideaId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

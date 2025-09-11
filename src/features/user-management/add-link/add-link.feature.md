@@ -4,7 +4,7 @@
 This feature allows authenticated users to add personal links to their profile. Links can be social media profiles, websites, portfolios, etc.
 
 ## Endpoints
-- `POST /api/v1/user/links`
+- `POST /v1/user/links`
 
 ## Authentication
 - Requires JWT token in Authorization header
@@ -56,7 +56,7 @@ This feature allows authenticated users to add personal links to their profile. 
 
 ### Add GitHub profile
 ```bash
-POST /api/v1/user/links
+POST /v1/user/links
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -67,7 +67,7 @@ Content-Type: application/json
 
 ### Add LinkedIn profile
 ```bash
-POST /api/v1/user/links
+POST /v1/user/links
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -78,7 +78,7 @@ Content-Type: application/json
 
 ### Add personal website
 ```bash
-POST /api/v1/user/links
+POST /v1/user/links
 Authorization: Bearer <token>
 Content-Type: application/json
 

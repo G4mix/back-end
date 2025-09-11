@@ -1,49 +1,102 @@
-import { createTestApp } from '@test/setup/test-app'
-import { App } from '@config/app'
+import { IntegrationTestSetup } from '@test/jest.setup'
+import { HttpClient } from '@test/helpers/http-client'
 import { TestTokens } from '@test/helpers/test-tokens'
-import request from 'supertest'
 
 describe('Get Ideas Integration Tests', () => {
-	let app: App
-	let server: any
+	let httpClient: HttpClient
+	let baseUrl: string
 	let authToken: string
 
-	beforeEach(async () => {
-		app = await createTestApp()
-		server = app.getInstance()
+	beforeAll(async () => {
+		// Usa o servidor global
+		baseUrl = IntegrationTestSetup.getBaseUrl()
+		httpClient = new HttpClient(baseUrl)
 		
-		// Gera token JWT válido para testes
+		// Gera token válido usando o helper
 		authToken = TestTokens.generateValidToken()
+		httpClient.setAuthToken(authToken)
 	})
 
-	afterEach(async () => {
-		if (app) {
-			app.stop()
-		}
+	beforeEach(() => {
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('GET /api/v1/ideas', () => {
+	describe('GET /v1/ideas', () => {
 		it('should get ideas with pagination successfully', async () => {
-			// Arrange - Mock do Prisma já está configurado globalmente no test-app.ts
+			// Arrange - Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
+			// Mock das ideias
+			const mockIdeas = [
+				{
+					id: 'idea-1',
+					title: 'Test Idea 1',
+					description: 'Description 1',
+					authorId: 'user-1',
+					created_at: new Date(),
+					updated_at: new Date(),
+					_count: { likes: 10, comments: 5, views: 100 }
+				},
+				{
+					id: 'idea-2',
+					title: 'Test Idea 2',
+					description: 'Description 2',
+					authorId: 'user-2',
+					created_at: new Date(),
+					updated_at: new Date(),
+					_count: { likes: 15, comments: 8, views: 150 }
+				}
+			]
+			
+			mockPrismaClient.idea.findMany.mockResolvedValue(mockIdeas)
+			mockPrismaClient.idea.count.mockResolvedValue(2)
 
 			// Act
-			const response = await request(server)
-				.get('/api/v1/ideas')
-				.query({ page: 0, limit: 10 })
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Debug removido
+			const response = await httpClient.get('/v1/ideas?page=0&limit=10')
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.body).toHaveProperty('ideas')
-			expect(response.body).toHaveProperty('pagination')
-			expect(response.body.ideas).toHaveLength(2)
-			expect(response.body.pagination.total).toBe(2)
+			expect(response.data).toHaveProperty('ideas')
+			expect(response.data).toHaveProperty('pagination')
+			expect(response.data.ideas).toHaveLength(2)
+			expect(response.data.pagination.total).toBe(2)
 		})
 
 		it('should get ideas with search query successfully', async () => {
 			// Arrange
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
 			const mockIdeas = [
 				{
 					id: 'idea-1',
@@ -59,30 +112,38 @@ describe('Get Ideas Integration Tests', () => {
 					}
 				}
 			]
-
-			// Mock do Prisma
-			const mockPrisma = require('@prisma/client').PrismaClient
-			mockPrisma.mockImplementation(() => ({
-				idea: {
-					findMany: jest.fn().mockResolvedValue(mockIdeas),
-					count: jest.fn().mockResolvedValue(1)
-				}
-			}))
+			
+			mockPrismaClient.idea.findMany.mockResolvedValue(mockIdeas)
+			mockPrismaClient.idea.count.mockResolvedValue(1)
 
 			// Act
-			const response = await request(server)
-				.get('/api/v1/ideas')
-				.query({ page: 0, limit: 10, search: 'react' })
-				.set('Authorization', `Bearer ${authToken}`)
+			const response = await httpClient.get('/v1/ideas?page=0&limit=10&search=react')
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.body).toHaveProperty('ideas')
-			expect(response.body.ideas).toHaveLength(1)
+			expect(response.data).toHaveProperty('ideas')
+			expect(response.data.ideas).toHaveLength(1)
 		})
 
 		it('should get ideas with tags filter successfully', async () => {
 			// Arrange
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
 			const mockIdeas = [
 				{
 					id: 'idea-1',
@@ -102,95 +163,173 @@ describe('Get Ideas Integration Tests', () => {
 					}
 				}
 			]
-
-			// Mock do Prisma
-			const mockPrisma = require('@prisma/client').PrismaClient
-			mockPrisma.mockImplementation(() => ({
-				idea: {
-					findMany: jest.fn().mockResolvedValue(mockIdeas),
-					count: jest.fn().mockResolvedValue(1)
-				}
-			}))
+			
+			mockPrismaClient.idea.findMany.mockResolvedValue(mockIdeas)
+			mockPrismaClient.idea.count.mockResolvedValue(1)
 
 			// Act
-			const response = await request(server)
-				.get('/api/v1/ideas')
-				.query({ page: 0, limit: 10, tags: ['react', 'typescript'] })
-				.set('Authorization', `Bearer ${authToken}`)
+			const response = await httpClient.get('/v1/ideas?page=0&limit=10&tags[]=react&tags[]=typescript')
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.body).toHaveProperty('ideas')
-			expect(response.body.ideas).toHaveLength(1)
+			expect(response.data).toHaveProperty('ideas')
+			expect(response.data.ideas).toHaveLength(1)
 		})
 
 		it('should return validation error for invalid page number', async () => {
-			// Act
-			const response = await request(server)
-				.get('/api/v1/ideas')
-				.query({ page: -1 })
-				.set('Authorization', `Bearer ${authToken}`)
+			// Arrange
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
 
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_PAGE')
+			// Act & Assert
+			await expect(httpClient.get('/v1/ideas?page=-1'))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_PAGE'
+						}
+					}
+				})
 		})
 
 		it('should return validation error for invalid limit', async () => {
-			// Act
-			const response = await request(server)
-				.get('/api/v1/ideas')
-				.query({ limit: 200 })
-				.set('Authorization', `Bearer ${authToken}`)
+			// Arrange
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
 
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('LIMIT_TOO_LARGE')
+			// Act & Assert
+			await expect(httpClient.get('/v1/ideas?limit=200'))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'LIMIT_TOO_LARGE'
+						}
+					}
+				})
 		})
 
 		it('should return validation error for negative limit', async () => {
-			// Act
-			const response = await request(server)
-				.get('/api/v1/ideas')
-				.query({ limit: -1 })
-				.set('Authorization', `Bearer ${authToken}`)
+			// Arrange
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
 
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_LIMIT')
+			// Act & Assert
+			await expect(httpClient.get('/v1/ideas?limit=-1'))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_LIMIT'
+						}
+					}
+				})
 		})
 
 		it('should return empty array when no ideas found', async () => {
 			// Arrange
-			// Mock do Prisma já está configurado globalmente no test-app.ts
-			// Para este teste, vamos simular que não há ideias
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
+			// Mock sem ideias
+			mockPrismaClient.idea.findMany.mockResolvedValue([])
+			mockPrismaClient.idea.count.mockResolvedValue(0)
 
 			// Act
-			const response = await request(server)
-				.get('/api/v1/ideas')
-				.query({ page: 0, limit: 10, authorId: '00000000-0000-0000-0000-000000000000' })
-				.set('Authorization', `Bearer ${authToken}`)
+			const response = await httpClient.get('/v1/ideas?page=0&limit=10&authorId=00000000-0000-0000-0000-000000000000')
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.body.ideas).toHaveLength(0)
-			expect(response.body.pagination.total).toBe(0)
+			expect(response.data.ideas).toHaveLength(0)
+			expect(response.data.pagination.total).toBe(0)
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			// Mock do Prisma já está configurado globalmente no test-app.ts
-			// Para este teste, vamos simular um erro de validação
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+			
+			// Mock de erro no banco
+			mockPrismaClient.idea.findMany.mockRejectedValue(new Error('Database connection failed'))
 
-			// Act
-			const response = await request(server)
-				.get('/api/v1/ideas')
-				.query({ page: -1, limit: 10 })
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_PAGE')
+			// Act & Assert
+			await expect(httpClient.get('/v1/ideas?page=0&limit=10'))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

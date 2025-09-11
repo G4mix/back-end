@@ -11,7 +11,7 @@ import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { Logger } from '@shared/utils/logger'
 
 @injectable()
-@Route('api/v1/auth')
+@Route('/v1/auth')
 @Tags('Authentication')
 export class SigninController extends Controller {
 	constructor(

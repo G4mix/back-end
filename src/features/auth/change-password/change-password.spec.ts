@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -27,7 +27,7 @@ describe('Change Password Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('PATCH /api/v1/auth/change-password', () => {
+	describe('PATCH /v1/auth/change-password', () => {
 		it('should change password successfully with valid data', async () => {
 			// Arrange
 			const changePasswordData = {
@@ -53,7 +53,7 @@ describe('Change Password Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.patch('/api/v1/auth/change-password', changePasswordData)
+			const response = await httpClient.patch('/v1/auth/change-password', changePasswordData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -68,7 +68,7 @@ describe('Change Password Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/api/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -87,7 +87,7 @@ describe('Change Password Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/api/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -106,7 +106,7 @@ describe('Change Password Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/api/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -125,7 +125,7 @@ describe('Change Password Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/api/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -144,7 +144,7 @@ describe('Change Password Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/api/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -164,7 +164,7 @@ describe('Change Password Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.patch('/api/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -192,7 +192,7 @@ describe('Change Password Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.patch('/api/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -224,7 +224,7 @@ describe('Change Password Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.patch('/api/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -252,7 +252,7 @@ describe('Change Password Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.patch('/api/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

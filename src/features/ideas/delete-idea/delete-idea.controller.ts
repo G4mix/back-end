@@ -5,7 +5,7 @@ import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 
 @injectable()
-@Route('api/v1/ideas')
+@Route('/v1/ideas')
 @Tags('Ideas')
 @Security('jwt')
 export class DeleteIdeaController extends Controller {

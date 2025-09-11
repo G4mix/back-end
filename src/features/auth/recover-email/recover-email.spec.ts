@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -22,7 +22,7 @@ describe('Recover Email Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('POST /api/v1/auth/recover-email', () => {
+	describe('POST /v1/auth/recover-email', () => {
 		it('should send recovery email successfully with valid email', async () => {
 			// Arrange
 			const recoverEmailData = {
@@ -55,7 +55,7 @@ describe('Recover Email Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/auth/recover-email', recoverEmailData)
+			const response = await httpClient.post('/v1/auth/recover-email', recoverEmailData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -69,7 +69,7 @@ describe('Recover Email Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -87,7 +87,7 @@ describe('Recover Email Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -114,7 +114,7 @@ describe('Recover Email Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -145,7 +145,7 @@ describe('Recover Email Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 409,
@@ -188,7 +188,7 @@ describe('Recover Email Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500
@@ -212,7 +212,7 @@ describe('Recover Email Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

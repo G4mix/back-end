@@ -7,7 +7,7 @@ import { FollowRepository } from '@shared/repositories/follow.repository'
 import { GetFollowingResponse } from './get-following.dto'
 
 @injectable()
-@Route('api/v1/follow')
+@Route('/v1/follow')
 @Tags('Follows')
 @Security('jwt')
 export class GetFollowingController extends Controller {

@@ -1,6 +1,7 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
+import { TestTokens } from '@test/helpers/test-tokens'
 
 describe('Get User By ID Integration Tests', () => {
 	let httpClient: HttpClient
@@ -8,18 +9,13 @@ describe('Get User By ID Integration Tests', () => {
 	let authToken: string
 
 	beforeAll(async () => {
-		// Inicia o servidor real
-		baseUrl = await IntegrationTestSetup.startServer()
+		// Usa o servidor global
+		baseUrl = IntegrationTestSetup.getBaseUrl()
 		httpClient = new HttpClient(baseUrl)
 		
-		// Simula login para obter token
-		authToken = TestData.generateFakeToken()
+		// Gera token válido usando o helper
+		authToken = TestTokens.generateValidToken()
 		httpClient.setAuthToken(authToken)
-	})
-
-	afterAll(async () => {
-		// Para o servidor
-		await IntegrationTestSetup.stopServer()
 	})
 
 	beforeEach(() => {
@@ -27,7 +23,7 @@ describe('Get User By ID Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('GET /api/v1/users/:id', () => {
+	describe('GET /v1/users/:id', () => {
 		it('should get user by id successfully', async () => {
 			// Arrange
 			const userId = TestData.generateUUID()
@@ -39,28 +35,25 @@ describe('Get User By ID Integration Tests', () => {
 				created_at: new Date(),
 				updated_at: new Date(),
 				userProfile: {
-					name: 'Test User',
-					bio: 'Bio of test user',
+					id: TestData.generateUUID(),
+					displayName: 'Test User',
+					autobiography: 'Bio of test user',
 					icon: 'https://example.com/user.jpg',
-					backgroundImage: 'https://example.com/background.jpg'
-				},
-				_count: {
-					followers: 10,
-					following: 5
+					backgroundImage: 'https://example.com/background.jpg',
+					links: [],
+					_count: {
+						followers: 10,
+						following: 5
+					}
 				}
 			}
 
 			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue(mockUser)
-					}
-				}
-			})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 
 			// Act
-			const response = await httpClient.get(`/api/v1/users/${userId}`)
+			const response = await httpClient.get(`/v1/users/${userId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -68,12 +61,12 @@ describe('Get User By ID Integration Tests', () => {
 			expect(response.data.user.id).toBe(userId)
 			expect(response.data.user.username).toBe('testuser')
 			expect(response.data.user.email).toBe('test@example.com')
-			expect(response.data.user.userProfile.name).toBe('Test User')
+			expect(response.data.user.userProfile.displayName).toBe('Test User')
 		})
 
 		it('should return validation error for invalid UUID', async () => {
 			// Act & Assert
-			await expect(httpClient.get('/api/v1/users/invalid-uuid'))
+			await expect(httpClient.get('/v1/users/invalid-uuid'))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -89,16 +82,11 @@ describe('Get User By ID Integration Tests', () => {
 			const userId = TestData.generateUUID()
 
 			// Mock do Prisma para retornar null
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue(null)
-					}
-				}
-			})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
-			await expect(httpClient.get(`/api/v1/users/${userId}`))
+			await expect(httpClient.get(`/v1/users/${userId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -120,37 +108,34 @@ describe('Get User By ID Integration Tests', () => {
 				created_at: new Date(),
 				updated_at: new Date(),
 				userProfile: {
-					name: 'Complete User',
-					bio: 'This is a complete user profile with all information filled out',
+					id: TestData.generateUUID(),
+					displayName: 'Complete User',
+					autobiography: 'This is a complete user profile with all information filled out',
 					icon: 'https://example.com/complete-user.jpg',
-					backgroundImage: 'https://example.com/complete-background.jpg'
-				},
-				_count: {
-					followers: 25,
-					following: 12
+					backgroundImage: 'https://example.com/complete-background.jpg',
+					links: [],
+					_count: {
+						followers: 25,
+						following: 12
+					}
 				}
 			}
 
 			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue(mockUser)
-					}
-				}
-			})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 
 			// Act
-			const response = await httpClient.get(`/api/v1/users/${userId}`)
+			const response = await httpClient.get(`/v1/users/${userId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.data.user.userProfile.name).toBe('Complete User')
-			expect(response.data.user.userProfile.bio).toBe('This is a complete user profile with all information filled out')
+			expect(response.data.user.userProfile.displayName).toBe('Complete User')
+			expect(response.data.user.userProfile.autobiography).toBe('This is a complete user profile with all information filled out')
 			expect(response.data.user.userProfile.icon).toBe('https://example.com/complete-user.jpg')
 			expect(response.data.user.userProfile.backgroundImage).toBe('https://example.com/complete-background.jpg')
-			expect(response.data.user._count.followers).toBe(25)
-			expect(response.data.user._count.following).toBe(12)
+			expect(response.data.user.userProfile._count.followers).toBe(25)
+			expect(response.data.user.userProfile._count.following).toBe(12)
 		})
 
 		it('should get user with minimal profile information', async () => {
@@ -164,39 +149,36 @@ describe('Get User By ID Integration Tests', () => {
 				created_at: new Date(),
 				updated_at: new Date(),
 				userProfile: {
-					name: null,
-					bio: null,
+					id: TestData.generateUUID(),
+					displayName: null,
+					autobiography: null,
 					icon: null,
-					backgroundImage: null
-				},
-				_count: {
-					followers: 0,
-					following: 0
+					backgroundImage: null,
+					links: [],
+					_count: {
+						followers: 0,
+						following: 0
+					}
 				}
 			}
 
 			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue(mockUser)
-					}
-				}
-			})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 
 			// Act
-			const response = await httpClient.get(`/api/v1/users/${userId}`)
+			const response = await httpClient.get(`/v1/users/${userId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
 			expect(response.data.user.username).toBe('minimaluser')
 			expect(response.data.user.verified).toBe(false)
-			expect(response.data.user.userProfile.name).toBeNull()
-			expect(response.data.user.userProfile.bio).toBeNull()
+			expect(response.data.user.userProfile.displayName).toBeNull()
+			expect(response.data.user.userProfile.autobiography).toBeNull()
 			expect(response.data.user.userProfile.icon).toBeNull()
 			expect(response.data.user.userProfile.backgroundImage).toBeNull()
-			expect(response.data.user._count.followers).toBe(0)
-			expect(response.data.user._count.following).toBe(0)
+			expect(response.data.user.userProfile._count.followers).toBe(0)
+			expect(response.data.user.userProfile._count.following).toBe(0)
 		})
 
 		it('should handle database errors gracefully', async () => {
@@ -204,16 +186,11 @@ describe('Get User By ID Integration Tests', () => {
 			const userId = TestData.generateUUID()
 
 			// Mock do Prisma para retornar erro
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-					}
-				}
-			})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
-			await expect(httpClient.get(`/api/v1/users/${userId}`))
+			await expect(httpClient.get(`/v1/users/${userId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

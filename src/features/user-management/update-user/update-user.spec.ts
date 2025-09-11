@@ -1,6 +1,7 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
+import { TestTokens } from '@test/helpers/test-tokens'
 
 describe('Update User Integration Tests', () => {
 	let httpClient: HttpClient
@@ -8,18 +9,13 @@ describe('Update User Integration Tests', () => {
 	let authToken: string
 
 	beforeAll(async () => {
-		// Inicia o servidor real
-		baseUrl = await IntegrationTestSetup.startServer()
+		// Usa o servidor global
+		baseUrl = IntegrationTestSetup.getBaseUrl()
 		httpClient = new HttpClient(baseUrl)
 		
-		// Simula login para obter token
-		authToken = TestData.generateFakeToken()
+		// Gera token válido usando o helper
+		authToken = TestTokens.generateValidToken()
 		httpClient.setAuthToken(authToken)
-	})
-
-	afterAll(async () => {
-		// Para o servidor
-		await IntegrationTestSetup.stopServer()
 	})
 
 	beforeEach(() => {
@@ -27,50 +23,68 @@ describe('Update User Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('PUT /api/v1/users', () => {
+	describe('PATCH /v1/users', () => {
 		it('should update user successfully with valid data', async () => {
 			// Arrange
 			const updateData = {
-				name: 'Updated Name',
-				bio: 'Updated bio with enough characters to pass validation',
-				icon: 'https://example.com/updated-icon.jpg',
-				backgroundImage: 'https://example.com/updated-background.jpg'
+				displayName: 'Updated Name',
+				autobiography: 'Updated bio with enough characters to pass validation'
 			}
 			
 			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							username: 'testuser',
-							email: 'test@example.com',
-							verified: true
-						}),
-						update: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							username: 'testuser',
-							email: 'test@example.com',
-							verified: true,
-							userProfile: {
-								name: updateData.name,
-								bio: updateData.bio,
-								icon: updateData.icon,
-								backgroundImage: updateData.backgroundImage
-							}
-						})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Original Name',
+					autobiography: 'Original bio',
+					icon: null,
+					backgroundImage: null,
+					links: [],
+					_count: {
+						followers: 10,
+						following: 5
+					}
+				}
+			})
+			
+			mockPrismaClient.user.update.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: updateData.displayName,
+					autobiography: updateData.autobiography,
+					icon: null,
+					backgroundImage: null,
+					links: [],
+					_count: {
+						followers: 10,
+						following: 5
 					}
 				}
 			})
 
 			// Act
-			const response = await httpClient.put('/api/v1/users', updateData)
+			const response = await httpClient.patch('/v1/users', updateData)
 
 			// Assert
 			expect(response.status).toBe(200)
 			expect(response.data).toHaveProperty('user')
-			expect(response.data.user.userProfile.name).toBe(updateData.name)
-			expect(response.data.user.userProfile.bio).toBe(updateData.bio)
+			expect(response.data.user.userProfile.displayName).toBe(updateData.displayName)
+			expect(response.data.user.userProfile.autobiography).toBe(updateData.autobiography)
 		})
 
 		it('should return validation error for long name', async () => {
@@ -81,7 +95,7 @@ describe('Update User Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.put('/api/v1/users', updateData))
+			await expect(httpClient.patch('/v1/users', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -100,7 +114,7 @@ describe('Update User Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.put('/api/v1/users', updateData))
+			await expect(httpClient.patch('/v1/users', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -120,7 +134,7 @@ describe('Update User Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.put('/api/v1/users', updateData))
+			await expect(httpClient.patch('/v1/users', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -140,7 +154,7 @@ describe('Update User Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.put('/api/v1/users', updateData))
+			await expect(httpClient.patch('/v1/users', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -160,7 +174,7 @@ describe('Update User Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.put('/api/v1/users', updateData))
+			await expect(httpClient.patch('/v1/users', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -188,7 +202,7 @@ describe('Update User Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.put('/api/v1/users', updateData))
+			await expect(httpClient.patch('/v1/users', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -232,7 +246,7 @@ describe('Update User Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.put('/api/v1/users', updateData)
+			const response = await httpClient.patch('/v1/users', updateData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -256,7 +270,7 @@ describe('Update User Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.put('/api/v1/users', updateData))
+			await expect(httpClient.patch('/v1/users', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

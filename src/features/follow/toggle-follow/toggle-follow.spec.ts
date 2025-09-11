@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -27,7 +27,7 @@ describe('Toggle Follow Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('POST /api/v1/follow/toggle', () => {
+	describe('POST /v1/follow/toggle', () => {
 		it('should follow user successfully', async () => {
 			// Arrange
 			const followData = {
@@ -50,7 +50,7 @@ describe('Toggle Follow Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/follow/toggle', followData)
+			const response = await httpClient.post('/v1/follow/toggle', followData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -82,7 +82,7 @@ describe('Toggle Follow Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/follow/toggle', followData)
+			const response = await httpClient.post('/v1/follow/toggle', followData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -97,7 +97,7 @@ describe('Toggle Follow Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+			await expect(httpClient.post('/v1/follow/toggle', followData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -115,7 +115,7 @@ describe('Toggle Follow Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+			await expect(httpClient.post('/v1/follow/toggle', followData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -134,7 +134,7 @@ describe('Toggle Follow Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+			await expect(httpClient.post('/v1/follow/toggle', followData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -161,7 +161,7 @@ describe('Toggle Follow Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+			await expect(httpClient.post('/v1/follow/toggle', followData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -188,7 +188,7 @@ describe('Toggle Follow Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+			await expect(httpClient.post('/v1/follow/toggle', followData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -215,7 +215,7 @@ describe('Toggle Follow Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/follow/toggle', followData))
+			await expect(httpClient.post('/v1/follow/toggle', followData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

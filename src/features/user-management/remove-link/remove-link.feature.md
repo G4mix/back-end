@@ -4,7 +4,7 @@
 This feature allows authenticated users to remove personal links from their profile. Only the owner of the link can remove it.
 
 ## Endpoints
-- `DELETE /api/v1/user/links/:linkId`
+- `DELETE /v1/user/links/:linkId`
 
 ## Authentication
 - Requires JWT token in Authorization header
@@ -35,7 +35,7 @@ This feature allows authenticated users to remove personal links from their prof
 
 ### Remove a link
 ```bash
-DELETE /api/v1/user/links/123e4567-e89b-12d3-a456-426614174000
+DELETE /v1/user/links/123e4567-e89b-12d3-a456-426614174000
 Authorization: Bearer <token>
 ```
 

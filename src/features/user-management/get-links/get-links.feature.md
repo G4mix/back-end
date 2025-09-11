@@ -4,7 +4,7 @@
 This feature allows authenticated users to retrieve their personal links or view another user's public links.
 
 ## Endpoints
-- `GET /api/v1/user/links`
+- `GET /v1/user/links`
 
 ## Authentication
 - Requires JWT token in Authorization header
@@ -49,12 +49,12 @@ This feature allows authenticated users to retrieve their personal links or view
 
 ### Get current user's links
 ```bash
-GET /api/v1/user/links
+GET /v1/user/links
 Authorization: Bearer <token>
 ```
 
 ### Get specific user's links
 ```bash
-GET /api/v1/user/links?userId=123e4567-e89b-12d3-a456-426614174000
+GET /v1/user/links?userId=123e4567-e89b-12d3-a456-426614174000
 Authorization: Bearer <token>
 ```

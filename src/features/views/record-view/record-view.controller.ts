@@ -8,7 +8,7 @@ import { ViewRepository } from '@shared/repositories/view.repository'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 
 @injectable()
-@Route('api/v1/views')
+@Route('/v1/views')
 @Tags('Views')
 @Security('jwt')
 export class RecordViewController extends Controller {

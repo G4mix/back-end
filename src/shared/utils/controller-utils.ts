@@ -1,6 +1,6 @@
 import { Controller } from 'tsoa'
 import { Claims, JwtManager } from './jwt-manager'
-import { ApiMessage, messages } from '@shared/constants'
+import { ApiMessage, messages } from '@shared/constants/messages'
 
 export class ControllerUtils {
 	public static getClaimsFromAuthorization(authorization?: string): Partial<Claims> & { message?: ApiMessage; } {

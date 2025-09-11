@@ -9,7 +9,7 @@ import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { CommentRepository } from '@shared/repositories/comment.repository'
 
 @injectable()
-@Route('api/v1/likes')
+@Route('/v1/likes')
 @Tags('Likes')
 @Security('jwt')
 export class ToggleLikeController extends Controller {

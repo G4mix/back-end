@@ -6,7 +6,7 @@ import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { LinkRepository } from '@shared/repositories/link.repository'
 
 @injectable()
-@Route('api/v1/user/links')
+@Route('/v1/user/links')
 @Tags('User Links')
 @Security('jwt')
 export class RemoveLinkController extends Controller {

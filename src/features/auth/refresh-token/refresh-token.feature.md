@@ -16,7 +16,7 @@ Permite que usuários renovem seus tokens de acesso usando o token de refresh v�
 ### Cenário: Renovação de token bem-sucedida
 ```gherkin
 Dado que tenho um token de refresh válido
-Quando envio uma requisição POST para "/api/v1/auth/refresh-token" com:
+Quando envio uma requisição POST para "/v1/auth/refresh-token" com:
   | Campo | Valor |
   | token | "valid_refresh_token" |
 Então devo receber uma resposta 200 com:
@@ -30,7 +30,7 @@ E o token de refresh deve ser atualizado no banco de dados
 ### Cenário: Renovar com token inválido
 ```gherkin
 Dado que tenho um token de refresh inválido
-Quando envio uma requisição POST para "/api/v1/auth/refresh-token" com:
+Quando envio uma requisição POST para "/v1/auth/refresh-token" com:
   | Campo | Valor |
   | token | "invalid_token" |
 Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
@@ -39,7 +39,7 @@ Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
 ### Cenário: Renovar com token expirado
 ```gherkin
 Dado que tenho um token de refresh expirado
-Quando envio uma requisição POST para "/api/v1/auth/refresh-token" com:
+Quando envio uma requisição POST para "/v1/auth/refresh-token" com:
   | Campo | Valor |
   | token | "expired_token" |
 Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
@@ -48,7 +48,7 @@ Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
 ### Cenário: Renovar token para usuário inexistente
 ```gherkin
 Dado que tenho um token para um usuário inexistente
-Quando envio uma requisição POST para "/api/v1/auth/refresh-token" com:
+Quando envio uma requisição POST para "/v1/auth/refresh-token" com:
   | Campo | Valor |
   | token | "token_for_deleted_user" |
 Então devo receber uma resposta 404 com erro "USER_NOT_FOUND"
@@ -56,7 +56,7 @@ Então devo receber uma resposta 404 com erro "USER_NOT_FOUND"
 
 ### Cenário: Renovar token sem campo token
 ```gherkin
-Quando envio uma requisição POST para "/api/v1/auth/refresh-token" com:
+Quando envio uma requisição POST para "/v1/auth/refresh-token" com:
   | Campo | Valor |
   | token | "" |
 Então devo receber uma resposta 400 com erro de validação

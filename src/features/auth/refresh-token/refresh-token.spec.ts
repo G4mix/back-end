@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -22,7 +22,7 @@ describe('Refresh Token Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('POST /api/v1/auth/refresh-token', () => {
+	describe('POST /v1/auth/refresh-token', () => {
 		it('should refresh token successfully with valid refresh token', async () => {
 			// Arrange
 			const refreshTokenData = {
@@ -57,7 +57,7 @@ describe('Refresh Token Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/auth/refresh-token', refreshTokenData)
+			const response = await httpClient.post('/v1/auth/refresh-token', refreshTokenData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -73,7 +73,7 @@ describe('Refresh Token Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+			await expect(httpClient.post('/v1/auth/refresh-token', refreshTokenData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -100,7 +100,7 @@ describe('Refresh Token Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+			await expect(httpClient.post('/v1/auth/refresh-token', refreshTokenData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -127,7 +127,7 @@ describe('Refresh Token Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+			await expect(httpClient.post('/v1/auth/refresh-token', refreshTokenData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -164,7 +164,7 @@ describe('Refresh Token Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+			await expect(httpClient.post('/v1/auth/refresh-token', refreshTokenData))
 				.rejects.toMatchObject({
 					response: {
 						status: 403,
@@ -191,7 +191,7 @@ describe('Refresh Token Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/auth/refresh-token', refreshTokenData))
+			await expect(httpClient.post('/v1/auth/refresh-token', refreshTokenData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

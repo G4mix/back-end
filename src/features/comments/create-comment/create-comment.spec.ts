@@ -42,7 +42,7 @@ describe('Create Comment Integration Tests', () => {
 			}
 		})
 		
-		const signupResponse = await httpClient.post('/api/v1/auth/signup', userData)
+		const signupResponse = await httpClient.post('/v1/auth/signup', userData)
 		authToken = signupResponse.data.accessToken
 		httpClient.setAuthToken(authToken)
 		
@@ -83,7 +83,7 @@ describe('Create Comment Integration Tests', () => {
 			}
 		})
 		
-		await httpClient.post('/api/v1/ideas', ideaData)
+		await httpClient.post('/v1/ideas', ideaData)
 	})
 
 	afterAll(async () => {
@@ -96,7 +96,7 @@ describe('Create Comment Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('POST /api/v1/comments', () => {
+	describe('POST /v1/comments', () => {
 		it('should create comment successfully with valid data', async () => {
 			// Arrange
 			const commentData = TestData.createComment({ ideaId })
@@ -134,7 +134,7 @@ describe('Create Comment Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/comments', commentData)
+			const response = await httpClient.post('/v1/comments', commentData)
 
 			// Assert
 			expect(response.status).toBe(201)
@@ -150,7 +150,7 @@ describe('Create Comment Integration Tests', () => {
 			const commentData = TestData.createComment({ ideaId, content: '' })
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/comments', commentData))
+			await expect(httpClient.post('/v1/comments', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -166,7 +166,7 @@ describe('Create Comment Integration Tests', () => {
 			const commentData = TestData.createComment({ ideaId: 'invalid-uuid' })
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/comments', commentData))
+			await expect(httpClient.post('/v1/comments', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -183,7 +183,7 @@ describe('Create Comment Integration Tests', () => {
 			const clientWithoutAuth = new HttpClient(baseUrl)
 
 			// Act & Assert
-			await expect(clientWithoutAuth.post('/api/v1/comments', commentData))
+			await expect(clientWithoutAuth.post('/v1/comments', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -208,7 +208,7 @@ describe('Create Comment Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/comments', commentData))
+			await expect(httpClient.post('/v1/comments', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -233,7 +233,7 @@ describe('Create Comment Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/comments', commentData))
+			await expect(httpClient.post('/v1/comments', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

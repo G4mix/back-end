@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -27,7 +27,7 @@ describe('Get Following Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('GET /api/v1/follow/following/:userId', () => {
+	describe('GET /v1/follow/following/:userId', () => {
 		it('should get following with pagination successfully', async () => {
 			// Arrange
 			const userId = TestData.generateUUID()
@@ -77,7 +77,7 @@ describe('Get Following Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.get(`/api/v1/follow/following/${userId}`, {
+			const response = await httpClient.get(`/v1/follow/following/${userId}`, {
 				page: 0,
 				limit: 10
 			})
@@ -92,7 +92,7 @@ describe('Get Following Integration Tests', () => {
 
 		it('should return validation error for invalid user ID', async () => {
 			// Act & Assert
-			await expect(httpClient.get('/api/v1/follow/following/invalid-uuid'))
+			await expect(httpClient.get('/v1/follow/following/invalid-uuid'))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -108,7 +108,7 @@ describe('Get Following Integration Tests', () => {
 			const userId = TestData.generateUUID()
 
 			// Act & Assert
-			await expect(httpClient.get(`/api/v1/follow/following/${userId}`, { page: -1 }))
+			await expect(httpClient.get(`/v1/follow/following/${userId}`, { page: -1 }))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -124,7 +124,7 @@ describe('Get Following Integration Tests', () => {
 			const userId = TestData.generateUUID()
 
 			// Act & Assert
-			await expect(httpClient.get(`/api/v1/follow/following/${userId}`, { limit: 200 }))
+			await expect(httpClient.get(`/v1/follow/following/${userId}`, { limit: 200 }))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -150,7 +150,7 @@ describe('Get Following Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.get(`/api/v1/follow/following/${userId}`, {
+			const response = await httpClient.get(`/v1/follow/following/${userId}`, {
 				page: 0,
 				limit: 10
 			})
@@ -210,7 +210,7 @@ describe('Get Following Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.get(`/api/v1/follow/following/${userId}`, {
+			const response = await httpClient.get(`/v1/follow/following/${userId}`, {
 				page: 0,
 				limit: 10
 			})
@@ -236,7 +236,7 @@ describe('Get Following Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.get(`/api/v1/follow/following/${userId}`, { page: 0, limit: 10 }))
+			await expect(httpClient.get(`/v1/follow/following/${userId}`, { page: 0, limit: 10 }))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

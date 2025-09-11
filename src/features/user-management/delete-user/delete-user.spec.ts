@@ -1,6 +1,8 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
+import { TestTokens } from '@test/helpers/test-tokens'
+import { container } from 'tsyringe'
 
 describe('Delete User Integration Tests', () => {
 	let httpClient: HttpClient
@@ -8,18 +10,13 @@ describe('Delete User Integration Tests', () => {
 	let authToken: string
 
 	beforeAll(async () => {
-		// Inicia o servidor real
-		baseUrl = await IntegrationTestSetup.startServer()
+		// Usa o servidor global
+		baseUrl = IntegrationTestSetup.getBaseUrl()
 		httpClient = new HttpClient(baseUrl)
 		
-		// Simula login para obter token
-		authToken = TestData.generateFakeToken()
+		// Gera token válido usando o helper
+		authToken = TestTokens.generateValidToken()
 		httpClient.setAuthToken(authToken)
-	})
-
-	afterAll(async () => {
-		// Para o servidor
-		await IntegrationTestSetup.stopServer()
 	})
 
 	beforeEach(() => {
@@ -27,7 +24,7 @@ describe('Delete User Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('DELETE /api/v1/users', () => {
+	describe('DELETE /v1/users', () => {
 		it('should delete user successfully', async () => {
 			// Arrange
 			const mockUser = {
@@ -42,26 +39,22 @@ describe('Delete User Integration Tests', () => {
 			}
 			
 			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findById: jest.fn().mockResolvedValue(mockUser),
-						delete: jest.fn().mockResolvedValue({
-							id: mockUser.id
-						})
-					}
-				}
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
+			mockPrismaClient.user.delete.mockResolvedValue({
+				id: mockUser.id
 			})
 
 			// Mock do S3 para deletar arquivos
-			IntegrationTestSetup.setupMocks({
-				s3: {
-					send: jest.fn().mockResolvedValue({})
-				}
-			})
+			const mockS3Client = container.resolve('S3Client') as any
+			mockS3Client.send.mockResolvedValue({})
+			
+			// Mock do S3Gateway
+			const mockS3Gateway = container.resolve('S3Gateway') as any
+			jest.spyOn(mockS3Gateway, 'deleteFile').mockResolvedValue({})
 
 			// Act
-			const response = await httpClient.delete('/api/v1/users')
+			const response = await httpClient.delete('/v1/users')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -82,19 +75,18 @@ describe('Delete User Integration Tests', () => {
 			}
 			
 			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findById: jest.fn().mockResolvedValue(mockUser),
-						delete: jest.fn().mockResolvedValue({
-							id: mockUser.id
-						})
-					}
-				}
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
+			mockPrismaClient.user.delete.mockResolvedValue({
+				id: mockUser.id
 			})
 
+			// Mock do S3Gateway
+			const mockS3Gateway = container.resolve('S3Gateway') as any
+			jest.spyOn(mockS3Gateway, 'deleteFile').mockResolvedValue({})
+
 			// Act
-			const response = await httpClient.delete('/api/v1/users')
+			const response = await httpClient.delete('/v1/users')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -106,7 +98,7 @@ describe('Delete User Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.delete('/api/v1/users'))
+			await expect(httpClient.delete('/v1/users'))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -119,17 +111,14 @@ describe('Delete User Integration Tests', () => {
 
 		it('should return USER_NOT_FOUND when user does not exist', async () => {
 			// Arrange
-			// Mock do Prisma para retornar null
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findById: jest.fn().mockResolvedValue(null)
-					}
-				}
-			})
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
+			
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
-			await expect(httpClient.delete('/api/v1/users'))
+			await expect(httpClient.delete('/v1/users'))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -142,6 +131,9 @@ describe('Delete User Integration Tests', () => {
 
 		it('should handle S3 errors gracefully', async () => {
 			// Arrange
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
+			
 			const mockUser = {
 				id: TestData.generateUUID(),
 				username: 'testuser',
@@ -154,26 +146,22 @@ describe('Delete User Integration Tests', () => {
 			}
 			
 			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findById: jest.fn().mockResolvedValue(mockUser),
-						delete: jest.fn().mockResolvedValue({
-							id: mockUser.id
-						})
-					}
-				}
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
+			mockPrismaClient.user.delete.mockResolvedValue({
+				id: mockUser.id
 			})
 
-			// Mock do S3 para retornar erro
-			IntegrationTestSetup.setupMocks({
-				s3: {
-					send: jest.fn().mockRejectedValue(new Error('S3 service unavailable'))
-				}
-			})
+			// Mock do S3 para simular erro
+			const mockS3Client = container.resolve('S3Client') as any
+			mockS3Client.send.mockRejectedValue(new Error('S3 Error'))
+			
+			// Mock do S3Gateway
+			const mockS3Gateway = container.resolve('S3Gateway') as any
+			jest.spyOn(mockS3Gateway, 'deleteFile').mockRejectedValue(new Error('S3 Error'))
 
 			// Act & Assert
-			await expect(httpClient.delete('/api/v1/users'))
+			await expect(httpClient.delete('/v1/users'))
 				.rejects.toMatchObject({
 					response: {
 						status: 500
@@ -183,17 +171,14 @@ describe('Delete User Integration Tests', () => {
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
-			// Mock do Prisma para retornar erro
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findById: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-					}
-				}
-			})
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
+			
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockRejectedValue(new Error('Database error'))
 
 			// Act & Assert
-			await expect(httpClient.delete('/api/v1/users'))
+			await expect(httpClient.delete('/v1/users'))
 				.rejects.toMatchObject({
 					response: {
 						status: 500
@@ -203,6 +188,9 @@ describe('Delete User Integration Tests', () => {
 
 		it('should delete user with all related data', async () => {
 			// Arrange
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
+			
 			const mockUser = {
 				id: TestData.generateUUID(),
 				username: 'testuser',
@@ -215,26 +203,22 @@ describe('Delete User Integration Tests', () => {
 			}
 			
 			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findById: jest.fn().mockResolvedValue(mockUser),
-						delete: jest.fn().mockResolvedValue({
-							id: mockUser.id
-						})
-					}
-				}
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
+			mockPrismaClient.user.delete.mockResolvedValue({
+				id: mockUser.id
 			})
 
-			// Mock do S3
-			IntegrationTestSetup.setupMocks({
-				s3: {
-					send: jest.fn().mockResolvedValue({})
-				}
-			})
+			// Mock do S3 para deletar arquivos
+			const mockS3Client = container.resolve('S3Client') as any
+			mockS3Client.send.mockResolvedValue({})
+			
+			// Mock do S3Gateway
+			const mockS3Gateway = container.resolve('S3Gateway') as any
+			jest.spyOn(mockS3Gateway, 'deleteFile').mockResolvedValue({})
 
 			// Act
-			const response = await httpClient.delete('/api/v1/users')
+			const response = await httpClient.delete('/v1/users')
 
 			// Assert
 			expect(response.status).toBe(200)

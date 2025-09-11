@@ -1,136 +1,294 @@
-import { createTestApp } from '@test/setup/test-app'
-import { App } from '@config/app'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { TestTokens } from '@test/helpers/test-tokens'
-import request from 'supertest'
+import { HttpClient } from '@test/helpers/http-client'
+import { container } from 'tsyringe'
 
 describe('Delete Idea Integration Tests', () => {
-	let app: App
-	let server: any
+	let httpClient: HttpClient
 	let authToken: string
 
-	beforeEach(async () => {
-		app = await createTestApp()
-		server = app.getInstance()
+	beforeAll(async () => {
+		// Usa o servidor global
+		const baseUrl = IntegrationTestSetup.getBaseUrl()
+		httpClient = new HttpClient(baseUrl)
 
-		// Gera token JWT válido para testes
+		// Gera token válido usando o helper
 		authToken = TestTokens.generateValidToken()
+		httpClient.setAuthToken(authToken)
 	})
 
-	afterEach(async () => {
-		if (app) {
-			app.stop()
-		}
+	beforeEach(() => {
+		// Limpa mocks antes de cada teste
+		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('DELETE /api/v1/ideas/:id', () => {
+	describe('DELETE /v1/ideas/:id', () => {
 		it('should delete idea successfully', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+
+			// Mock da ideia existente
+			const existingIdea = {
+				id: ideaId,
+				title: 'Test Idea',
+				description: 'Test Description',
+				authorId: 'profile-123', // Mesmo autor do usuário logado
+				created_at: new Date(),
+				updated_at: new Date()
+			}
+
+			// Mock do Prisma
+			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
+			mockPrismaClient.idea.delete.mockResolvedValue(existingIdea)
+
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
+			jest.spyOn(mockIdeaRepository, 'delete').mockResolvedValue(existingIdea)
+
 			// Act
-			const response = await request(server)
-				.delete(`/api/v1/ideas/${ideaId}`)
-				.set('Authorization', `Bearer ${authToken}`)
+			const response = await httpClient.delete(`/v1/ideas/${ideaId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.body.message).toBe('IDEA_DELETED')
+			expect(response.data).toBe('Idea deleted successfully')
 		})
 
 		it('should return validation error for invalid UUID', async () => {
 			// Arrange
 			const invalidId = 'invalid-uuid'
 
-			// Act
-			const response = await request(server)
-				.delete(`/api/v1/ideas/${invalidId}`)
-				.set('Authorization', `Bearer ${authToken}`)
-
-			// Assert
-			expect(response.status).toBe(400)
-			expect(response.body.message).toBe('INVALID_IDEA_ID')
+			// Act & Assert
+			await expect(httpClient.delete(`/v1/ideas/${invalidId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_IDEA_ID'
+						}
+					}
+				})
 		})
 
 		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
-			// Act
-			const response = await request(server)
-				.delete(`/api/v1/ideas/${ideaId}`)
-
-			// Assert
-			expect(response.status).toBe(401)
-			expect(response.body.message).toBe('UNAUTHORIZED')
+			// Act & Assert
+			httpClient.setAuthToken('') // Remove token
+			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED'
+						}
+					}
+				})
 		})
 
 		it('should return IDEA_NOT_FOUND when idea does not exist', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
-			// Act
-			const response = await request(server)
-				.delete(`/api/v1/ideas/${ideaId}`)
-				.set('Authorization', `Bearer ${authToken}`)
+			// Define token válido para este teste
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
 
-			// Assert
-			expect(response.status).toBe(404)
-			expect(response.body.message).toBe('IDEA_NOT_FOUND')
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+
+			// Mock da ideia como null (não encontrada)
+			mockPrismaClient.idea.findUnique.mockResolvedValue(null)
+
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(null)
+
+			// Act & Assert
+			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: 'IDEA_NOT_FOUND'
+					}
+				})
 		})
 
 		it('should return FORBIDDEN when user is not the author', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
-			// Act
-			const response = await request(server)
-				.delete(`/api/v1/ideas/${ideaId}`)
-				.set('Authorization', `Bearer ${authToken}`)
+			// Define token válido para este teste
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
 
-			// Assert
-			expect(response.status).toBe(403)
-			expect(response.body.message).toBe('FORBIDDEN')
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+
+			// Mock da ideia com autor diferente
+			const existingIdea = {
+				id: ideaId,
+				title: 'Test Idea',
+				description: 'Test Description',
+				authorId: 'different-user-id', // Autor diferente
+				created_at: new Date(),
+				updated_at: new Date()
+			}
+
+			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
+
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
+
+			// Act & Assert
+			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 403,
+						data: 'FORBIDDEN'
+					}
+				})
 		})
 
 		it('should delete idea with all related data', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
+				}
+			})
+
+			// Mock da ideia existente
+			const existingIdea = {
+				id: ideaId,
+				title: 'Test Idea',
+				description: 'Test Description',
+				authorId: 'profile-123', // Mesmo autor do usuário logado
+				created_at: new Date(),
+				updated_at: new Date()
+			}
+
+			// Mock do Prisma
+			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
+			mockPrismaClient.idea.delete.mockResolvedValue(existingIdea)
+
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
+			jest.spyOn(mockIdeaRepository, 'delete').mockResolvedValue(existingIdea)
+
 			// Act
-			const response = await request(server)
-				.delete(`/api/v1/ideas/${ideaId}`)
-				.set('Authorization', `Bearer ${authToken}`)
+			const response = await httpClient.delete(`/v1/ideas/${ideaId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.body.message).toBe('IDEA_DELETED')
+			expect(response.data).toBe('Idea deleted successfully')
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
-			// Mock do Prisma para retornar erro
-			const mockPrisma = require('@prisma/client').PrismaClient
-			const originalMock = mockPrisma.mockImplementation
-			
-			mockPrisma.mockImplementation(() => ({
-				...mockPrisma(),
-				idea: {
-					findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+			// Define token válido para este teste
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
+
+			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+
+			// Mock do usuário para o middleware de segurança
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Test User'
 				}
-			}))
+			})
 
-			// Act
-			const response = await request(server)
-				.delete(`/api/v1/ideas/${ideaId}`)
-				.set('Authorization', `Bearer ${authToken}`)
+			// Mock de erro no banco
+			mockPrismaClient.idea.findUnique.mockRejectedValue(new Error('Database connection failed'))
 
-			// Assert
-			expect(response.status).toBe(500)
+			// Mock do IdeaRepository
+			const mockIdeaRepository = container.resolve('IdeaRepository') as any
+			jest.spyOn(mockIdeaRepository, 'findById').mockRejectedValue(new Error('Database connection failed'))
 
-			// Restore original mock
-			mockPrisma.mockImplementation = originalMock
+			// Act & Assert
+			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
+					}
+				})
 		})
 	})
 })

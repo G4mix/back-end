@@ -6,7 +6,7 @@ import { CommentRepository } from '@shared/repositories/comment.repository'
 import { GetCommentsResponse } from './get-comments.dto'
 
 @injectable()
-@Route('api/v1/comment')
+@Route('/v1/comment')
 @Tags('Comment')
 @Security('jwt')
 export class GetCommentsController extends Controller {

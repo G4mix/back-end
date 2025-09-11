@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -27,7 +27,7 @@ describe('Remove Link Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('DELETE /api/v1/users/links/:linkId', () => {
+	describe('DELETE /v1/users/links/:linkId', () => {
 		it('should remove personal link successfully', async () => {
 			// Arrange
 			const linkId = TestData.generateUUID()
@@ -49,7 +49,7 @@ describe('Remove Link Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.delete(`/api/v1/users/links/${linkId}`)
+			const response = await httpClient.delete(`/v1/users/links/${linkId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -58,7 +58,7 @@ describe('Remove Link Integration Tests', () => {
 
 		it('should return validation error for invalid link ID', async () => {
 			// Act & Assert
-			await expect(httpClient.delete('/api/v1/users/links/invalid-uuid'))
+			await expect(httpClient.delete('/v1/users/links/invalid-uuid'))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -75,7 +75,7 @@ describe('Remove Link Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.delete(`/api/v1/users/links/${linkId}`))
+			await expect(httpClient.delete(`/v1/users/links/${linkId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -100,7 +100,7 @@ describe('Remove Link Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.delete(`/api/v1/users/links/${linkId}`))
+			await expect(httpClient.delete(`/v1/users/links/${linkId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -129,7 +129,7 @@ describe('Remove Link Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.delete(`/api/v1/users/links/${linkId}`))
+			await expect(httpClient.delete(`/v1/users/links/${linkId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 403,
@@ -154,7 +154,7 @@ describe('Remove Link Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.delete(`/api/v1/users/links/${linkId}`))
+			await expect(httpClient.delete(`/v1/users/links/${linkId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

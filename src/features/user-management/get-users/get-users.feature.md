@@ -11,7 +11,7 @@ As a user, I want to see a list of all users so that I can discover and connect 
 ### Scenario: Get users with default pagination
 ```gherkin
 Given the API is running
-When I make a GET request to "/api/v1/users"
+When I make a GET request to "/v1/users"
 Then I should receive a 200 status code
 And the response should contain a list of users
 And the response should include pagination information
@@ -22,7 +22,7 @@ And the default limit should be 10
 ### Scenario: Get users with custom pagination
 ```gherkin
 Given the API is running
-When I make a GET request to "/api/v1/users?page=2&limit=5"
+When I make a GET request to "/v1/users?page=2&limit=5"
 Then I should receive a 200 status code
 And the response should contain at most 5 users
 And the pagination should show page 2
@@ -32,7 +32,7 @@ And the pagination should show page 2
 ```gherkin
 Given the API is running
 And there are users with usernames "john_doe" and "jane_smith"
-When I make a GET request to "/api/v1/users?search=john"
+When I make a GET request to "/v1/users?search=john"
 Then I should receive a 200 status code
 And the response should contain users matching "john"
 And the search should be case-insensitive
@@ -41,7 +41,7 @@ And the search should be case-insensitive
 ### Scenario: Handle empty search results
 ```gherkin
 Given the API is running
-When I make a GET request to "/api/v1/users?search=nonexistent"
+When I make a GET request to "/v1/users?search=nonexistent"
 Then I should receive a 200 status code
 And the response should contain an empty users array
 And the total count should be 0
@@ -49,7 +49,7 @@ And the total count should be 0
 
 ## API Endpoint
 - **Method**: GET
-- **Path**: `/api/v1/users`
+- **Path**: `/v1/users`
 - **Query Parameters**:
   - `page` (optional): Page number (default: 0)
   - `limit` (optional): Number of users per page (default: 10, max: 100)

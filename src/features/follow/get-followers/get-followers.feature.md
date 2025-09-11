@@ -4,7 +4,7 @@
 This feature allows authenticated users to retrieve a paginated list of followers for a specific user profile.
 
 ## Endpoints
-- `GET /api/v1/follow/followers`
+- `GET /v1/follow/followers`
 
 ## Authentication
 - Requires JWT token in Authorization header
@@ -59,12 +59,12 @@ This feature allows authenticated users to retrieve a paginated list of follower
 
 ### Get first page of followers
 ```bash
-GET /api/v1/follow/followers?userId=123e4567-e89b-12d3-a456-426614174000
+GET /v1/follow/followers?userId=123e4567-e89b-12d3-a456-426614174000
 Authorization: Bearer <token>
 ```
 
 ### Get second page with custom limit
 ```bash
-GET /api/v1/follow/followers?userId=123e4567-e89b-12d3-a456-426614174000&page=1&limit=5
+GET /v1/follow/followers?userId=123e4567-e89b-12d3-a456-426614174000&page=1&limit=5
 Authorization: Bearer <token>
 ```

@@ -13,7 +13,7 @@ export const socialLoginRequests = {
 					client_secret: env.GOOGLE_CLIENT_SECRET,
 					code,
 					codeVerifier,
-					redirect_uri: `${env.REDIRECT_URL}/api/v1/auth/callback/google`,
+					redirect_uri: `${env.REDIRECT_URL}/v1/auth/callback/google`,
 					grant_type: 'authorization_code'
 				} as any).toString(),
 			})
@@ -49,7 +49,7 @@ export const socialLoginRequests = {
 					client_id: env.GITHUB_CLIENT_ID,
 					client_secret: env.GITHUB_CLIENT_SECRET,
 					code,
-					redirect_uri: `${env.REDIRECT_URL}/api/v1/auth/callback/github`
+					redirect_uri: `${env.REDIRECT_URL}/v1/auth/callback/github`
 				}).toString(),
 			})
       
@@ -105,7 +105,7 @@ export const socialLoginRequests = {
 					code,
 					client_id: env.LINKEDIN_CLIENT_ID,
 					client_secret: env.LINKEDIN_CLIENT_SECRET,
-					redirect_uri: `${env.REDIRECT_URL}/api/v1/auth/callback/linkedin`
+					redirect_uri: `${env.REDIRECT_URL}/v1/auth/callback/linkedin`
 				} as any).toString()
 			})
       

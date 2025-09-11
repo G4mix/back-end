@@ -37,6 +37,12 @@ export class HttpClient {
 			},
 			(error) => {
 				console.log(`❌ ${error.response?.status || 'ERROR'} ${error.config?.method?.toUpperCase()} ${error.config?.url}`)
+				// Se for um erro de conexão, retorna um erro mais específico
+				if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+					const connectionError = new Error('Connection refused')
+					connectionError.name = 'ConnectionError'
+					return Promise.reject(connectionError)
+				}
 				return Promise.reject(error)
 			}
 		)

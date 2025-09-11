@@ -7,7 +7,7 @@ import { LinkRepository } from '@shared/repositories/link.repository'
 import { AddLinkInput, AddLinkResponse } from './add-link.dto'
 
 @injectable()
-@Route('api/v1/user/links')
+@Route('/v1/user/links')
 @Tags('User Links')
 @Security('jwt')
 export class AddLinkController extends Controller {

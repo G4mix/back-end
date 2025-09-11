@@ -16,7 +16,7 @@ Permite que usuários autenticados atualizem suas informações pessoais, inclui
 ### Cenário: Atualização de usuário bem-sucedida com todos os campos
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição PUT para "/api/v1/users/{userId}" com:
+Quando envio uma requisição PUT para "/v1/users/{userId}" com:
   | Campo | Valor |
   | name  | "João Silva" |
   | bio   | "Desenvolvedor Full Stack" |
@@ -31,7 +31,7 @@ E os dados do usuário devem ser atualizados no banco de dados
 ### Cenário: Atualização de usuário bem-sucedida com dados parciais
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição PUT para "/api/v1/users/{userId}" com:
+Quando envio uma requisição PUT para "/v1/users/{userId}" com:
   | Campo | Valor |
   | name  | "João Silva" |
 Então devo receber uma resposta 200
@@ -41,7 +41,7 @@ E apenas o campo name deve ser atualizado
 ### Cenário: Atualizar usuário com tamanho de arquivo inválido
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição PUT para "/api/v1/users/{userId}" com:
+Quando envio uma requisição PUT para "/v1/users/{userId}" com:
   | Campo | Valor |
   | icon  | [arquivo maior que 5MB] |
 Então devo receber uma resposta 400 com erro "FILE_TOO_LARGE"
@@ -50,7 +50,7 @@ Então devo receber uma resposta 400 com erro "FILE_TOO_LARGE"
 ### Cenário: Atualizar usuário com tipo de arquivo não suportado
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição PUT para "/api/v1/users/{userId}" com:
+Quando envio uma requisição PUT para "/v1/users/{userId}" com:
   | Campo | Valor |
   | icon  | [arquivo PDF] |
 Então devo receber uma resposta 400 com erro "UNSUPPORTED_FILE_TYPE"
@@ -59,21 +59,21 @@ Então devo receber uma resposta 400 com erro "UNSUPPORTED_FILE_TYPE"
 ### Cenário: Atualizar usuário sem autenticação
 ```gherkin
 Dado que não estou autenticado
-Quando envio uma requisição PUT para "/api/v1/users/{userId}"
+Quando envio uma requisição PUT para "/v1/users/{userId}"
 Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
 ```
 
 ### Cenário: Atualizar dados de outro usuário
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição PUT para "/api/v1/users/{anotherUserId}"
+Quando envio uma requisição PUT para "/v1/users/{anotherUserId}"
 Então devo receber uma resposta 403 com erro "FORBIDDEN"
 ```
 
 ### Cenário: Atualizar usuário inexistente
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição PUT para "/api/v1/users/{nonExistentUserId}"
+Quando envio uma requisição PUT para "/v1/users/{nonExistentUserId}"
 Então devo receber uma resposta 404 com erro "USER_NOT_FOUND"
 ```
 

@@ -359,7 +359,7 @@ export function RegisterRoutes(app: Router) {
 
 
     
-        app.post('/api/v1/views/record',
+        app.post('/v1/views/record',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(RecordViewController)),
             ...(fetchMiddlewares<RequestHandler>(RecordViewController.prototype.recordView)),
@@ -396,7 +396,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.patch('/api/v1/users',
+        app.patch('/v1/users',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(UpdateUserController)),
             ...(fetchMiddlewares<RequestHandler>(UpdateUserController.prototype.updateUser)),
@@ -433,7 +433,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.delete('/api/v1/user/links/:linkId',
+        app.delete('/v1/user/links/:linkId',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(RemoveLinkController)),
             ...(fetchMiddlewares<RequestHandler>(RemoveLinkController.prototype.removeLink)),
@@ -470,7 +470,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/users',
+        app.get('/v1/users',
             ...(fetchMiddlewares<RequestHandler>(GetUsersController)),
             ...(fetchMiddlewares<RequestHandler>(GetUsersController.prototype.getUsers)),
 
@@ -507,7 +507,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/users/:userId',
+        app.get('/v1/users/:userId',
             ...(fetchMiddlewares<RequestHandler>(GetUserByIdController)),
             ...(fetchMiddlewares<RequestHandler>(GetUserByIdController.prototype.getUserById)),
 
@@ -542,7 +542,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/user/links',
+        app.get('/v1/user/links',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(GetLinksController)),
             ...(fetchMiddlewares<RequestHandler>(GetLinksController.prototype.getLinks)),
@@ -579,7 +579,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.delete('/api/v1/users',
+        app.delete('/v1/users',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(DeleteUserController)),
             ...(fetchMiddlewares<RequestHandler>(DeleteUserController.prototype.deleteUser)),
@@ -615,7 +615,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/user/links',
+        app.post('/v1/user/links',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(AddLinkController)),
             ...(fetchMiddlewares<RequestHandler>(AddLinkController.prototype.addLink)),
@@ -652,7 +652,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/likes/toggle',
+        app.post('/v1/likes/toggle',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ToggleLikeController)),
             ...(fetchMiddlewares<RequestHandler>(ToggleLikeController.prototype.toggleLike)),
@@ -689,7 +689,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.patch('/api/v1/ideas/:id',
+        app.patch('/v1/ideas/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(UpdateIdeaController)),
             ...(fetchMiddlewares<RequestHandler>(UpdateIdeaController.prototype.updateIdea)),
@@ -727,7 +727,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/ideas',
+        app.get('/v1/ideas',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(GetIdeasController)),
             ...(fetchMiddlewares<RequestHandler>(GetIdeasController.prototype.getIdeas)),
@@ -770,7 +770,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/ideas/:id',
+        app.get('/v1/ideas/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(GetIdeaByIdController)),
             ...(fetchMiddlewares<RequestHandler>(GetIdeaByIdController.prototype.getIdeaById)),
@@ -807,7 +807,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.delete('/api/v1/ideas/:id',
+        app.delete('/v1/ideas/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(DeleteIdeaController)),
             ...(fetchMiddlewares<RequestHandler>(DeleteIdeaController.prototype.deleteIdea)),
@@ -844,7 +844,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/ideas',
+        app.post('/v1/ideas',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(CreateIdeaController)),
             ...(fetchMiddlewares<RequestHandler>(CreateIdeaController.prototype.createIdea)),
@@ -881,7 +881,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/follow/toggle',
+        app.post('/v1/follow/toggle',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ToggleFollowController)),
             ...(fetchMiddlewares<RequestHandler>(ToggleFollowController.prototype.toggleFollow)),
@@ -918,7 +918,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/follow/following',
+        app.get('/v1/follow/following',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(GetFollowingController)),
             ...(fetchMiddlewares<RequestHandler>(GetFollowingController.prototype.getFollowing)),
@@ -957,7 +957,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/follow/followers',
+        app.get('/v1/follow/followers',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(GetFollowersController)),
             ...(fetchMiddlewares<RequestHandler>(GetFollowersController.prototype.getFollowers)),
@@ -996,7 +996,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/comment',
+        app.get('/v1/comment',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(GetCommentsController)),
             ...(fetchMiddlewares<RequestHandler>(GetCommentsController.prototype.getComments)),
@@ -1036,7 +1036,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/comment',
+        app.post('/v1/comment',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(CreateCommentController)),
             ...(fetchMiddlewares<RequestHandler>(CreateCommentController.prototype.createComment)),
@@ -1073,7 +1073,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/v1/auth/callback/:provider',
+        app.get('/v1/auth/callback/:provider',
             ...(fetchMiddlewares<RequestHandler>(SocialLoginController)),
             ...(fetchMiddlewares<RequestHandler>(SocialLoginController.prototype.callbackSocialLoginGet)),
 
@@ -1111,7 +1111,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/auth/social-login/:provider',
+        app.post('/v1/auth/social-login/:provider',
             ...(fetchMiddlewares<RequestHandler>(SocialLoginController)),
             ...(fetchMiddlewares<RequestHandler>(SocialLoginController.prototype.socialLogin)),
 
@@ -1147,7 +1147,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/auth/link-new-oauth-provider/:provider',
+        app.post('/v1/auth/link-new-oauth-provider/:provider',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(SocialLoginController)),
             ...(fetchMiddlewares<RequestHandler>(SocialLoginController.prototype.linkNewOAuthProvider)),
@@ -1185,7 +1185,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/auth/signup',
+        app.post('/v1/auth/signup',
             ...(fetchMiddlewares<RequestHandler>(SignupController)),
             ...(fetchMiddlewares<RequestHandler>(SignupController.prototype.signup)),
 
@@ -1220,7 +1220,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/auth/signin',
+        app.post('/v1/auth/signin',
             ...(fetchMiddlewares<RequestHandler>(SigninController)),
             ...(fetchMiddlewares<RequestHandler>(SigninController.prototype.signin)),
 
@@ -1255,7 +1255,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/auth/refresh-token',
+        app.post('/v1/auth/refresh-token',
             ...(fetchMiddlewares<RequestHandler>(RefreshTokenController)),
             ...(fetchMiddlewares<RequestHandler>(RefreshTokenController.prototype.refreshToken)),
 
@@ -1290,7 +1290,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/auth/send-recover-email',
+        app.post('/v1/auth/send-recover-email',
             ...(fetchMiddlewares<RequestHandler>(RecoverEmailController)),
             ...(fetchMiddlewares<RequestHandler>(RecoverEmailController.prototype.sendRecoverEmail)),
 
@@ -1325,7 +1325,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/auth/verify-email-code',
+        app.post('/v1/auth/verify-email-code',
             ...(fetchMiddlewares<RequestHandler>(RecoverEmailController)),
             ...(fetchMiddlewares<RequestHandler>(RecoverEmailController.prototype.verifyEmailCode)),
 
@@ -1360,7 +1360,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/v1/auth/change-password',
+        app.post('/v1/auth/change-password',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(ChangePasswordController)),
             ...(fetchMiddlewares<RequestHandler>(ChangePasswordController.prototype.changePassword)),

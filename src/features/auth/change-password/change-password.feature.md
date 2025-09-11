@@ -15,7 +15,7 @@ Permite que usuários autenticados alterem sua senha atual por uma nova senha.
 ### Cenário: Alteração de senha bem-sucedida
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição POST para "/api/v1/auth/change-password" com:
+Quando envio uma requisição POST para "/v1/auth/change-password" com:
   | Campo | Valor |
   | password | "NewPassword123!" |
 Então devo receber uma resposta 200 com:
@@ -30,7 +30,7 @@ E o token de refresh deve ser atualizado no banco de dados
 ### Cenário: Alterar senha com senha fraca
 ```gherkin
 Dado que sou um usuário autenticado
-Quando envio uma requisição POST para "/api/v1/auth/change-password" com:
+Quando envio uma requisição POST para "/v1/auth/change-password" com:
   | Campo | Valor |
   | password | "weak" |
 Então devo receber uma resposta 400 com erro de validação
@@ -39,14 +39,14 @@ Então devo receber uma resposta 400 com erro de validação
 ### Cenário: Alterar senha sem autenticação
 ```gherkin
 Dado que não estou autenticado
-Quando envio uma requisição POST para "/api/v1/auth/change-password"
+Quando envio uma requisição POST para "/v1/auth/change-password"
 Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
 ```
 
 ### Cenário: Alterar senha para usuário inexistente
 ```gherkin
 Dado que sou um usuário autenticado com token inválido
-Quando envio uma requisição POST para "/api/v1/auth/change-password"
+Quando envio uma requisição POST para "/v1/auth/change-password"
 Então devo receber uma resposta 404 com erro "USER_NOT_FOUND"
 ```
 

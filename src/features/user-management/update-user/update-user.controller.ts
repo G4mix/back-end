@@ -11,7 +11,7 @@ import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { Logger } from '@shared/utils/logger'
 
 @injectable()
-@Route('api/v1/users')
+@Route('/v1/users')
 @Tags('User Management')
 export class UpdateUserController extends Controller {
 	constructor(

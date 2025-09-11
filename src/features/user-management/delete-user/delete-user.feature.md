@@ -12,7 +12,7 @@ As a user, I want to delete my account so that I can remove all my personal data
 ```gherkin
 Given the API is running
 And I am authenticated as user "valid-uuid"
-When I make a DELETE request to "/api/v1/users/valid-uuid"
+When I make a DELETE request to "/v1/users/valid-uuid"
 Then I should receive a 200 status code
 And the response should contain success message "USER_DELETED_SUCCESSFULLY"
 And my user account should be permanently deleted
@@ -24,7 +24,7 @@ And all my associated data should be removed
 ```gherkin
 Given the API is running
 And I am authenticated as user "user-a-uuid"
-When I make a DELETE request to "/api/v1/users/user-b-uuid"
+When I make a DELETE request to "/v1/users/user-b-uuid"
 Then I should receive a 403 status code
 And the response should contain error message "FORBIDDEN"
 And the other user's account should remain unchanged
@@ -34,7 +34,7 @@ And the other user's account should remain unchanged
 ```gherkin
 Given the API is running
 And I am authenticated as user "valid-uuid"
-When I make a DELETE request to "/api/v1/users/non-existent-uuid"
+When I make a DELETE request to "/v1/users/non-existent-uuid"
 Then I should receive a 404 status code
 And the response should contain error message "USER_NOT_FOUND"
 ```
@@ -42,14 +42,14 @@ And the response should contain error message "USER_NOT_FOUND"
 ### Scenario: Delete account without authentication
 ```gherkin
 Given the API is running
-When I make a DELETE request to "/api/v1/users/any-uuid" without authentication
+When I make a DELETE request to "/v1/users/any-uuid" without authentication
 Then I should receive a 401 status code
 And the request should be rejected
 ```
 
 ## API Endpoint
 - **Method**: DELETE
-- **Path**: `/api/v1/users/{userId}`
+- **Path**: `/v1/users/{userId}`
 - **Authentication**: Required (JWT)
 - **Path Parameters**:
   - `userId`: UUID of the user account to delete

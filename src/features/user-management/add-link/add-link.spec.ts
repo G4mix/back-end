@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -27,7 +27,7 @@ describe('Add Link Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('POST /api/v1/users/links', () => {
+	describe('POST /v1/users/links', () => {
 		it('should add personal link successfully with valid URL', async () => {
 			// Arrange
 			const linkData = TestData.createPersonalLink()
@@ -47,7 +47,7 @@ describe('Add Link Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/api/v1/users/links', linkData)
+			const response = await httpClient.post('/v1/users/links', linkData)
 
 			// Assert
 			expect(response.status).toBe(201)
@@ -60,7 +60,7 @@ describe('Add Link Integration Tests', () => {
 			const linkData = TestData.createPersonalLink({ url: 'invalid-url' })
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/users/links', linkData))
+			await expect(httpClient.post('/v1/users/links', linkData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -76,7 +76,7 @@ describe('Add Link Integration Tests', () => {
 			const linkData = TestData.createPersonalLink({ url: 'example.com' })
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/users/links', linkData))
+			await expect(httpClient.post('/v1/users/links', linkData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -92,7 +92,7 @@ describe('Add Link Integration Tests', () => {
 			const linkData = TestData.createPersonalLink({ url: 'http://example.com' })
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/users/links', linkData))
+			await expect(httpClient.post('/v1/users/links', linkData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -110,7 +110,7 @@ describe('Add Link Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/users/links', linkData))
+			await expect(httpClient.post('/v1/users/links', linkData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -127,7 +127,7 @@ describe('Add Link Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/users/links', linkData))
+			await expect(httpClient.post('/v1/users/links', linkData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -152,7 +152,7 @@ describe('Add Link Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/api/v1/users/links', linkData))
+			await expect(httpClient.post('/v1/users/links', linkData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500
@@ -187,7 +187,7 @@ describe('Add Link Integration Tests', () => {
 			// Act & Assert
 			for (const url of validUrls) {
 				const linkData = TestData.createPersonalLink({ url })
-				const response = await httpClient.post('/api/v1/users/links', linkData)
+				const response = await httpClient.post('/v1/users/links', linkData)
 				expect(response.status).toBe(201)
 			}
 		})
