@@ -34,12 +34,8 @@ export class S3Gateway {
 			}
 		})
 
-		try {
-			await this.s3.send(command)
-			return { success: true }
-		} catch (err) {
-			throw err
-		}
+		await this.s3.send(command)
+		return { success: true }
 	}
 
 	public async createBucket(bucketName: string) {

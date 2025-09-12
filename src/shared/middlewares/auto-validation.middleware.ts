@@ -300,37 +300,37 @@ export class AutoValidationMiddleware {
 		// Se não encontrou mensagem customizada, tenta inferir pelo tipo de erro
 		for (const issue of issues) {
 			switch (issue.code) {
-				case 'invalid_type':
-					if (issue.expected === 'string' && issue.received === 'undefined') {
-						return 'REQUIRED_FIELD'
-					}
-					return 'INVALID_TYPE'
-				case 'too_small':
-					if (issue.type === 'string') {
-						return 'TOO_SHORT'
-					}
-					return 'TOO_SMALL'
-				case 'too_big':
-					if (issue.type === 'string') {
-						return 'TOO_LONG'
-					}
-					return 'TOO_BIG'
-				case 'invalid_string':
-					if (issue.validation === 'email') {
-						return 'INVALID_EMAIL'
-					}
-					if (issue.validation === 'url') {
-						return 'INVALID_URL'
-					}
-					return 'INVALID_STRING'
-				case 'invalid_enum_value':
-					return 'INVALID_ENUM'
-				case 'invalid_literal':
-					return 'INVALID_VALUE'
-				case 'custom':
-					return issue.message || 'CUSTOM_ERROR'
-				default:
-					continue
+			case 'invalid_type':
+				if (issue.expected === 'string' && issue.received === 'undefined') {
+					return 'REQUIRED_FIELD'
+				}
+				return 'INVALID_TYPE'
+			case 'too_small':
+				if (issue.type === 'string') {
+					return 'TOO_SHORT'
+				}
+				return 'TOO_SMALL'
+			case 'too_big':
+				if (issue.type === 'string') {
+					return 'TOO_LONG'
+				}
+				return 'TOO_BIG'
+			case 'invalid_string':
+				if (issue.validation === 'email') {
+					return 'INVALID_EMAIL'
+				}
+				if (issue.validation === 'url') {
+					return 'INVALID_URL'
+				}
+				return 'INVALID_STRING'
+			case 'invalid_enum_value':
+				return 'INVALID_ENUM'
+			case 'invalid_literal':
+				return 'INVALID_VALUE'
+			case 'custom':
+				return issue.message || 'CUSTOM_ERROR'
+			default:
+				continue
 			}
 		}
 
