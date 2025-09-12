@@ -282,7 +282,7 @@ describe('Update Idea Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: 'IDEA_NOT_FOUND'
+						data: { message: 'NOT_FOUNDED_DATA' }
 					}
 				})
 		})
@@ -341,7 +341,7 @@ describe('Update Idea Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 403,
-						data: 'FORBIDDEN'
+						data: { message: 'YOU_ARE_NOT_THE_AUTHOR' }
 					}
 				})
 		})

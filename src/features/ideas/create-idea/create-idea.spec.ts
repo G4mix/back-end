@@ -177,7 +177,7 @@ describe('Create Idea Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 500,
-						data: 'Failed to create idea'
+						data: { message: 'ERROR_WHILE_CHECKING_EMAIL' }
 					}
 				})
 		})

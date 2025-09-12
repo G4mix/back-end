@@ -5,6 +5,7 @@ import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { FollowRepository } from '@shared/repositories/follow.repository'
 import { GetFollowersResponse } from './get-followers.dto'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/follow')
@@ -40,12 +41,12 @@ export class GetFollowersController extends Controller {
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Request() request?: any
-	): Promise<GetFollowersResponse | string> {
+	): Promise<GetFollowersResponse | ErrorResponse> {
 		try {
 			const userProfileId = request?.user?.userProfileId
 			if (!userProfileId) {
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			const queryParams = {
@@ -102,7 +103,7 @@ export class GetFollowersController extends Controller {
 				userProfileId: request.user?.userProfileId 
 			})
 			this.setStatus(500)
-			return 'DATABASE_ERROR'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

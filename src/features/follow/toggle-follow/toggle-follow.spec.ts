@@ -200,7 +200,7 @@ describe('Toggle Follow Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: 'TARGET_NOT_FOUND'
+						data: { message: 'USER_NOT_FOUND' }
 					}
 				})
 		})
@@ -228,7 +228,7 @@ describe('Toggle Follow Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
-						data: 'CANNOT_FOLLOW_SELF'
+						data: { message: 'CANNOT_FOLLOW_SELF' }
 					}
 				})
 		})

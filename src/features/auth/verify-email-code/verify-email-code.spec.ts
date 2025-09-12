@@ -102,7 +102,7 @@ describe('Verify Email Code Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: 'USER_NOT_FOUND'
+						data: { message: 'USER_NOT_FOUND' }
 					}
 				})
 		})
@@ -133,7 +133,7 @@ describe('Verify Email Code Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
-						data: 'CODE_EXPIRED'
+						data: { message: 'CODE_EXPIRED' }
 					}
 				})
 		})
@@ -163,7 +163,7 @@ describe('Verify Email Code Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
-						data: 'CODE_NOT_EQUALS'
+						data: { message: 'CODE_NOT_EQUALS' }
 					}
 				})
 		})

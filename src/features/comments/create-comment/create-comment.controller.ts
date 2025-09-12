@@ -5,6 +5,7 @@ import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { CommentRepository } from '@shared/repositories/comment.repository'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
+import { CommonErrors } from '@shared/utils/error-response'
 
 export interface CreateCommentInput {
 	ideaId: string
@@ -107,7 +108,7 @@ export class CreateCommentController extends Controller {
 			if (!userProfileId) {
 				console.log('CreateCommentController - UNAUTHORIZED - sem userProfileId')
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			// O middleware já validou e processou os dados de entrada
@@ -132,7 +133,7 @@ export class CreateCommentController extends Controller {
 			if (!idea) {
 				console.log('CreateCommentController - IDEA_NOT_FOUND')
 				this.setStatus(404)
-				return 'IDEA_NOT_FOUND'
+				return CommonErrors.IDEA_NOT_FOUND
 			}
 
 			// Validate parent comment if provided
@@ -143,7 +144,7 @@ export class CreateCommentController extends Controller {
 				if (!parentComment) {
 					console.log('CreateCommentController - PARENT_COMMENT_NOT_FOUND')
 					this.setStatus(404)
-					return 'PARENT_COMMENT_NOT_FOUND'
+					return CommonErrors.COMMENT_NOT_FOUND
 				}
 			}
 
@@ -176,7 +177,7 @@ export class CreateCommentController extends Controller {
 			})
 			
 			this.setStatus(500)
-			return 'Failed to create comment'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

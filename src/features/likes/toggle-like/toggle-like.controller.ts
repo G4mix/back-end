@@ -7,6 +7,7 @@ import { ToggleLikeInput, ToggleLikeResponse } from './toggle-like.dto'
 import { LikeRepository } from '@shared/repositories/like.repository'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { CommentRepository } from '@shared/repositories/comment.repository'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/likes')
@@ -84,7 +85,7 @@ export class ToggleLikeController extends Controller {
 	public async toggleLike(
 		@Body() body: ToggleLikeInput,
 		@Request() request: any
-	): Promise<ToggleLikeResponse | string> {
+	): Promise<ToggleLikeResponse | ErrorResponse> {
 		console.log('ToggleLikeController - Método toggleLike chamado')
 		console.log('ToggleLikeController - Body:', body)
 		console.log('ToggleLikeController - Request user:', request.user)
@@ -93,7 +94,7 @@ export class ToggleLikeController extends Controller {
 			const userProfileId = request.user?.userProfileId
 			if (!userProfileId) {
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			const { ideaId, commentId } = body
@@ -110,7 +111,7 @@ export class ToggleLikeController extends Controller {
 				const idea = await this.ideaRepository.findById(ideaId)
 				if (!idea) {
 					this.setStatus(404)
-					return 'IDEA_NOT_FOUND'
+					return CommonErrors.IDEA_NOT_FOUND
 				}
 			}
 
@@ -119,7 +120,7 @@ export class ToggleLikeController extends Controller {
 				const comment = await this.commentRepository.findById(commentId)
 				if (!comment) {
 					this.setStatus(404)
-					return 'COMMENT_NOT_FOUND'
+					return CommonErrors.COMMENT_NOT_FOUND
 				}
 			}
 
@@ -186,7 +187,7 @@ export class ToggleLikeController extends Controller {
 			})
 			
 			this.setStatus(500)
-			return 'DATABASE_ERROR'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

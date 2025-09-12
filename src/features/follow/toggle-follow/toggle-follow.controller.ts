@@ -6,6 +6,7 @@ import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { ToggleFollowInput, ToggleFollowResponse } from './toggle-follow.dto'
 import { FollowRepository } from '@shared/repositories/follow.repository'
 import { UserRepository } from '@shared/repositories/user.repository'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/follow')
@@ -74,13 +75,13 @@ export class ToggleFollowController extends Controller {
 	public async toggleFollow(
 		@Body() body: ToggleFollowInput,
 		@Request() request: any
-	): Promise<ToggleFollowResponse | string> {
+	): Promise<ToggleFollowResponse | ErrorResponse> {
 		try {
 			const userId = request.user?.sub
 			const userProfileId = request.user?.userProfileId
 			if (!userId || !userProfileId) {
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			const { followingId } = body
@@ -97,14 +98,14 @@ export class ToggleFollowController extends Controller {
 			// Prevent self-following
 			if (userProfileId === followingId) {
 				this.setStatus(400)
-				return 'CANNOT_FOLLOW_SELF'
+				return { message: 'CANNOT_FOLLOW_SELF' }
 			}
 
 			// Validate that target user profile exists
 			const targetUser = await this.userRepository.findUserByProfileId({ userProfileId: followingId })
 			if (!targetUser) {
 				this.setStatus(404)
-				return 'TARGET_NOT_FOUND'
+				return CommonErrors.USER_NOT_FOUND
 			}
 
 			// Check if user is already following
@@ -124,7 +125,7 @@ export class ToggleFollowController extends Controller {
 
 				if (unfollowResult === 'FOLLOW_NOT_FOUND') {
 					this.setStatus(404)
-					return 'FOLLOW_NOT_FOUND'
+					return { message: 'FOLLOW_NOT_FOUND' }
 				}
 
 				response = {
@@ -140,7 +141,7 @@ export class ToggleFollowController extends Controller {
 
 				if (followResult === 'YOU_CANT_FOLLOW_YOURSELF') {
 					this.setStatus(400)
-					return 'CANNOT_FOLLOW_SELF'
+					return { message: 'CANNOT_FOLLOW_SELF' }
 				}
 
 				if (followResult === 'ALREADY_FOLLOWING') {
@@ -174,7 +175,7 @@ export class ToggleFollowController extends Controller {
 			})
 			
 			this.setStatus(500)
-			return 'DATABASE_ERROR'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

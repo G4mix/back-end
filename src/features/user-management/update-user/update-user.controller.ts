@@ -9,6 +9,7 @@ import { UserDTO } from '@shared/dto/simple.dto'
 import { TsoaRequest } from '@shared/types/tsoa'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { Logger } from '@shared/utils/logger'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/users')
@@ -82,14 +83,14 @@ export class UpdateUserController extends Controller {
 	public async updateUser(
 		@Body() body: UpdateUserInput,
 		@Request() req: TsoaRequest
-	): Promise<UpdateUserOutput | string> {
+	): Promise<UpdateUserOutput | ErrorResponse> {
 		const userId = req.user.sub
 		this.logger.info('Updating user profile', { userId, fields: Object.keys(body) })
 
 		const currentUser = await this.userRepository.findById({ id: userId })
 		if (!currentUser) {
 			this.logger.warn('User not found for update', { userId })
-			return 'USER_NOT_FOUND'
+			return CommonErrors.USER_NOT_FOUND
 		}
 
 		const updateData: any = {}

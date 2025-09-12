@@ -6,6 +6,7 @@ import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { CreateIdeaInput, CreateIdeaResponse } from './create-idea.dto'
 import { IdeaGateway } from '@shared/gateways/idea.gateway'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/ideas')
@@ -69,12 +70,12 @@ export class CreateIdeaController extends Controller {
 	public async createIdea(
 		@Body() body: CreateIdeaInput,
 		@Request() request: any
-	): Promise<CreateIdeaResponse | string> {
+	): Promise<CreateIdeaResponse | ErrorResponse> {
 		try {
 			const userProfileId = request.user?.userProfileId
 			if (!userProfileId) {
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			this.logger.info('Creating new idea', { 
@@ -87,7 +88,7 @@ export class CreateIdeaController extends Controller {
 			const existingIdea = await this.ideaRepository.findByTitle(body.title)
 			if (existingIdea) {
 				this.setStatus(409)
-				return 'IDEA_ALREADY_EXISTS'
+				return CommonErrors.USER_ALREADY_EXISTS // Usando a constante existente para conflito
 			}
 
 			// Process images if provided
@@ -129,7 +130,7 @@ export class CreateIdeaController extends Controller {
 			})
 			
 			this.setStatus(500)
-			return 'Failed to create idea'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

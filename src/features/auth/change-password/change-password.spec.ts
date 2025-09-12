@@ -139,10 +139,9 @@ describe('Change Password Integration Tests', () => {
 				})
 		})
 
-		it('should return validation error for weak new password', async () => {
+		it('should return validation error for new password too short', async () => {
 			// Arrange
 			const changePasswordData = {
-				currentPassword: 'OldPassword123!',
 				newPassword: '123'
 			}
 
@@ -161,7 +160,6 @@ describe('Change Password Integration Tests', () => {
 		it('should return validation error for new password without uppercase', async () => {
 			// Arrange
 			const changePasswordData = {
-				currentPassword: 'OldPassword123!',
 				newPassword: 'newpassword123!'
 			}
 
@@ -180,7 +178,6 @@ describe('Change Password Integration Tests', () => {
 		it('should return validation error for new password without special character', async () => {
 			// Arrange
 			const changePasswordData = {
-				currentPassword: 'OldPassword123!',
 				newPassword: 'NewPassword123'
 			}
 
@@ -199,7 +196,6 @@ describe('Change Password Integration Tests', () => {
 		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
 			const changePasswordData = {
-				currentPassword: 'OldPassword123!',
 				newPassword: 'NewPassword123!'
 			}
 			httpClient.clearAuthToken()

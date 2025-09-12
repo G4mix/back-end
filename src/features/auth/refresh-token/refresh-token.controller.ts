@@ -6,6 +6,7 @@ import { JwtManager } from '@shared/utils/jwt-manager'
 import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants/jwt'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/auth')
@@ -58,7 +59,7 @@ export class RefreshTokenController extends Controller {
 	@SuccessResponse(200)
 	@Post('/refresh-token')
 	@LogResponseTime()
-	public async refreshToken(@Body() body: { refreshToken: string }): Promise<{ accessToken: string; refreshToken: string } | string> {
+	public async refreshToken(@Body() body: { refreshToken: string }): Promise<{ accessToken: string; refreshToken: string } | ErrorResponse> {
 		const { refreshToken: token } = body
 
 		let userId: string
@@ -66,18 +67,18 @@ export class RefreshTokenController extends Controller {
 			userId = JwtManager.decode(token).sub
 		} catch (err) {
 			this.setStatus(401)
-			return 'UNAUTHORIZED'
+			return CommonErrors.UNAUTHORIZED
 		}
 
 		const user = await this.userRepository.findById({ id: userId })
 		if (!user) {
 			this.setStatus(404)
-			return 'USER_NOT_FOUND'
+			return CommonErrors.USER_NOT_FOUND
 		}
 
 		if (!user.verified) {
 			this.setStatus(403)
-			return 'USER_NOT_VERIFIED'
+			return CommonErrors.EMAIL_NOT_VERIFIED
 		}
 
 		const data = {

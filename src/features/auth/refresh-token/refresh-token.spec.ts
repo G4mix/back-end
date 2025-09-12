@@ -120,7 +120,7 @@ describe('Refresh Token Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
-						data: 'UNAUTHORIZED'
+						data: { message: 'UNAUTHORIZED' }
 					}
 				})
 		})
@@ -155,7 +155,7 @@ describe('Refresh Token Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: 'USER_NOT_FOUND'
+						data: { message: 'USER_NOT_FOUND' }
 					}
 				})
 		})
@@ -200,7 +200,7 @@ describe('Refresh Token Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 403,
-						data: 'USER_NOT_VERIFIED'
+						data: { message: 'EMAIL_NOT_VERIFIED' }
 					}
 				})
 		})

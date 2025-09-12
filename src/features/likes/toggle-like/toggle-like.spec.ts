@@ -243,12 +243,12 @@ describe('Toggle Like Integration Tests', () => {
 
 			// Act & Assert
 					await expect(httpClient.post('/v1/likes/toggle', likeData))
-							.rejects.toMatchObject({
-								response: {
-									status: 404,
-									data: 'IDEA_NOT_FOUND'
-								}
-							})
+						.rejects.toMatchObject({
+							response: {
+								status: 404,
+								data: { message: 'NOT_FOUNDED_DATA' }
+							}
+						})
 		})
 
 		it('should handle database errors gracefully', async () => {

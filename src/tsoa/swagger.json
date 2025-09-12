@@ -28,6 +28,19 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ErrorResponse": {
+				"description": "Utilitário para padronizar retornos de erro\nGarante que todos os erros sigam o formato: { message: 'ERROR_CODE' }",
+				"properties": {
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"RecordViewInput": {
 				"properties": {
 					"ideas": {
@@ -1182,7 +1195,7 @@
 											"$ref": "#/components/schemas/RecordViewResponse"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -1228,7 +1241,7 @@
 											"$ref": "#/components/schemas/UpdateUserOutput"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -1386,7 +1399,14 @@
 						"description": "User retrieved successfully",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"anyOf": [
+										{},
+										{
+											"$ref": "#/components/schemas/ErrorResponse"
+										}
+									]
+								}
 							}
 						}
 					}
@@ -1423,7 +1443,7 @@
 											"$ref": "#/components/schemas/ToggleLikeResponse"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -1469,7 +1489,7 @@
 											"$ref": "#/components/schemas/UpdateIdeaResponse"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -1523,7 +1543,7 @@
 											"$ref": "#/components/schemas/GetIdeaByIdResponse"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -1560,7 +1580,14 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"type": "string"
+									"anyOf": [
+										{
+											"type": "string"
+										},
+										{
+											"$ref": "#/components/schemas/ErrorResponse"
+										}
+									]
 								}
 							}
 						}
@@ -1596,7 +1623,14 @@
 						"description": "Ideas retrieved successfully",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"anyOf": [
+										{},
+										{
+											"$ref": "#/components/schemas/ErrorResponse"
+										}
+									]
+								}
 							}
 						}
 					}
@@ -1696,7 +1730,7 @@
 											"$ref": "#/components/schemas/CreateIdeaResponse"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -1742,7 +1776,7 @@
 											"$ref": "#/components/schemas/ToggleFollowResponse"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -1788,7 +1822,7 @@
 											"$ref": "#/components/schemas/GetFollowingResponse"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -1852,7 +1886,7 @@
 											"$ref": "#/components/schemas/GetFollowersResponse"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -1916,7 +1950,7 @@
 											"$ref": "#/components/schemas/GetCommentsResponse"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -2032,7 +2066,7 @@
 											"type": "object"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -2277,7 +2311,7 @@
 											"$ref": "#/components/schemas/SigninOutput"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -2319,7 +2353,7 @@
 											"$ref": "#/components/schemas/SigninOutput"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -2369,7 +2403,7 @@
 											"type": "object"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}
@@ -2431,7 +2465,7 @@
 											"type": "object"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}

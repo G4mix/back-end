@@ -100,7 +100,7 @@ describe('Recover Email Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: 'USER_NOT_FOUND'
+						data: { message: 'USER_NOT_FOUND' }
 					}
 				})
 		})
@@ -124,7 +124,7 @@ describe('Recover Email Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 500,
-						data: 'ERROR_WHILE_SENDING_EMAIL'
+						data: { message: 'ERROR_WHILE_SENDING_EMAIL' }
 					}
 				})
 		})

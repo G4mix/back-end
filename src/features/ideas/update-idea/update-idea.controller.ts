@@ -5,6 +5,7 @@ import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { UpdateIdeaInput, UpdateIdeaResponse } from './update-idea.dto'
 import { IdeaGateway } from '@shared/gateways/idea.gateway'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/ideas')
@@ -59,12 +60,12 @@ export class UpdateIdeaController extends Controller {
 		@Path() id: string,
 		@Body() body: UpdateIdeaInput,
 		@Request() request: any
-	): Promise<UpdateIdeaResponse | string> {
+	): Promise<UpdateIdeaResponse | ErrorResponse> {
 		try {
 			const userProfileId = request?.user?.userProfileId
 			if (!userProfileId) {
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			this.logger.info('Updating idea', {
@@ -78,13 +79,13 @@ export class UpdateIdeaController extends Controller {
 			const existingIdea = await this.ideaRepository.findById(id)
 			if (!existingIdea) {
 				this.setStatus(404)
-				return 'IDEA_NOT_FOUND'
+				return CommonErrors.IDEA_NOT_FOUND
 			}
 
 			// Check if user is the author
 			if (existingIdea.authorId !== userProfileId) {
 				this.setStatus(403)
-				return 'FORBIDDEN'
+				return CommonErrors.FORBIDDEN
 			}
 
 			// Process images if provided
@@ -129,7 +130,7 @@ export class UpdateIdeaController extends Controller {
 				ideaId: id
 			})
 			this.setStatus(500)
-			return 'Failed to update idea'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

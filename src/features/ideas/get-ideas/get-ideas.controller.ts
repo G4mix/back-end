@@ -4,6 +4,7 @@ import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/ideas')
@@ -102,12 +103,12 @@ export class GetIdeasController extends Controller {
 		@Query() sortBy?: 'created_at' | 'updated_at' | 'title',
 		@Query() sortOrder?: 'asc' | 'desc',
 		@Request() request?: any
-	): Promise<any> {
+	): Promise<any | ErrorResponse> {
 		try {
 			const userId = request?.user?.sub
 			if (!userId) {
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			const queryParams = {
@@ -160,7 +161,7 @@ export class GetIdeasController extends Controller {
 			})
 			
 			this.setStatus(500)
-			return 'DATABASE_ERROR'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

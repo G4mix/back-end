@@ -6,6 +6,7 @@ import { SESGateway } from '@shared/gateways/ses.gateway'
 import { generateRandomCode } from '@shared/utils/generate-random-code'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
+import { createErrorResponse, ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/auth')
@@ -57,19 +58,19 @@ export class SendRecoverEmailController extends Controller {
 	@SuccessResponse(200)
 	@Post('/send-recover-email')
 	@LogResponseTime()
-	public async sendRecoverEmail(@Body() body: { email: string }): Promise<{ email: string } | string> {
+	public async sendRecoverEmail(@Body() body: { email: string }): Promise<{ email: string } | ErrorResponse> {
 		const { email } = body
 		const normalizedEmail = email.toLowerCase()
 
 		const user = await this.userRepository.findByEmail({ email: normalizedEmail })
 		if (!user) {
 			this.setStatus(404)
-			return 'USER_NOT_FOUND'
+			return CommonErrors.USER_NOT_FOUND
 		}
 
 		if (user.verified) {
 			this.setStatus(500)
-			return 'ERROR_WHILE_SENDING_EMAIL'
+			return CommonErrors.INTERNAL_ERROR
 		}
 
 		const code = generateRandomCode()
@@ -81,7 +82,7 @@ export class SendRecoverEmailController extends Controller {
 		})
 		if (typeof sentEmail === 'string') {
 			this.setStatus(500)
-			return sentEmail
+			return createErrorResponse(sentEmail)
 		}
 
 		await this.userRepository.update({ id: user.id, code })

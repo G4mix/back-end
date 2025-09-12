@@ -66,10 +66,7 @@ export class ChangePasswordController extends Controller {
 		const { newPassword } = body
 		const userId = req.user.sub
 
-		const user = await this.userRepository.findById({ id: userId })
-		if (!user) return 'USER_NOT_FOUND'
-
-		// Não precisa verificar senha atual pois o usuário esqueceu
+		const user = (await this.userRepository.findById({ id: userId }))!
 
 		await this.userRepository.update({ 
 			id: userId, 

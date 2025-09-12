@@ -4,6 +4,7 @@ import { UserRepository } from '@shared/repositories/user.repository'
 import { UserGateway } from '@shared/gateways/user.gateway'
 import { Logger } from '@shared/utils/logger'
 import { TsoaRequest } from '@shared/types/tsoa'
+import { CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/users')
@@ -76,7 +77,7 @@ export class DeleteUserController extends Controller {
 			console.log('🔍 Delete user - user found:', user)
 			if (!user) {
 				this.setStatus(404)
-				return { message: 'USER_NOT_FOUND' }
+				return CommonErrors.USER_NOT_FOUND
 			}
 
 			console.log('🔍 Delete user - userProfile:', user.userProfile)
@@ -97,7 +98,7 @@ export class DeleteUserController extends Controller {
 		} catch (error) {
 			console.log('🔍 Delete user - error:', error)
 			this.setStatus(500)
-			return { message: 'DELETION_FAILED' }
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

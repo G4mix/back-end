@@ -153,7 +153,7 @@ describe('Signin Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: 'USER_NOT_FOUND'
+						data: { message: 'USER_NOT_FOUND' }
 					}
 				})
 		})
@@ -206,7 +206,7 @@ describe('Signin Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
-						data: 'WRONG_PASSWORD_ONCE'
+						data: { message: 'WRONG_PASSWORD_ONCE' }
 					}
 				})
 		})

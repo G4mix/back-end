@@ -226,12 +226,12 @@ describe('Create Comment Integration Tests', () => {
 
 			// Act & Assert
 					await expect(httpClient.post('/v1/comment/', commentData))
-							.rejects.toMatchObject({
-								response: {
-									status: 404,
-									data: 'IDEA_NOT_FOUND'
-								}
-							})
+						.rejects.toMatchObject({
+							response: {
+								status: 404,
+								data: { message: 'NOT_FOUNDED_DATA' }
+							}
+						})
 		})
 
 		it('should handle database errors gracefully', async () => {

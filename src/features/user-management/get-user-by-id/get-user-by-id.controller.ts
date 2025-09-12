@@ -2,6 +2,7 @@ import { Route, Tags, Controller, Get, Path, SuccessResponse } from 'tsoa'
 import { injectable, inject } from 'tsyringe'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { Logger } from '@shared/utils/logger'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/users')
@@ -67,12 +68,12 @@ export class GetUserByIdController extends Controller {
 	 */
 	@SuccessResponse(200, 'User retrieved successfully')
 	@Get('/{userId}')
-	public async getUserById(@Path() userId: string): Promise<any> {
+	public async getUserById(@Path() userId: string): Promise<any | ErrorResponse> {
 		const user = await this.userRepository.findById({ id: userId })
 		
 		if (!user) {
 			this.setStatus(404)
-			return { message: 'USER_NOT_FOUND' }
+			return CommonErrors.USER_NOT_FOUND
 		}
 
 		// O middleware irá automaticamente serializar usando GetUserByIdResponseDTO

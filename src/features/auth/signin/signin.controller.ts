@@ -9,6 +9,7 @@ import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants/jwt'
 import { UserDTO } from '@shared/dto/simple.dto'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { Logger } from '@shared/utils/logger'
+import { createErrorResponse, ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/auth')
@@ -71,7 +72,7 @@ export class SigninController extends Controller {
 	@SuccessResponse(200, 'User signed in successfully')
 	@Post('/signin')
 	@LogResponseTime()
-	public async signin(@Body() body: SigninInput): Promise<SigninOutput | string> {
+	public async signin(@Body() body: SigninInput): Promise<SigninOutput | ErrorResponse> {
 		const { email, password } = body
 		const normalizedEmail = email.toLowerCase()
 		
@@ -81,7 +82,7 @@ export class SigninController extends Controller {
 		if (!user) {
 			this.logger.warn('Signin failed - user not found', { email: normalizedEmail })
 			this.setStatus(404)
-			return 'USER_NOT_FOUND'
+			return CommonErrors.USER_NOT_FOUND
 		}
 
 		if (!user.verified) {
@@ -103,7 +104,7 @@ export class SigninController extends Controller {
 			if (blockedByTime) {
 				this.logger.warn('Signin blocked - too many attempts', { userId: user.id, attempts })
 				this.setStatus(429)
-				return 'EXCESSIVE_LOGIN_ATTEMPTS'
+				return CommonErrors.EXCESSIVE_LOGIN_ATTEMPTS
 			}
 			attempts = 0
 			await this.userRepository.update({ id: user.id, loginAttempts: attempts })
@@ -133,7 +134,7 @@ export class SigninController extends Controller {
 				'WRONG_PASSWORD_FIVE_TIMES',
 			]
 			this.setStatus(401)
-			return possibleErrors[attempts - 1]
+			return createErrorResponse(possibleErrors[attempts - 1])
 		}
 
 		const data: SigninOutput = {

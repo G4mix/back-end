@@ -6,6 +6,7 @@ import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { RecordViewInput, RecordViewResponse } from './record-view.dto'
 import { ViewRepository } from '@shared/repositories/view.repository'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/views')
@@ -81,12 +82,12 @@ export class RecordViewController extends Controller {
 	public async recordView(
 		@Body() body: RecordViewInput,
 		@Request() request: any
-	): Promise<RecordViewResponse | string> {
+	): Promise<RecordViewResponse | ErrorResponse> {
 		try {
 			const userProfileId = request.user?.userProfileId
 			if (!userProfileId) {
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			const { ideas } = body
@@ -102,7 +103,7 @@ export class RecordViewController extends Controller {
 				const idea = await this.ideaRepository.findById(ideaId)
 				if (!idea) {
 					this.setStatus(404)
-					return 'IDEA_NOT_FOUND'
+					return CommonErrors.IDEA_NOT_FOUND
 				}
 			}
 
@@ -139,7 +140,7 @@ export class RecordViewController extends Controller {
 			})
 			
 			this.setStatus(500)
-			return 'DATABASE_ERROR'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

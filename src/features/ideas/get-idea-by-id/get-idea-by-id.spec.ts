@@ -153,7 +153,7 @@ describe('Get Idea By ID Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: 'IDEA_NOT_FOUND'
+						data: { message: 'NOT_FOUNDED_DATA' }
 					}
 				})
 		})

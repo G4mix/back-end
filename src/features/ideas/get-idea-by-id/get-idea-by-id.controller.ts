@@ -4,6 +4,7 @@ import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { GetIdeaByIdResponse } from './get-idea-by-id.dto'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/ideas')
@@ -62,12 +63,12 @@ export class GetIdeaByIdController extends Controller {
 	public async getIdeaById(
 		@Path() id: string,
 		@Request() request: any
-	): Promise<GetIdeaByIdResponse | string> {
+	): Promise<GetIdeaByIdResponse | ErrorResponse> {
 		try {
 			const userProfileId = request.user?.userProfileId
 			if (!userProfileId) {
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			this.logger.info('Retrieving idea by ID', {
@@ -79,7 +80,7 @@ export class GetIdeaByIdController extends Controller {
 			const idea = await this.ideaRepository.findById(id)
 			if (!idea) {
 				this.setStatus(404)
-				return 'IDEA_NOT_FOUND'
+				return CommonErrors.IDEA_NOT_FOUND
 			}
 
 			this.logger.info('Idea retrieved successfully', {
@@ -104,7 +105,7 @@ export class GetIdeaByIdController extends Controller {
 				ideaId: id
 			})
 			this.setStatus(500)
-			return 'Failed to retrieve idea'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }

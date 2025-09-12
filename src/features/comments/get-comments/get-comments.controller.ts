@@ -4,6 +4,7 @@ import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { CommentRepository } from '@shared/repositories/comment.repository'
 import { GetCommentsResponse } from './get-comments.dto'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/comment')
@@ -83,12 +84,12 @@ export class GetCommentsController extends Controller {
 		@Query() limit?: number,
 		@Query() parentCommentId?: string,
 		@Request() request?: any
-	): Promise<GetCommentsResponse | string> {
+	): Promise<GetCommentsResponse | ErrorResponse> {
 		try {
 			const userProfileId = request?.user?.userProfileId
 			if (!userProfileId) {
 				this.setStatus(401)
-				return 'UNAUTHORIZED'
+				return CommonErrors.UNAUTHORIZED
 			}
 
 			const queryParams = {
@@ -151,7 +152,7 @@ export class GetCommentsController extends Controller {
 				userProfileId: request.user?.userProfileId 
 			})
 			this.setStatus(500)
-			return 'Failed to retrieve comments'
+			return CommonErrors.DATABASE_ERROR
 		}
 	}
 }
