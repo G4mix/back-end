@@ -1,246 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import { Logger } from '@shared/utils/logger'
-import { z } from 'zod'
 import { messages } from '@shared/constants/messages'
-
-// Schemas de validação por rota
-const ROUTE_SCHEMAS: Record<string, {
-	input?: z.ZodSchema
-	query?: z.ZodSchema
-	params?: z.ZodSchema
-	output?: z.ZodSchema
-}> = {
-	// Auth routes
-	'POST /v1/auth/signup': {
-		input: z.object({
-			username: z.string().regex(/^[^{}]{3,255}$/, 'INVALID_NAME'),
-			email: z.string().email('INVALID_EMAIL'),
-			password: z.string().regex(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, 'INVALID_PASSWORD')
-		})
-	},
-	'POST /v1/auth/signin': {
-		input: z.object({
-			email: z.string().email('INVALID_EMAIL'),
-			password: z.string().min(1, 'PASSWORD_REQUIRED')
-		})
-	},
-	'POST /v1/auth/change-password': {
-		input: z.object({
-			newPassword: z.string().regex(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, 'INVALID_PASSWORD')
-		})
-	},
-	'POST /v1/auth/send-recover-email': {
-		input: z.object({
-			email: z.string().email('INVALID_EMAIL').min(1, 'EMAIL_REQUIRED')
-		})
-	},
-	'POST /v1/auth/verify-email-code': {
-		input: z.object({
-			email: z.string().email('INVALID_EMAIL').min(1, 'EMAIL_REQUIRED'),
-			code: z.string().min(1, 'CODE_REQUIRED')
-		})
-	},
-	'POST /v1/views/record': {
-		input: z.object({
-			ideas: z.array(z.string().uuid('INVALID_IDEA_ID')).min(1, 'IDEAS_REQUIRED')
-		})
-	},
-	'POST /v1/auth/recover-email/send': {
-		input: z.object({
-			email: z.string().email('INVALID_EMAIL')
-		})
-	},
-	'POST /v1/auth/recover-email/verify': {
-		input: z.object({
-			email: z.string().email('INVALID_EMAIL'),
-			code: z.string().min(1, 'CODE_REQUIRED')
-		})
-	},
-	'POST /v1/auth/refresh-token': {
-		input: z.object({
-			refreshToken: z.string().min(1, 'REFRESH_TOKEN_REQUIRED')
-		})
-	},
-	'POST /v1/auth/social-login/google': {
-		input: z.object({
-			token: z.string().min(1, 'TOKEN_REQUIRED')
-		})
-	},
-	'POST /v1/auth/social-login/linkedin': {
-		input: z.object({
-			token: z.string().min(1, 'TOKEN_REQUIRED')
-		})
-	},
-	'POST /v1/auth/social-login/github': {
-		input: z.object({
-			token: z.string().min(1, 'TOKEN_REQUIRED')
-		})
-	},
-
-	// Ideas routes
-	'POST /v1/ideas': {
-		input: z.object({
-			title: z.string().min(10, 'TITLE_TOO_SHORT').max(70, 'TITLE_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_TITLE'),
-			description: z.string().min(50, 'DESCRIPTION_TOO_SHORT').max(700, 'DESCRIPTION_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_DESCRIPTION'),
-			tags: z.array(z.string().min(1, 'TAG_EMPTY').max(50, 'TAG_TOO_LONG')).optional(),
-			images: z.array(z.any()).optional(), // Express.Multer.File[]
-			links: z.array(z.object({
-				url: z.string().url('INVALID_LINK_URL').max(700, 'LINK_URL_TOO_LONG')
-			})).optional()
-		})
-	},
-	'PATCH /v1/ideas/:id': {
-		input: z.object({
-			title: z.string().min(10, 'TITLE_TOO_SHORT').max(70, 'TITLE_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_TITLE').optional(),
-			description: z.string().min(50, 'DESCRIPTION_TOO_SHORT').max(700, 'DESCRIPTION_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_DESCRIPTION').optional(),
-			tags: z.array(z.string().min(1, 'TAG_EMPTY').max(50, 'TAG_TOO_LONG')).optional(),
-			images: z.array(z.any()).optional(), // Express.Multer.File[]
-			links: z.array(z.object({
-				url: z.string().url('INVALID_LINK_URL').max(700, 'LINK_URL_TOO_LONG')
-			})).optional()
-		}),
-		params: z.object({
-			id: z.string().uuid('INVALID_IDEA_ID')
-		})
-	},
-	'GET /v1/ideas': {
-		query: z.object({
-			search: z.string().optional(),
-			authorId: z.string().uuid('INVALID_AUTHOR_ID').optional(),
-			tags: z.array(z.string()).optional(),
-			page: z.coerce.number().int().min(0, 'INVALID_PAGE').optional(),
-			limit: z.coerce.number().int().min(1, 'INVALID_LIMIT').max(100, 'LIMIT_TOO_LARGE').optional(),
-			sortBy: z.enum(['created_at', 'updated_at', 'title']).optional(),
-			sortOrder: z.enum(['asc', 'desc']).optional()
-		})
-	},
-	'GET /v1/ideas/:id': {
-		params: z.object({
-			id: z.string().uuid('INVALID_IDEA_ID')
-		})
-	},
-	'DELETE /v1/ideas/:id': {
-		params: z.object({
-			id: z.string().uuid('INVALID_IDEA_ID')
-		})
-	},
-
-	// Comments routes
-	'POST /v1/comment/': {
-		input: z.object({
-			ideaId: z.string().uuid('INVALID_IDEA_ID'),
-			content: z.string().min(1, 'CONTENT_REQUIRED').max(200, 'CONTENT_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_CONTENT'),
-			parentCommentId: z.string().uuid('INVALID_PARENT_COMMENT_ID').optional()
-		})
-	},
-	'GET /v1/comments': {
-		query: z.object({
-			ideaId: z.string().uuid('INVALID_IDEA_ID'),
-			page: z.coerce.number().int().min(0, 'INVALID_PAGE').optional(),
-			limit: z.coerce.number().int().min(1, 'INVALID_LIMIT').max(100, 'LIMIT_TOO_LARGE').optional(),
-			parentCommentId: z.string().uuid('INVALID_PARENT_COMMENT_ID').optional()
-		})
-	},
-
-	// Likes routes
-	'POST /v1/likes/toggle': {
-		input: z.object({
-			ideaId: z.string().uuid('INVALID_IDEA_ID').optional(),
-			commentId: z.string().uuid('INVALID_COMMENT_ID').optional()
-		}).refine(data => data.ideaId || data.commentId, {
-			message: 'IDEA_OR_COMMENT_REQUIRED'
-		})
-	},
-
-	// Views routes
-	'POST /v1/views': {
-		input: z.object({
-			ideas: z.array(z.string().uuid('INVALID_IDEA_ID'))
-				.min(1, 'IDEAS_REQUIRED')
-				.max(10, 'TOO_MANY_IDEAS')
-		})
-	},
-
-	// Follow routes
-	'POST /v1/follow/toggle': {
-		input: z.object({
-			followingId: z.string().uuid('INVALID_USER_ID')
-		})
-	},
-	'GET /v1/follow/followers/:userId': {
-		params: z.object({
-			userId: z.string().uuid('INVALID_USER_ID')
-		}),
-		query: z.object({
-			page: z.coerce.number().int().min(0, 'INVALID_PAGE').optional(),
-			limit: z.coerce.number().int().min(1, 'INVALID_LIMIT').max(100, 'LIMIT_TOO_LARGE').optional()
-		})
-	},
-	'GET /v1/follow/following/:userId': {
-		params: z.object({
-			userId: z.string().uuid('INVALID_USER_ID')
-		}),
-		query: z.object({
-			page: z.coerce.number().int().min(0, 'INVALID_PAGE').optional(),
-			limit: z.coerce.number().int().min(1, 'INVALID_LIMIT').max(100, 'LIMIT_TOO_LARGE').optional()
-		})
-	},
-
-	// User management routes
-	'PATCH /v1/users': {
-		input: z.object({
-			displayName: z.string().min(3, 'NAME_TOO_SHORT').max(255, 'NAME_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_NAME').optional(),
-			autobiography: z.string().min(10, 'BIO_TOO_SHORT').max(500, 'BIO_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_BIO').optional(),
-			icon: z.string().url('INVALID_ICON_URL').max(700, 'ICON_URL_TOO_LONG').optional(),
-			backgroundImage: z.string().url('INVALID_BACKGROUND_IMAGE_URL').max(700, 'BACKGROUND_IMAGE_URL_TOO_LONG').optional()
-		})
-	},
-	'PUT /v1/users/:id': {
-		input: z.object({
-			username: z.string().regex(/^[^{}]{3,255}$/, 'INVALID_NAME').optional(),
-			email: z.string().email('INVALID_EMAIL').optional(),
-			password: z.string().regex(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, 'INVALID_PASSWORD').optional(),
-			icon: z.any().optional() // Express.Multer.File
-		}),
-		params: z.object({
-			id: z.string().uuid('INVALID_USER_ID')
-		})
-	},
-	'GET /v1/users': {
-		query: z.object({
-			page: z.coerce.number().int().min(0, 'INVALID_PAGE').optional(),
-			limit: z.coerce.number().int().min(1, 'INVALID_LIMIT').max(100, 'LIMIT_TOO_LARGE').optional(),
-			search: z.string().optional()
-		})
-	},
-	'GET /v1/users/:id': {
-		params: z.object({
-			id: z.string().uuid('INVALID_USER_ID')
-		})
-	},
-	'DELETE /v1/users/:id': {
-		params: z.object({
-			id: z.string().uuid('INVALID_USER_ID')
-		})
-	},
-
-	// Personal links routes
-	'POST /v1/users/links': {
-		input: z.object({
-			url: z.string().url('INVALID_URL').max(700, 'URL_TOO_LONG').regex(/^https?:\/\//, 'URL_MUST_START_WITH_HTTP')
-		})
-	},
-	'GET /v1/users/links': {
-		query: z.object({
-			userId: z.string().uuid('INVALID_USER_ID').optional()
-		})
-	},
-	'DELETE /v1/users/links/:linkId': {
-		params: z.object({
-			linkId: z.string().uuid('INVALID_LINK_ID')
-		})
-	}
-}
+import { DTORegistry } from '@shared/utils/dto-registry'
+import { initializeAllDTOs } from '@shared/utils/dto-initializer'
 
 /**
  * Middleware de validação automática global
@@ -254,9 +16,31 @@ const ROUTE_SCHEMAS: Record<string, {
  */
 export class AutoValidationMiddleware {
 	private logger: Logger
+	private dtoRegistry: DTORegistry
 
 	constructor(logger: Logger) {
 		this.logger = logger
+		this.dtoRegistry = DTORegistry.getInstance(logger)
+		// Inicialização assíncrona será feita no primeiro uso
+		this.initializeDTOSchemas().catch(error => {
+			this.logger.warn('Erro na inicialização assíncrona dos DTOs', { error })
+		})
+	}
+
+	/**
+	 * Inicializa schemas dos DTOs automaticamente
+	 */
+	private async initializeDTOSchemas(): Promise<void> {
+		try {
+			// Inicializa todos os DTOs automaticamente
+			await initializeAllDTOs(this.logger)
+			
+			this.logger.info('DTOs inicializados automaticamente', {
+				routes: this.dtoRegistry.listRoutes()
+			})
+		} catch (error) {
+			this.logger.warn('Erro ao inicializar DTOs, usando schemas hardcoded', { error })
+		}
 	}
 
 	/**
@@ -502,79 +286,27 @@ export class AutoValidationMiddleware {
 
 	/**
 	 * Obtém schema para a rota específica
+	 * 🎯 USA EXCLUSIVAMENTE DTOs - schemas hardcoded foram REMOVIDOS COMPLETAMENTE!
 	 */
 	private getSchemaForRoute(routeKey: string): any {
-		// Tenta encontrar schema exato primeiro
-		if (ROUTE_SCHEMAS[routeKey]) {
-			console.log('✅ Schema encontrado por match exato:', routeKey)
-			return ROUTE_SCHEMAS[routeKey]
+		// 🎯 PRIORIDADE ABSOLUTA: DTOs registrados automaticamente
+		const dtoSchema = this.dtoRegistry.getSchema(routeKey)
+		if (dtoSchema) {
+			this.logger.info('🎯 USANDO DTO AUTOMATICAMENTE:', routeKey, {
+				schemas: Object.keys(dtoSchema).filter(key => dtoSchema[key as keyof typeof dtoSchema])
+			})
+			return dtoSchema
 		}
 
-		// Tenta encontrar schema por padrão (com parâmetros dinâmicos)
-		for (const [key, schema] of Object.entries(ROUTE_SCHEMAS)) {
-			const matches = this.matchesRoutePattern(key, routeKey)
-			if (matches) {
-				return schema
-			}
-		}
-
+		// ❌ NÃO HÁ MAIS SCHEMAS HARDCODED!
+		// Todos os schemas agora são injetados automaticamente dos DTOs
+		this.logger.warn('❌ Nenhum DTO encontrado para rota:', routeKey, {
+			message: 'Esta rota precisa ter um DTO padronizado!',
+			availableRoutes: this.dtoRegistry.listRoutes()
+		})
 		return null
 	}
 
-	/**
-	 * Verifica se a rota atual corresponde ao padrão do schema
-	 */
-	private matchesRoutePattern(pattern: string, route: string): boolean {
-		const patternParts = pattern.split(' ')
-		const routeParts = route.split(' ')
-
-		if (patternParts.length !== routeParts.length) {
-			return false
-		}
-
-		for (let i = 0; i < patternParts.length; i++) {
-			// Verifica se é um parâmetro dinâmico (começa com /:)
-			if (patternParts[i].startsWith('/:') && routeParts[i].startsWith('/')) {
-				continue // Parâmetro dinâmico
-			}
-			// Verifica se é um parâmetro dinâmico sem barra inicial (apenas :id)
-			if (patternParts[i].startsWith(':') && !patternParts[i].startsWith('/:')) {
-				continue // Parâmetro dinâmico
-			}
-
-			// Compara caminhos dividindo por /
-			if (patternParts[i].includes('/') && routeParts[i].includes('/')) {
-				const patternPathParts = patternParts[i].split('/')
-				const routePathParts = routeParts[i].split('/')
-
-				if (patternPathParts.length !== routePathParts.length) {
-					return false
-				}
-
-				let pathMatches = true
-				for (let j = 0; j < patternPathParts.length; j++) {
-					if (patternPathParts[j].startsWith(':')) {
-						continue // Parâmetro dinâmico no caminho
-					}
-					if (patternPathParts[j] !== routePathParts[j]) {
-						pathMatches = false
-						break
-					}
-				}
-
-				if (!pathMatches) {
-					return false
-				}
-				continue
-			}
-
-			if (patternParts[i] !== routeParts[i]) {
-				return false
-			}
-		}
-
-		return true
-	}
 
 	/**
 	 * Trata erros de validação

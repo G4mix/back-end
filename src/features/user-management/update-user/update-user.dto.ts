@@ -1,33 +1,45 @@
 import { z } from 'zod'
 
-export const updateUserSchema = z.object({
-	username: z.string()
-		.min(3, 'USERNAME_TOO_SHORT')
-		.max(255, 'USERNAME_TOO_LONG')
-		.regex(/^[a-zA-Z0-9_]+$/, 'INVALID_USERNAME_FORMAT')
-		.optional(),
-	email: z.string()
-		.email('INVALID_EMAIL_FORMAT')
-		.max(255, 'EMAIL_TOO_LONG')
-		.optional(),
-	password: z.string()
-		.min(8, 'PASSWORD_TOO_SHORT')
-		.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 'INVALID_PASSWORD_FORMAT')
-		.optional(),
+/**
+ * Schema de entrada para atualização de usuário
+ * Segue o padrão do middleware de validação automática
+ */
+export const UpdateUserInputSchema = z.object({
 	displayName: z.string()
-		.max(255, 'DISPLAY_NAME_TOO_LONG')
+		.min(3, 'NAME_TOO_SHORT')
+		.max(255, 'NAME_TOO_LONG')
+		.regex(/^[^{}]+$/, 'INVALID_NAME')
 		.optional(),
 	autobiography: z.string()
-		.max(1000, 'AUTOBIOGRAPHY_TOO_LONG')
+		.min(10, 'BIO_TOO_SHORT')
+		.max(500, 'BIO_TOO_LONG')
+		.regex(/^[^{}]+$/, 'INVALID_BIO')
 		.optional(),
-	links: z.array(z.string().url('INVALID_URL_FORMAT'))
-		.max(5, 'TOO_MANY_LINKS')
+	icon: z.string()
+		.url('INVALID_ICON_URL')
+		.max(700, 'ICON_URL_TOO_LONG')
 		.optional(),
-	icon: z.any().optional(), // Express.Multer.File
-	backgroundImage: z.any().optional() // Express.Multer.File
+	backgroundImage: z.string()
+		.url('INVALID_BACKGROUND_IMAGE_URL')
+		.max(700, 'BACKGROUND_IMAGE_URL_TOO_LONG')
+		.optional()
 })
 
-export type UpdateUserInput = z.infer<typeof updateUserSchema>
+/**
+ * DTO padronizado para atualização de usuário
+ * Compatível com o sistema de registro automático
+ */
+export const UpdateUserDTO = {
+	InputSchema: UpdateUserInputSchema
+}
+
+// Tipos para compatibilidade com TSOA
+export interface UpdateUserInput {
+	displayName?: string
+	autobiography?: string
+	icon?: string
+	backgroundImage?: string
+}
 
 export interface UpdateUserOutput {
 	user: {

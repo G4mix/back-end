@@ -1,6 +1,7 @@
 import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { container } from 'tsyringe'
+import { generateRandomPassword } from '@shared/utils/generate-random-password'
 
 describe('Signup Integration Tests', () => {
 	let httpClient: HttpClient
@@ -19,11 +20,12 @@ describe('Signup Integration Tests', () => {
 
 	describe('POST /v1/auth/signup', () => {
 		it('should create user successfully with valid data', async () => {
+			const randomPassword = generateRandomPassword(20)
 			// Arrange
 			const userData = {
 				username: 'testuser',
 				email: 'test@example.com',
-				password: 'TestPassword123!'
+				password: randomPassword
 			}
 
 			// Mock do Prisma
@@ -58,7 +60,7 @@ describe('Signup Integration Tests', () => {
 
 			// Act
 			const response = await httpClient.post('/v1/auth/signup', userData)
-
+			console.log(response.data)
 			// Assert
 			expect(response.status).toBe(201)
 			expect(response.data).toHaveProperty('accessToken')
@@ -73,7 +75,7 @@ describe('Signup Integration Tests', () => {
 			const userData = {
 				username: 'testuser',
 				email: 'invalid-email',
-				password: 'TestPassword123!'
+				password: generateRandomPassword()
 			}
 
 			// Act & Assert

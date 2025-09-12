@@ -1,37 +1,40 @@
 import { z } from 'zod'
 
-// Input DTOs
-export const getUserByIdParamsSchema = z.object({
-	userId: z.string().uuid('Invalid user ID format')
+/**
+ * Schema de parâmetros para busca de usuário por ID
+ * Segue o padrão do middleware de validação automática
+ */
+export const GetUserByIdParamsSchema = z.object({
+	id: z.string().uuid('INVALID_USER_ID')
 })
 
-// Output DTOs
-export const getUserByIdResponseSchema = z.object({
-	user: z.object({
-		id: z.string(),
-		username: z.string(),
-		email: z.string(),
-		verified: z.boolean(),
-		created_at: z.string(),
-		updated_at: z.string(),
-		userProfile: z.object({
-			id: z.string(),
-			icon: z.string().nullable(),
-			displayName: z.string().nullable(),
-			autobiography: z.string().nullable(),
-			backgroundImage: z.string().nullable(),
-			isFollowing: z.boolean(),
-			links: z.array(z.string()),
-			followersCount: z.number(),
-			followingCount: z.number()
-		}).nullable()
-	})
-})
+/**
+ * DTO padronizado para busca de usuário por ID
+ * Compatível com o sistema de registro automático
+ */
+export const GetUserByIdDTO = {
+	ParamsSchema: GetUserByIdParamsSchema
+}
 
-export const getUserByIdErrorSchema = z.object({
-	message: z.enum(['USER_NOT_FOUND'])
-})
-
-export type GetUserByIdParams = z.infer<typeof getUserByIdParamsSchema>
-export type GetUserByIdResponse = z.infer<typeof getUserByIdResponseSchema>
-export type GetUserByIdError = z.infer<typeof getUserByIdErrorSchema>
+// Tipos para compatibilidade com TSOA
+export interface GetUserByIdResponse {
+	user: {
+		id: string
+		username: string
+		email: string
+		verified: boolean
+		created_at: string
+		updated_at: string
+		userProfile: {
+			id: string
+			icon: string | null
+			displayName: string | null
+			autobiography: string | null
+			backgroundImage: string | null
+			isFollowing: boolean
+			links: string[]
+			followersCount: number
+			followingCount: number
+		} | null
+	}
+}

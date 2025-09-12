@@ -1,39 +1,56 @@
 import { z } from 'zod'
 
-// Input DTOs
-export const getUsersQuerySchema = z.object({
-	page: z.coerce.number().min(1).default(0),
-	limit: z.coerce.number().min(1).max(100).default(10),
+/**
+ * Schema de query para busca de usuários
+ * Segue o padrão do middleware de validação automática
+ */
+export const GetUsersQuerySchema = z.object({
+	page: z.coerce.number().int().min(0, 'INVALID_PAGE').optional(),
+	limit: z.coerce.number().int().min(1, 'INVALID_LIMIT').max(100, 'LIMIT_TOO_LARGE').optional(),
 	search: z.string().optional()
 })
 
-// Output DTOs
-export const getUsersResponseSchema = z.object({
-	users: z.array(z.object({
-		id: z.string(),
-		username: z.string(),
-		email: z.string(),
-		verified: z.boolean(),
-		created_at: z.string(),
-		updated_at: z.string(),
-		userProfile: z.object({
-			id: z.string(),
-			icon: z.string().nullable(),
-			displayName: z.string().nullable(),
-			autobiography: z.string().nullable(),
-			backgroundImage: z.string().nullable(),
-			isFollowing: z.boolean(),
-			links: z.array(z.string()),
-			followersCount: z.number(),
-			followingCount: z.number()
-		}).nullable()
-	})),
-	pagination: z.object({
-		page: z.number(),
-		limit: z.number(),
-		total: z.number()
-	})
-})
+/**
+ * DTO padronizado para busca de usuários
+ * Compatível com o sistema de registro automático
+ */
+export const GetUsersDTO = {
+	QuerySchema: GetUsersQuerySchema
+}
 
-export type GetUsersQuery = z.infer<typeof getUsersQuerySchema>
-export type GetUsersResponse = z.infer<typeof getUsersResponseSchema>
+// Tipos para compatibilidade com TSOA
+export interface GetUsersQuery {
+	page?: number
+	limit?: number
+	search?: string
+}
+
+export interface GetUsersResponse {
+	users: Array<{
+		id: string
+		username: string
+		email: string
+		verified: boolean
+		created_at: string
+		updated_at: string
+		userProfile: {
+			id: string
+			icon: string | null
+			displayName: string | null
+			autobiography: string | null
+			backgroundImage: string | null
+			isFollowing: boolean
+			links: string[]
+			followersCount: number
+			followingCount: number
+		} | null
+	}>
+	pagination: {
+		page: number
+		limit: number
+		total: number
+		totalPages: number
+		hasNext: boolean
+		hasPrev: boolean
+	}
+}

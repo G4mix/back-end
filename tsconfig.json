@@ -30,7 +30,8 @@
       "@tsoa-build/*": ["src/tsoa/*"],
       "@shared/*": ["src/shared/*"],
       "@features/*": ["src/features/*"],
-      "@test/*": ["src/test/*"]
+      "@test/*": ["src/test/*"],
+      "@dto/*": ["*.dto.ts"]
     },
     "typeRoots": ["src/types", "node_modules/@types"],
     "esModuleInterop": true,

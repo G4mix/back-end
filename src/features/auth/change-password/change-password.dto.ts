@@ -1,12 +1,17 @@
 import { z } from 'zod'
 
+/**
+ * Schema de entrada para mudança de senha
+ * Segue o padrão do middleware de validação automática
+ */
 export const ChangePasswordInputSchema = z.object({
-	password: z.string()
-		.min(8, 'Password must be at least 8 characters long')
-		.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 
-			'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character')
+	newPassword: z.string()
+		.regex(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, 'INVALID_PASSWORD')
 })
 
+/**
+ * Schema de saída para mudança de senha
+ */
 export const ChangePasswordOutputSchema = z.object({
 	accessToken: z.string(),
 	refreshToken: z.string(),
@@ -30,6 +35,15 @@ export const ChangePasswordOutputSchema = z.object({
 		})
 	})
 })
+
+/**
+ * DTO padronizado para mudança de senha
+ * Compatível com o sistema de registro automático
+ */
+export const ChangePasswordDTO = {
+	InputSchema: ChangePasswordInputSchema,
+	OutputSchema: ChangePasswordOutputSchema
+}
 
 export type ChangePasswordInput = z.infer<typeof ChangePasswordInputSchema>
 export type ChangePasswordOutput = z.infer<typeof ChangePasswordOutputSchema>

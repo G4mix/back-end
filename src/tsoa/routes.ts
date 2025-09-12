@@ -131,7 +131,7 @@ const models: TsoaRoute.Models = {
     "ToggleLikeInput": {
         "dataType": "refObject",
         "properties": {
-            "ideaId": {"dataType":"string","required":true},
+            "ideaId": {"dataType":"string"},
             "commentId": {"dataType":"string"},
         },
         "additionalProperties": false,

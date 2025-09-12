@@ -1,41 +1,35 @@
 {
-    "entryFile": "src/index.ts",
-    "noImplicitAdditionalProperties": "throw-on-extras",
-    "controllerPathGlobs": ["src/features/**/*.controller.ts"],
-    "spec": {
-      "outputDirectory": "src/tsoa",
-      "specVersion": 3,
-      "securityDefinitions": {
-        "jwt": {
-            "type": "http",
-            "scheme": "bearer"
-        }
-      }
-    },
-    "routes": {
-      "iocModule": "src/config/ioc.ts",
-      "routesDir": "src/tsoa",
-      "authenticationModule": "./src/shared/middlewares/security.ts"
-    },
-    "compilerOptions": {
-      "baseUrl": "./",
-      "typeRoots": ["node_modules/@types", "src/shared/types"],
-      "paths": {
-        "tsoa": ["node_modules/tsoa/dist"],
-        "@config/*": ["src/config/*"],
-        "@constants/*": ["src/constants/*"],
-        "@ioc": ["src/config/ioc.ts"],
-        "@shared/gateways/*": ["src/shared/gateways/*"],
-        "@shared/repositories/*": ["src/shared/repositories/*"],
-        "@shared/utils/*": ["src/shared/serializers/*"],
-        "@shared/schemas/*": ["src/shared/schemas/*"],
-        "@shared/types/*": ["src/shared/types/*"],
-        "@shared/middlewares/*": ["src/shared/middlewares/*"],
-        "@shared/errors/*": ["src/shared/errors/*"],
-        "@utils/*": ["src/utils/*"],
-        "@setup/*": ["src/__tests__/config/*"],
-        "@mocks/*": ["src/__tests__/mocks/*"],
-        "@tsoa-build/*": ["src/tsoa/*"]
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/features/**/*.controller.ts"],
+  "spec": {
+    "outputDirectory": "src/tsoa",
+    "specVersion": 3,
+    "securityDefinitions": {
+      "jwt": {
+          "type": "http",
+          "scheme": "bearer"
       }
     }
+  },
+  "routes": {
+    "iocModule": "src/config/ioc.ts",
+    "routesDir": "src/tsoa",
+    "authenticationModule": "./src/shared/middlewares/security.ts"
+  },
+  "compilerOptions": {
+    "baseUrl": "./",
+    "typeRoots": ["node_modules/@types", "src/shared/types"],
+    "paths": {
+      "tsoa": ["node_modules/tsoa/dist"],
+      "@config/*": ["src/config/*"],
+      "@constants/*": ["src/constants/*"],
+      "@ioc": ["src/config/ioc.ts"],
+      "@shared/*": ["src/shared/*"],
+      "@utils/*": ["src/utils/*"],
+      "@setup/*": ["src/__tests__/config/*"],
+      "@mocks/*": ["src/__tests__/mocks/*"],
+      "@tsoa-build/*": ["src/tsoa/*"]
+    }
   }
+}

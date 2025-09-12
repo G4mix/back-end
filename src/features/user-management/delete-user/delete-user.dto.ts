@@ -1,19 +1,22 @@
 import { z } from 'zod'
 
-// Input DTOs
-export const deleteUserParamsSchema = z.object({
-	userId: z.string().uuid('Invalid user ID format')
+/**
+ * Schema de parâmetros para exclusão de usuário
+ * Segue o padrão do middleware de validação automática
+ */
+export const DeleteUserParamsSchema = z.object({
+	id: z.string().uuid('INVALID_USER_ID')
 })
 
-// Output DTOs
-export const deleteUserSuccessSchema = z.object({
-	message: z.enum(['USER_DELETED_SUCCESSFULLY'])
-})
+/**
+ * DTO padronizado para exclusão de usuário
+ * Compatível com o sistema de registro automático
+ */
+export const DeleteUserDTO = {
+	ParamsSchema: DeleteUserParamsSchema
+}
 
-export const deleteUserErrorSchema = z.object({
-	message: z.enum(['USER_NOT_FOUND', 'FORBIDDEN'])
-})
-
-export type DeleteUserParams = z.infer<typeof deleteUserParamsSchema>
-export type DeleteUserSuccess = z.infer<typeof deleteUserSuccessSchema>
-export type DeleteUserError = z.infer<typeof deleteUserErrorSchema>
+// Tipos para compatibilidade com TSOA
+export interface DeleteUserResponse {
+	message: string
+}

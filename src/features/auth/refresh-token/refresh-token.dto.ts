@@ -1,14 +1,30 @@
 import { z } from 'zod'
 
+/**
+ * Schema de entrada para refresh token
+ * Segue o padrão do middleware de validação automática
+ */
 export const RefreshTokenInputSchema = z.object({
-	token: z.string()
-		.min(1, 'Token is required')
+	refreshToken: z.string()
+		.min(1, 'REFRESH_TOKEN_REQUIRED')
 })
 
+/**
+ * Schema de saída para refresh token
+ */
 export const RefreshTokenOutputSchema = z.object({
 	accessToken: z.string(),
 	refreshToken: z.string()
 })
+
+/**
+ * DTO padronizado para refresh token
+ * Compatível com o sistema de registro automático
+ */
+export const RefreshTokenDTO = {
+	InputSchema: RefreshTokenInputSchema,
+	OutputSchema: RefreshTokenOutputSchema
+}
 
 export type RefreshTokenInput = z.infer<typeof RefreshTokenInputSchema>
 export type RefreshTokenOutput = z.infer<typeof RefreshTokenOutputSchema>

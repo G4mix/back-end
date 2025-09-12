@@ -1,8 +1,12 @@
 import { z } from 'zod'
 
+/**
+ * Schema de entrada para login social
+ * Segue o padrão do middleware de validação automática
+ */
 export const SocialLoginInputSchema = z.object({
 	token: z.string()
-		.min(1, 'Token is required')
+		.min(1, 'TOKEN_REQUIRED')
 })
 
 export const LinkOAuthProviderInputSchema = z.object({
@@ -37,6 +41,15 @@ export const SocialLoginOutputSchema = z.object({
 export const LinkOAuthProviderOutputSchema = z.object({
 	success: z.boolean()
 })
+
+/**
+ * DTO padronizado para login social
+ * Compatível com o sistema de registro automático
+ */
+export const SocialLoginDTO = {
+	InputSchema: SocialLoginInputSchema,
+	OutputSchema: SocialLoginOutputSchema
+}
 
 export type SocialLoginInput = z.infer<typeof SocialLoginInputSchema>
 export type LinkOAuthProviderInput = z.infer<typeof LinkOAuthProviderInputSchema>

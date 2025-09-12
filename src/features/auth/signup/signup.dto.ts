@@ -1,17 +1,17 @@
 import { z } from 'zod'
 
+/**
+ * Schema de entrada para cadastro
+ * Segue o padrão do middleware de validação automática
+ */
 export const SignupInputSchema = z.object({
 	email: z.string()
-		.email('Invalid email format')
-		.min(1, 'Email is required'),
+		.email('INVALID_EMAIL')
+		.min(1, 'EMAIL_REQUIRED'),
 	password: z.string()
-		.min(8, 'Password must be at least 8 characters long')
-		.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 
-			'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character'),
+		.regex(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, 'INVALID_PASSWORD'),
 	username: z.string()
-		.min(3, 'Username must be at least 3 characters long')
-		.max(20, 'Username must be at most 20 characters long')
-		.regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers and underscores')
+		.regex(/^[^{}]{3,255}$/, 'INVALID_NAME')
 })
 
 export const SignupOutputSchema = z.object({
@@ -37,6 +37,15 @@ export const SignupOutputSchema = z.object({
 		})
 	})
 })
+
+/**
+ * DTO padronizado para cadastro
+ * Compatível com o sistema de registro automático
+ */
+export const SignupDTO = {
+	InputSchema: SignupInputSchema,
+	OutputSchema: SignupOutputSchema
+}
 
 export type SignupInput = z.infer<typeof SignupInputSchema>
 export type SignupOutput = z.infer<typeof SignupOutputSchema>

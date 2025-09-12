@@ -271,9 +271,6 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"ideaId"
-				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -2043,7 +2040,7 @@
 						}
 					}
 				},
-				"description": "Verify recovery code and generate temporary access token\r\n\r\nThis endpoint verifies the recovery code sent to the user's email and generates\r\na temporary access token that allows the user to change their password. The\r\ncode must be used within 10 minutes of generation.\r\n\r\nVerification Process:\r\n- Validates user exists by email\r\n- Checks code expiration (10 minutes)\r\n- Verifies provided code matches stored code\r\n- Generates temporary access token for password change\r\n- Clears recovery code from user account",
+				"description": "Verify recovery code and generate temporary access token\n\nThis endpoint verifies the recovery code sent to the user's email and generates\na temporary access token that allows the user to change their password. The\ncode must be used within 10 minutes of generation.\n\nVerification Process:\n- Validates user exists by email\n- Checks code expiration (10 minutes)\n- Verifies provided code matches stored code\n- Generates temporary access token for password change\n- Clears recovery code from user account",
 				"tags": [
 					"Authentication"
 				],

@@ -1,17 +1,32 @@
 import { z } from 'zod'
 
+/**
+ * Schema de entrada para verificação de código de email
+ * Segue o padrão do middleware de validação automática
+ */
 export const VerifyEmailCodeInputSchema = z.object({
-	code: z.string()
-		.length(6, 'Code must be exactly 6 characters')
-		.regex(/^[A-Z0-9]+$/, 'Code must contain only uppercase letters and numbers'),
 	email: z.string()
-		.email('Invalid email format')
-		.min(1, 'Email is required')
+		.email('INVALID_EMAIL')
+		.min(1, 'EMAIL_REQUIRED'),
+	code: z.string()
+		.min(1, 'CODE_REQUIRED')
 })
 
+/**
+ * Schema de saída para verificação de código de email
+ */
 export const VerifyEmailCodeOutputSchema = z.object({
 	accessToken: z.string()
 })
+
+/**
+ * DTO padronizado para verificação de código de email
+ * Compatível com o sistema de registro automático
+ */
+export const VerifyEmailCodeDTO = {
+	InputSchema: VerifyEmailCodeInputSchema,
+	OutputSchema: VerifyEmailCodeOutputSchema
+}
 
 export type VerifyEmailCodeInput = z.infer<typeof VerifyEmailCodeInputSchema>
 export type VerifyEmailCodeOutput = z.infer<typeof VerifyEmailCodeOutputSchema>
