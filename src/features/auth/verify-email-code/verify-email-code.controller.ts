@@ -62,7 +62,10 @@ export class VerifyEmailCodeController extends Controller {
 		const normalizedEmail = email.toLowerCase()
 
 		const user = await this.userRepository.findByEmail({ email: normalizedEmail })
-		if (!user || !user.userCode) return 'USER_NOT_FOUND'
+		if (!user || !user.userCode) {
+			this.setStatus(404)
+			return 'USER_NOT_FOUND'
+		}
 
 		const isCodeExpired = () => {
 			if (!user.userCode) return false
@@ -72,8 +75,14 @@ export class VerifyEmailCodeController extends Controller {
 			return now - updatedDate >= TEN_MINUTES
 		}
 
-		if (isCodeExpired()) return 'CODE_EXPIRED'
-		if (user.userCode.code !== normalizedCode) return 'CODE_NOT_EQUALS'
+		if (isCodeExpired()) {
+			this.setStatus(400)
+			return 'CODE_EXPIRED'
+		}
+		if (user.userCode.code !== normalizedCode) {
+			this.setStatus(400)
+			return 'CODE_NOT_EQUALS'
+		}
 
 		const { JwtManager } = await import('@shared/utils/jwt-manager')
 		return { 

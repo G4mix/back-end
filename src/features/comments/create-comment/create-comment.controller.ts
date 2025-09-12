@@ -97,9 +97,15 @@ export class CreateCommentController extends Controller {
 		@Body() body: CreateCommentInput,
 		@Request() request: any
 	): Promise<any> {
+		console.log('CreateCommentController - Método createComment chamado')
+		console.log('CreateCommentController - Body:', body)
+		console.log('CreateCommentController - Request user:', request.user)
+		
 		try {
 			const userProfileId = request.user?.userProfileId
+			console.log('CreateCommentController - UserProfileId:', userProfileId)
 			if (!userProfileId) {
+				console.log('CreateCommentController - UNAUTHORIZED - sem userProfileId')
 				this.setStatus(401)
 				return 'UNAUTHORIZED'
 			}
@@ -107,6 +113,9 @@ export class CreateCommentController extends Controller {
 			// O middleware já validou e processou os dados de entrada
 			const inputDTO = request.getInputDTO?.() as CreateCommentInput || body
 			const { ideaId, content, parentCommentId } = inputDTO
+
+			console.log('CreateCommentController - InputDTO:', inputDTO)
+			console.log('CreateCommentController - ideaId:', ideaId, 'content:', content, 'parentCommentId:', parentCommentId)
 
 			this.logger.info('Creating comment', { 
 				userProfileId, 
@@ -117,28 +126,36 @@ export class CreateCommentController extends Controller {
 			})
 
 			// Validate that idea exists
+			console.log('CreateCommentController - Validando se a ideia existe...')
 			const idea = await this.ideaRepository.findById(ideaId)
+			console.log('CreateCommentController - Idea encontrada:', idea)
 			if (!idea) {
+				console.log('CreateCommentController - IDEA_NOT_FOUND')
 				this.setStatus(404)
 				return 'IDEA_NOT_FOUND'
 			}
 
 			// Validate parent comment if provided
 			if (parentCommentId) {
+				console.log('CreateCommentController - Validando parent comment...')
 				const parentComment = await this.commentRepository.findById(parentCommentId)
+				console.log('CreateCommentController - Parent comment encontrado:', parentComment)
 				if (!parentComment) {
+					console.log('CreateCommentController - PARENT_COMMENT_NOT_FOUND')
 					this.setStatus(404)
 					return 'PARENT_COMMENT_NOT_FOUND'
 				}
 			}
 
 			// Create comment in database
+			console.log('CreateCommentController - Criando comentário no banco...')
 			const newComment = await this.commentRepository.create({
 				ideaId,
 				content,
 				commentId: parentCommentId || undefined,
 				userProfileId: userProfileId
 			})
+			console.log('CreateCommentController - Comentário criado:', newComment)
 
 			this.logger.info('Comment created successfully', { 
 				commentId: newComment.id, 
@@ -151,6 +168,7 @@ export class CreateCommentController extends Controller {
 			return { comment: newComment }
 
 		} catch (error) {
+			console.log('CreateCommentController - Erro capturado:', error)
 			this.logger.error('Failed to create comment', { 
 				error: error instanceof Error ? error.message : 'Unknown error',
 				userProfileId: request.user?.userProfileId,

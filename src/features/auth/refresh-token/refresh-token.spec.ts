@@ -127,8 +127,18 @@ describe('Refresh Token Integration Tests', () => {
 
 		it('should return USER_NOT_FOUND when user does not exist', async () => {
 			// Arrange
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			
+			// Gera um JWT válido para o refresh token
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const validRefreshToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId
+			})
+
 			const refreshTokenData = {
-				refreshToken: 'valid-refresh-token'
+				refreshToken: validRefreshToken
 			}
 
 			// Mock do Prisma para retornar null
@@ -145,17 +155,25 @@ describe('Refresh Token Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: {
-							message: 'USER_NOT_FOUND'
-						}
+						data: 'USER_NOT_FOUND'
 					}
 				})
 		})
 
 		it('should return USER_NOT_VERIFIED when user is not verified', async () => {
 			// Arrange
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			
+			// Gera um JWT válido para o refresh token
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const validRefreshToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId
+			})
+
 			const refreshTokenData = {
-				refreshToken: 'valid-refresh-token'
+				refreshToken: validRefreshToken
 			}
 
 			// Mock do Prisma para retornar usuário não verificado
@@ -163,13 +181,13 @@ describe('Refresh Token Integration Tests', () => {
 				prisma: {
 					user: {
 						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
+							id: userId,
 							username: 'testuser',
 							email: 'test@example.com',
 							verified: false,
 							created_at: new Date(),
 							updated_at: new Date(),
-							userProfileId: TestData.generateUUID(),
+							userProfileId: userProfileId,
 							loginAttempts: 0,
 							blockedUntil: null
 						})
@@ -182,17 +200,25 @@ describe('Refresh Token Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 403,
-						data: {
-							message: 'USER_NOT_VERIFIED'
-						}
+						data: 'USER_NOT_VERIFIED'
 					}
 				})
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			
+			// Gera um JWT válido para o refresh token
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const validRefreshToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId
+			})
+
 			const refreshTokenData = {
-				refreshToken: 'valid-refresh-token'
+				refreshToken: validRefreshToken
 			}
 
 			// Mock do Prisma para retornar erro

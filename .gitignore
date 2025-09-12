@@ -3,4 +3,3 @@ node_modules/
 dist/
 coverage/
 .vercel
-back-end-main/

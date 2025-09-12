@@ -58,35 +58,74 @@ describe('Create Comment Integration Tests', () => {
 		// Cria uma ideia para comentar
 		const ideaData = TestData.createIdea()
 		ideaId = TestData.generateUUID()
+		const ideaResponse = {
+			id: ideaId,
+			title: ideaData.title,
+			description: ideaData.description,
+			authorId: TestData.generateUUID(),
+			created_at: new Date(),
+			updated_at: new Date(),
+			author: {
+				id: TestData.generateUUID(),
+				username: 'testuser',
+				email: 'test@example.com',
+				userProfile: {
+					id: TestData.generateUUID(),
+					name: 'Test User',
+					bio: null,
+					icon: null
+				}
+			},
+			images: [],
+			tags: [],
+			links: [],
+			_count: {
+				likes: 0,
+				comments: 0,
+				views: 0
+			}
+		}
+		
 		IntegrationTestSetup.setupMocks({
 			prisma: {
 				idea: {
-					create: jest.fn().mockResolvedValue({
-						id: ideaId,
-						title: ideaData.title,
-						description: ideaData.description,
-						authorId: TestData.generateUUID(),
-						created_at: new Date(),
-						updated_at: new Date(),
-						author: {
-							id: TestData.generateUUID(),
-							username: 'testuser',
-							email: 'test@example.com',
-							userProfile: {
-								id: TestData.generateUUID(),
-								name: 'Test User',
-								bio: null,
-								icon: null
-							}
-						},
-						images: [],
-						tags: [],
-						links: [],
-						_count: {
-							likes: 0,
-							comments: 0,
-							views: 0
+					create: jest.fn().mockResolvedValue(ideaResponse),
+					findUnique: jest.fn().mockImplementation(({ where }) => {
+						if (where.id === ideaId) {
+							return Promise.resolve(ideaResponse)
 						}
+						return Promise.resolve(null)
+					})
+				},
+				comment: {
+					create: jest.fn().mockImplementation(({ data, include }) => {
+						console.log('Mock prisma.comment.create chamado com:', { data, include })
+						const result = {
+							id: TestData.generateUUID(),
+							content: data.content,
+							ideaId: data.ideaId,
+							parentCommentId: data.parentCommentId,
+							authorId: data.authorId,
+							created_at: new Date(),
+							updated_at: new Date(),
+							author: {
+								id: TestData.generateUUID(),
+								displayName: 'Test User',
+								icon: null,
+								user: {
+									id: TestData.generateUUID(),
+									username: 'testuser',
+									email: 'test@example.com'
+								},
+								links: []
+							},
+							_count: {
+								likes: 0,
+								replies: 0
+							}
+						}
+						console.log('Mock prisma.comment.create retornando:', result)
+						return Promise.resolve(result)
 					})
 				}
 			}
@@ -110,48 +149,17 @@ describe('Create Comment Integration Tests', () => {
 			// Arrange
 			const commentData = TestData.createComment({ ideaId })
 			
-			// Mock do Prisma para retornar sucesso
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					comment: {
-						create: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							content: commentData.content,
-							ideaId: commentData.ideaId,
-							authorId: TestData.generateUUID(),
-							created_at: new Date(),
-							updated_at: new Date(),
-							author: {
-								id: TestData.generateUUID(),
-								username: 'testuser',
-								email: 'test@example.com',
-								userProfile: {
-									id: TestData.generateUUID(),
-									name: 'Test User',
-									bio: null,
-									icon: null
-								}
-							},
-							idea: {
-								id: ideaId,
-								title: 'Test Idea',
-								description: 'Test Description'
-							}
-						})
-					}
-				}
-			})
 
 			// Act
 			const response = await httpClient.post('/v1/comment/', commentData)
 
 			// Assert
 			expect(response.status).toBe(201)
-			expect(response.data).toHaveProperty('id')
-			expect(response.data.content).toBe(commentData.content)
-			expect(response.data.ideaId).toBe(commentData.ideaId)
-			expect(response.data).toHaveProperty('author')
-			expect(response.data).toHaveProperty('created_at')
+			expect(response.data.comment).toHaveProperty('id')
+			expect(response.data.comment.content).toBe(commentData.content)
+			expect(response.data.comment.ideaId).toBe(commentData.ideaId)
+			expect(response.data.comment).toHaveProperty('author')
+			expect(response.data.comment).toHaveProperty('created_at')
 		})
 
 		it('should return validation error for empty content', async () => {
@@ -159,15 +167,15 @@ describe('Create Comment Integration Tests', () => {
 			const commentData = TestData.createComment({ ideaId, content: '' })
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/comment/', commentData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'INVALID_CONTENT'
-						}
-					}
-				})
+					await expect(httpClient.post('/v1/comment/', commentData))
+							.rejects.toMatchObject({
+								response: {
+									status: 400,
+									data: {
+										message: 'CONTENT_REQUIRED'
+									}
+								}
+							})
 		})
 
 		it('should return validation error for invalid ideaId', async () => {
@@ -192,7 +200,7 @@ describe('Create Comment Integration Tests', () => {
 			const clientWithoutAuth = new HttpClient(baseUrl)
 
 			// Act & Assert
-			await expect(clientWithoutAuth.post('/v1/comments', commentData))
+			await expect(clientWithoutAuth.post('/v1/comment/', commentData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -217,15 +225,13 @@ describe('Create Comment Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/comment/', commentData))
-				.rejects.toMatchObject({
-					response: {
-						status: 404,
-						data: {
-							message: 'IDEA_NOT_FOUND'
-						}
-					}
-				})
+					await expect(httpClient.post('/v1/comment/', commentData))
+							.rejects.toMatchObject({
+								response: {
+									status: 404,
+									data: 'IDEA_NOT_FOUND'
+								}
+							})
 		})
 
 		it('should handle database errors gracefully', async () => {
@@ -235,6 +241,40 @@ describe('Create Comment Integration Tests', () => {
 			// Mock do Prisma para retornar erro
 			IntegrationTestSetup.setupMocks({
 				prisma: {
+					idea: {
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.id === ideaId) {
+								return Promise.resolve({
+									id: ideaId,
+									title: 'Test Idea',
+									description: 'Test Description',
+									authorId: TestData.generateUUID(),
+									created_at: new Date(),
+									updated_at: new Date(),
+									author: {
+										id: TestData.generateUUID(),
+										username: 'testuser',
+										email: 'test@example.com',
+										userProfile: {
+											id: TestData.generateUUID(),
+											name: 'Test User',
+											bio: null,
+											icon: null
+										}
+									},
+									images: [],
+									tags: [],
+									links: [],
+									_count: {
+										likes: 0,
+										comments: 0,
+										views: 0
+									}
+								})
+							}
+							return Promise.resolve(null)
+						})
+					},
 					comment: {
 						create: jest.fn().mockRejectedValue(new Error('Database connection failed'))
 					}

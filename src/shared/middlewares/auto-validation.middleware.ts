@@ -61,9 +61,18 @@ const ROUTE_SCHEMAS: Record<string, {
 			refreshToken: z.string().min(1, 'REFRESH_TOKEN_REQUIRED')
 		})
 	},
-	'POST /v1/auth/social-login': {
+	'POST /v1/auth/social-login/google': {
 		input: z.object({
-			provider: z.enum(['google', 'facebook', 'github']),
+			token: z.string().min(1, 'TOKEN_REQUIRED')
+		})
+	},
+	'POST /v1/auth/social-login/linkedin': {
+		input: z.object({
+			token: z.string().min(1, 'TOKEN_REQUIRED')
+		})
+	},
+	'POST /v1/auth/social-login/github': {
+		input: z.object({
 			token: z.string().min(1, 'TOKEN_REQUIRED')
 		})
 	},

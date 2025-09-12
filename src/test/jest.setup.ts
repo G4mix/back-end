@@ -17,6 +17,11 @@ import { CommentRepository } from '@shared/repositories/comment.repository'
 import { LikeRepository } from '@shared/repositories/like.repository'
 import { ViewRepository } from '@shared/repositories/view.repository'
 import { RecordViewController } from '@features/views/record-view/record-view.controller'
+import { CreateCommentController } from '@features/comments/create-comment/create-comment.controller'
+import { ToggleLikeController } from '@features/likes/toggle-like/toggle-like.controller'
+import { SendRecoverEmailController } from '@features/auth/send-recover-email/send-recover-email.controller'
+import { VerifyEmailCodeController } from '@features/auth/verify-email-code/verify-email-code.controller'
+import { SocialLoginController } from '@features/auth/social-login/social-login.controller'
 import { IdeaGateway } from '@shared/gateways/idea.gateway'
 import { UserGateway } from '@shared/gateways/user.gateway'
 import { S3Gateway } from '@shared/gateways/s3.gateway'
@@ -73,6 +78,7 @@ jest.mock('@prisma/client', () => ({
 			create: jest.fn(),
 			update: jest.fn(),
 			delete: jest.fn(),
+			deleteMany: jest.fn(),
 			count: jest.fn(),
 			upsert: jest.fn()
 		},
@@ -195,365 +201,371 @@ export class IntegrationTestSetup {
 				postgres_version: 'PostgreSQL 15.0'
 			}])
 
+		// Configura mocks específicos do SES
+		mockSESClient.send = jest.fn().mockResolvedValue({
+			MessageId: 'test-message-id-123'
+		})
+
 		// Mock das operações do Prisma para testes
 		Object.assign(mockPrismaClient, {
 			user: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'user-123',
-				userProfileId: 'profile-123',
-				email: 'test@example.com',
-				username: 'testuser',
-				verified: true,
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'user-123',
-				userProfileId: 'profile-123',
-				email: 'test@example.com',
-				username: 'testuser',
-				verified: true,
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'user-123',
-				userProfileId: 'profile-123',
-				email: 'test@example.com',
-				username: 'testuser',
-				verified: true,
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'user-123',
-				userProfileId: 'profile-123',
-				email: 'test@example.com',
-				username: 'testuser',
-				verified: true,
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'user-123',
+					userProfileId: 'profile-123',
+					email: 'test@example.com',
+					username: 'testuser',
+					verified: true,
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'user-123',
+					userProfileId: 'profile-123',
+					email: 'test@example.com',
+					username: 'testuser',
+					verified: true,
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'user-123',
+					userProfileId: 'profile-123',
+					email: 'test@example.com',
+					username: 'testuser',
+					verified: true,
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'user-123',
+					userProfileId: 'profile-123',
+					email: 'test@example.com',
+					username: 'testuser',
+					verified: true,
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			idea: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'idea-123',
-				title: 'Test Idea',
-				description: 'Test Description',
-				authorId: 'user-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'idea-123',
-				title: 'Test Idea',
-				description: 'Test Description',
-				authorId: 'user-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'idea-123',
-				title: 'Test Idea',
-				description: 'Test Description',
-				authorId: 'user-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'idea-123',
-				title: 'Test Idea',
-				description: 'Test Description',
-				authorId: 'user-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'idea-123',
+					title: 'Test Idea',
+					description: 'Test Description',
+					authorId: 'user-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'idea-123',
+					title: 'Test Idea',
+					description: 'Test Description',
+					authorId: 'user-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'idea-123',
+					title: 'Test Idea',
+					description: 'Test Description',
+					authorId: 'user-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'idea-123',
+					title: 'Test Idea',
+					description: 'Test Description',
+					authorId: 'user-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			userProfile: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'profile-123',
-				user_id: 'user-123',
-				name: 'Test User',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'profile-123',
-				user_id: 'user-123',
-				name: 'Test User',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'profile-123',
-				user_id: 'user-123',
-				name: 'Test User',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'profile-123',
-				user_id: 'user-123',
-				name: 'Test User',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'profile-123',
+					user_id: 'user-123',
+					name: 'Test User',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'profile-123',
+					user_id: 'user-123',
+					name: 'Test User',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'profile-123',
+					user_id: 'user-123',
+					name: 'Test User',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'profile-123',
+					user_id: 'user-123',
+					name: 'Test User',
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			comment: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'comment-123',
-				content: 'Test Comment',
-				authorId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'comment-123',
-				content: 'Test Comment',
-				authorId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'comment-123',
-				content: 'Test Comment',
-				authorId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'comment-123',
-				content: 'Test Comment',
-				authorId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'comment-123',
+					content: 'Test Comment',
+					authorId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'comment-123',
+					content: 'Test Comment',
+					authorId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'comment-123',
+					content: 'Test Comment',
+					authorId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'comment-123',
+					content: 'Test Comment',
+					authorId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			like: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'like-123',
-				userId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'like-123',
-				userId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'like-123',
-				userId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'like-123',
-				userId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'like-123',
+					userId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'like-123',
+					userId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'like-123',
+					userId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'like-123',
+					userId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			view: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'view-123',
-				userId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'view-123',
-				userId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'view-123',
-				userId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'view-123',
-				userId: 'user-123',
-				ideaId: 'idea-123',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			createMany: jest.fn().mockResolvedValue({ count: 1 })
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'view-123',
+					userId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'view-123',
+					userId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'view-123',
+					userId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'view-123',
+					userId: 'user-123',
+					ideaId: 'idea-123',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				createMany: jest.fn().mockResolvedValue({ count: 1 })
+			},
 			follow: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'follow-123',
-				followerId: 'user-123',
-				followingId: 'user-456',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'follow-123',
-				followerId: 'user-123',
-				followingId: 'user-456',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'follow-123',
-				followerId: 'user-123',
-				followingId: 'user-456',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'follow-123',
-				followerId: 'user-123',
-				followingId: 'user-456',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'follow-123',
+					followerId: 'user-123',
+					followingId: 'user-456',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'follow-123',
+					followerId: 'user-123',
+					followingId: 'user-456',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'follow-123',
+					followerId: 'user-123',
+					followingId: 'user-456',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'follow-123',
+					followerId: 'user-123',
+					followingId: 'user-456',
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			link: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'link-123',
-				userId: 'user-123',
-				url: 'https://example.com',
-				title: 'Example Link',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'link-123',
-				userId: 'user-123',
-				url: 'https://example.com',
-				title: 'Example Link',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'link-123',
-				userId: 'user-123',
-				url: 'https://example.com',
-				title: 'Example Link',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'link-123',
-				userId: 'user-123',
-				url: 'https://example.com',
-				title: 'Example Link',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'link-123',
+					userId: 'user-123',
+					url: 'https://example.com',
+					title: 'Example Link',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'link-123',
+					userId: 'user-123',
+					url: 'https://example.com',
+					title: 'Example Link',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'link-123',
+					userId: 'user-123',
+					url: 'https://example.com',
+					title: 'Example Link',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'link-123',
+					userId: 'user-123',
+					url: 'https://example.com',
+					title: 'Example Link',
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			tag: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'tag-123',
-				name: 'test',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'tag-123',
-				name: 'test',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'tag-123',
-				name: 'test',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'tag-123',
-				name: 'test',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'tag-123',
+					name: 'test',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'tag-123',
+					name: 'test',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'tag-123',
+					name: 'test',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'tag-123',
+					name: 'test',
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			image: {
-			findMany: jest.fn().mockResolvedValue([]),
-			findUnique: jest.fn().mockResolvedValue(null),
-			findFirst: jest.fn().mockResolvedValue(null),
-			create: jest.fn().mockResolvedValue({
-				id: 'image-123',
-				ideaId: 'idea-123',
-				url: 'https://example.com/image.jpg',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			update: jest.fn().mockResolvedValue({
-				id: 'image-123',
-				ideaId: 'idea-123',
-				url: 'https://example.com/image.jpg',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			delete: jest.fn().mockResolvedValue({
-				id: 'image-123',
-				ideaId: 'idea-123',
-				url: 'https://example.com/image.jpg',
-				created_at: new Date(),
-				updated_at: new Date()
-			}),
-			count: jest.fn().mockResolvedValue(0),
-			upsert: jest.fn().mockResolvedValue({
-				id: 'image-123',
-				ideaId: 'idea-123',
-				url: 'https://example.com/image.jpg',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-		},
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'image-123',
+					ideaId: 'idea-123',
+					url: 'https://example.com/image.jpg',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'image-123',
+					ideaId: 'idea-123',
+					url: 'https://example.com/image.jpg',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'image-123',
+					ideaId: 'idea-123',
+					url: 'https://example.com/image.jpg',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'image-123',
+					ideaId: 'idea-123',
+					url: 'https://example.com/image.jpg',
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			// Mock das operações de transação
 			$transaction: jest.fn().mockImplementation(async (queries: any[]) => {
 				console.log('🔍 Mock $transaction - Iniciando com queries:', queries.length)
@@ -567,6 +579,44 @@ export class IntegrationTestSetup {
 					throw error
 				}
 			}),
+			userOAuth: {
+				findMany: jest.fn().mockResolvedValue([]),
+				findUnique: jest.fn().mockResolvedValue(null),
+				findFirst: jest.fn().mockResolvedValue(null),
+				create: jest.fn().mockResolvedValue({
+					id: 'oauth-123',
+					userId: 'user-123',
+					provider: 'google',
+					email: 'test@example.com',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				update: jest.fn().mockResolvedValue({
+					id: 'oauth-123',
+					userId: 'user-123',
+					provider: 'google',
+					email: 'test@example.com',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				delete: jest.fn().mockResolvedValue({
+					id: 'oauth-123',
+					userId: 'user-123',
+					provider: 'google',
+					email: 'test@example.com',
+					created_at: new Date(),
+					updated_at: new Date()
+				}),
+				count: jest.fn().mockResolvedValue(0),
+				upsert: jest.fn().mockResolvedValue({
+					id: 'oauth-123',
+					userId: 'user-123',
+					provider: 'google',
+					email: 'test@example.com',
+					created_at: new Date(),
+					updated_at: new Date()
+				})
+			},
 			// Mock das operações de conexão
 			$connect: jest.fn().mockResolvedValue(undefined),
 			$disconnect: jest.fn().mockResolvedValue(undefined)
@@ -581,6 +631,9 @@ export class IntegrationTestSetup {
 			.register('RouteLister', { useClass: RouteLister })
 			.register('StartupModuleManager', { useClass: StartupModuleManager })
 			.register('AppModule', { useClass: AppModule })
+
+		// Exportar mockPrismaClient para uso em testes
+		container
 			.register('Logger', { useClass: Logger })
 			.register('IdeaRepository', { useClass: IdeaRepository })
 			.register('UserRepository', { useClass: UserRepository })
@@ -595,6 +648,11 @@ export class IntegrationTestSetup {
 			.register('AuthGateway', { useClass: AuthGateway })
 			.register('SESGateway', { useClass: SESGateway })
 			.register('RecordViewController', { useClass: RecordViewController })
+			.register('CreateCommentController', { useClass: CreateCommentController })
+			.register('ToggleLikeController', { useClass: ToggleLikeController })
+			.register('SendRecoverEmailController', { useClass: SendRecoverEmailController })
+			.register('VerifyEmailCodeController', { useClass: VerifyEmailCodeController })
+			.register('SocialLoginController', { useClass: SocialLoginController })
 
 		// Cria instância do App
 		this.app = new App(
@@ -650,9 +708,10 @@ export class IntegrationTestSetup {
 	static setupDefaultMocks(): void {
 		// Mock padrão do Prisma
 		const mockPrismaClient = container.resolve('PostgresqlClient') as any
-		
+
 		// Mock das operações básicas do Prisma usando a abordagem correta
 		mockPrismaClient.user.findUnique.mockResolvedValue(null)
+		mockPrismaClient.user.findFirst.mockResolvedValue(null)
 		mockPrismaClient.user.findMany.mockResolvedValue([])
 		mockPrismaClient.user.create.mockResolvedValue({})
 		mockPrismaClient.user.update.mockResolvedValue({})
@@ -682,6 +741,7 @@ export class IntegrationTestSetup {
 
 		mockPrismaClient.like.findUnique.mockResolvedValue(null)
 		mockPrismaClient.like.findMany.mockResolvedValue([])
+		mockPrismaClient.like.findFirst.mockResolvedValue(null)
 		mockPrismaClient.like.create.mockResolvedValue({})
 		mockPrismaClient.like.update.mockResolvedValue({})
 		mockPrismaClient.like.delete.mockResolvedValue({})
@@ -825,19 +885,19 @@ let globalBaseUrl: string
 
 beforeAll(async () => {
 	console.log('🚀 Starting Integration Tests...')
-	
+
 	// Inicia o servidor uma única vez para todos os testes
 	globalBaseUrl = await IntegrationTestSetup.startServer()
-	
+
 	console.log(`🌐 Test server started at ${globalBaseUrl}`)
 })
 
 afterAll(async () => {
 	console.log('🔄 Stopping test server...')
-	
+
 	// Para o servidor após todos os testes
 	await IntegrationTestSetup.stopServer()
-	
+
 	console.log('✅ Integration Tests Completed')
 })
 
@@ -845,12 +905,159 @@ afterAll(async () => {
 beforeEach(() => {
 	// Limpa console.log para evitar spam nos testes
 	// jest.spyOn(console, 'log').mockImplementation(() => {})
-	jest.spyOn(console, 'warn').mockImplementation(() => {})
-	jest.spyOn(console, 'error').mockImplementation(() => {})
-	
+	jest.spyOn(console, 'warn').mockImplementation(() => { })
+	jest.spyOn(console, 'error').mockImplementation(() => { })
+
+
 	// Limpa mocks antes de cada teste
 	IntegrationTestSetup.clearMocks()
 })
+
+// Utilitário para mock do axios
+export class AxiosMockHelper {
+	private static originalAxios: any
+	private static mockImplementations: Map<string, jest.Mock> = new Map()
+
+	static setupAxiosMock() {
+		const axios = require('axios')
+		this.originalAxios = axios
+		
+		// Mock dos métodos do axios
+		const mockGet = jest.fn()
+		const mockPost = jest.fn()
+		const mockPut = jest.fn()
+		const mockDelete = jest.fn()
+		const mockPatch = jest.fn()
+
+		// Mock padrão que permite chamadas reais para rotas locais
+		const defaultMock = (url: string, ...args: any[]) => {
+			// Se for uma URL local (nossa aplicação), permite chamada real
+			if (url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('/')) {
+				return this.originalAxios.get(url, ...args)
+			}
+			// Para URLs externas, usa mock
+			return Promise.resolve({ data: {} })
+		}
+
+		mockGet.mockImplementation(defaultMock)
+		mockPost.mockImplementation(defaultMock)
+		mockPut.mockImplementation(defaultMock)
+		mockDelete.mockImplementation(defaultMock)
+		mockPatch.mockImplementation(defaultMock)
+
+		this.mockImplementations.set('get', mockGet)
+		this.mockImplementations.set('post', mockPost)
+		this.mockImplementations.set('put', mockPut)
+		this.mockImplementations.set('delete', mockDelete)
+		this.mockImplementations.set('patch', mockPatch)
+
+		jest.spyOn(axios, 'get').mockImplementation(mockGet)
+		jest.spyOn(axios, 'post').mockImplementation(mockPost)
+		jest.spyOn(axios, 'put').mockImplementation(mockPut)
+		jest.spyOn(axios, 'delete').mockImplementation(mockDelete)
+		jest.spyOn(axios, 'patch').mockImplementation(mockPatch)
+	}
+
+	static mockExternalCall(method: 'get' | 'post' | 'put' | 'delete' | 'patch', urlPattern: string, response: any) {
+		const mock = this.mockImplementations.get(method)
+		if (!mock) return
+
+		// Mock que permite chamadas reais para URLs locais e mocka URLs externas específicas
+		mock.mockImplementation((url: string, ...args: any[]) => {
+			// Se for uma URL local, permite chamada real
+			if (url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('/')) {
+				return this.originalAxios[method](url, ...args)
+			}
+			// Se corresponde ao padrão específico, retorna o mock
+			if (url.includes(urlPattern)) {
+				return Promise.resolve(response)
+			}
+			// Para outras URLs externas, usa mock padrão
+			return Promise.resolve({ data: {} })
+		})
+	}
+
+	static mockSocialLoginCalls() {
+		// Mock para Google
+		this.mockExternalCall('get', 'www.googleapis.com/userinfo/v2/me', {
+			data: {
+				id: 'mock-google-user-id',
+				email: 'test@example.com',
+				name: 'Test User',
+				picture: 'https://example.com/avatar.jpg'
+			}
+		})
+
+		this.mockExternalCall('post', 'oauth2.googleapis.com/token', {
+			data: {
+				access_token: 'mock-google-access-token',
+				token_type: 'Bearer',
+				expires_in: 3600
+			}
+		})
+
+		this.mockExternalCall('post', 'oauth2.googleapis.com/revoke', {
+			data: {}
+		})
+
+		// Mock para GitHub
+		this.mockExternalCall('get', 'api.github.com/user', {
+			data: {
+				id: 'mock-github-user-id',
+				login: 'testuser',
+				email: 'test@example.com',
+				name: 'Test User',
+				avatar_url: 'https://example.com/avatar.jpg'
+			}
+		})
+
+		this.mockExternalCall('get', 'api.github.com/user/emails', {
+			data: [
+				{ email: 'test@example.com', primary: true, verified: true },
+				{ email: 'secondary@example.com', primary: false, verified: true }
+			]
+		})
+
+		this.mockExternalCall('post', 'github.com/login/oauth/access_token', {
+			data: {
+				access_token: 'mock-github-access-token',
+				token_type: 'bearer',
+				scope: 'user:email'
+			}
+		})
+
+		this.mockExternalCall('delete', 'api.github.com/applications', {
+			data: {}
+		})
+
+		// Mock para LinkedIn
+		this.mockExternalCall('get', 'api.linkedin.com/v2/userinfo', {
+			data: {
+				id: 'mock-linkedin-user-id',
+				firstName: { localized: { 'en_US': 'Test' } },
+				lastName: { localized: { 'en_US': 'User' } },
+				profilePicture: { 'displayImage~': { elements: [{ identifiers: [{ identifier: 'https://example.com/avatar.jpg' }] }] } }
+			}
+		})
+
+		this.mockExternalCall('post', 'linkedin.com/oauth/v2/accessToken', {
+			data: {
+				access_token: 'mock-linkedin-access-token',
+				expires_in: 5184000
+			}
+		})
+
+		this.mockExternalCall('post', 'linkedin.com/oauth/v2/revoke', {
+			data: {}
+		})
+	}
+
+	static clearMocks() {
+		this.mockImplementations.forEach(mock => {
+			mock.mockClear()
+		})
+	}
+}
 
 afterEach(() => {
 	// Restaura console.log após cada teste

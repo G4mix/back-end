@@ -83,7 +83,7 @@ describe('Verify Email Code Integration Tests', () => {
 					response: {
 						status: 400,
 						data: {
-							message: 'EMAIL_REQUIRED'
+							message: 'INVALID_EMAIL'
 						}
 					}
 				})
@@ -102,9 +102,7 @@ describe('Verify Email Code Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: {
-							message: 'USER_NOT_FOUND'
-						}
+						data: 'USER_NOT_FOUND'
 					}
 				})
 		})
@@ -135,9 +133,7 @@ describe('Verify Email Code Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
-						data: {
-							message: 'CODE_EXPIRED'
-						}
+						data: 'CODE_EXPIRED'
 					}
 				})
 		})
@@ -167,9 +163,7 @@ describe('Verify Email Code Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
-						data: {
-							message: 'CODE_NOT_EQUALS'
-						}
+						data: 'CODE_NOT_EQUALS'
 					}
 				})
 		})

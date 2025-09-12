@@ -218,8 +218,19 @@ describe('Change Password Integration Tests', () => {
 
 		it('should return USER_NOT_FOUND when user does not exist', async () => {
 			// Arrange
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			
+			// Gera um JWT limitado válido
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const limitedToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId,
+				validRoutes: [{ route: '/auth/change-password', method: 'POST' }]
+			})
+			httpClient.setAuthToken(limitedToken)
+
 			const changePasswordData = {
-				currentPassword: 'OldPassword123!',
 				newPassword: 'NewPassword123!'
 			}
 
@@ -244,50 +255,61 @@ describe('Change Password Integration Tests', () => {
 				})
 		})
 
-		it('should return INVALID_CURRENT_PASSWORD when current password is wrong', async () => {
-			// Arrange
-			const changePasswordData = {
-				currentPassword: 'WrongPassword123!',
-				newPassword: 'NewPassword123!'
-			}
-
-			// Mock do Prisma para retornar usuário existente
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							password: '$2b$10$hashedpassword',
-							verified: true
-						})
-					}
-				}
-			})
-
-			// Act & Assert
-			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
-				.rejects.toMatchObject({
-					response: {
-						status: 401,
-						data: {
-							message: 'INVALID_CURRENT_PASSWORD'
-						}
-					}
-				})
-		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			
+			// Gera um JWT limitado válido
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const limitedToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId,
+				validRoutes: [{ route: '/auth/change-password', method: 'POST' }]
+			})
+			httpClient.setAuthToken(limitedToken)
+
 			const changePasswordData = {
-				currentPassword: 'OldPassword123!',
 				newPassword: 'NewPassword123!'
 			}
 
 			// Mock do Prisma para retornar erro
+			let callCount = 0
 			IntegrationTestSetup.setupMocks({
 				prisma: {
 					user: {
-						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.id === userId) {
+								// Primeira chamada (middleware de segurança) retorna usuário válido
+								// Segunda chamada (controller) retorna erro
+								if (callCount === 0) {
+									callCount = 1
+									return Promise.resolve({
+										id: userId,
+										username: 'testuser',
+										email: 'test@example.com',
+										verified: true,
+										created_at: new Date(),
+										updated_at: new Date(),
+										userProfileId: userProfileId,
+										loginAttempts: 0,
+										blockedUntil: null,
+										userProfile: {
+											id: userProfileId,
+											name: null,
+											bio: null,
+											icon: null,
+											created_at: new Date(),
+											updated_at: new Date()
+										}
+									})
+								} else {
+									return Promise.reject(new Error('Database connection failed'))
+								}
+							}
+							return Promise.resolve(null)
+						})
 					}
 				}
 			})

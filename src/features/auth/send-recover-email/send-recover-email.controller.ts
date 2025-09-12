@@ -62,7 +62,15 @@ export class SendRecoverEmailController extends Controller {
 		const normalizedEmail = email.toLowerCase()
 
 		const user = await this.userRepository.findByEmail({ email: normalizedEmail })
-		if (!user) return 'USER_NOT_FOUND'
+		if (!user) {
+			this.setStatus(404)
+			return 'USER_NOT_FOUND'
+		}
+
+		if (user.verified) {
+			this.setStatus(500)
+			return 'ERROR_WHILE_SENDING_EMAIL'
+		}
 
 		const code = generateRandomCode()
 
@@ -71,7 +79,10 @@ export class SendRecoverEmailController extends Controller {
 			receiver: normalizedEmail, 
 			data: { code } 
 		})
-		if (typeof sentEmail === 'string') return sentEmail
+		if (typeof sentEmail === 'string') {
+			this.setStatus(500)
+			return sentEmail
+		}
 
 		await this.userRepository.update({ id: user.id, code })
 

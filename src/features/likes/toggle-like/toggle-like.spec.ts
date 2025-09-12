@@ -87,6 +87,38 @@ describe('Toggle Like Integration Tests', () => {
 							comments: 0,
 							views: 0
 						}
+					}),
+					findUnique: jest.fn().mockImplementation(({ where }) => {
+						if (where.id === ideaId) {
+							return Promise.resolve({
+								id: ideaId,
+								title: ideaData.title,
+								description: ideaData.description,
+								authorId: TestData.generateUUID(),
+								created_at: new Date(),
+								updated_at: new Date(),
+								author: {
+									id: TestData.generateUUID(),
+									username: 'testuser',
+									email: 'test@example.com',
+									userProfile: {
+										id: TestData.generateUUID(),
+										name: 'Test User',
+										bio: null,
+										icon: null
+									}
+								},
+								images: [],
+								tags: [],
+								links: [],
+								_count: {
+									likes: 0,
+									comments: 0,
+									views: 0
+								}
+							})
+						}
+						return Promise.resolve(null)
 					})
 				}
 			}
@@ -129,10 +161,10 @@ describe('Toggle Like Integration Tests', () => {
 			const response = await httpClient.post('/v1/likes/toggle', likeData)
 
 			// Assert
-			expect(response.status).toBe(201)
-			expect(response.data).toHaveProperty('id')
-			expect(response.data.ideaId).toBe(likeData.ideaId)
-			expect(response.data).toHaveProperty('created_at')
+			expect(response.status).toBe(200)
+			expect(response.data).toHaveProperty('liked')
+			expect(response.data).toHaveProperty('likeCount')
+			expect(response.data).toHaveProperty('message')
 		})
 
 		it('should remove like successfully when already liked', async () => {
@@ -145,12 +177,12 @@ describe('Toggle Like Integration Tests', () => {
 				created_at: new Date()
 			}
 			
-			// Mock do Prisma para retornar like existente e depois deletar
 			IntegrationTestSetup.setupMocks({
 				prisma: {
 					like: {
 						findFirst: jest.fn().mockResolvedValue(existingLike),
-						delete: jest.fn().mockResolvedValue(existingLike)
+						deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+						count: jest.fn().mockResolvedValue(0)
 					}
 				}
 			})
@@ -210,15 +242,13 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/likes/toggle', likeData))
-				.rejects.toMatchObject({
-					response: {
-						status: 404,
-						data: {
-							message: 'IDEA_NOT_FOUND'
-						}
-					}
-				})
+					await expect(httpClient.post('/v1/likes/toggle', likeData))
+							.rejects.toMatchObject({
+								response: {
+									status: 404,
+									data: 'IDEA_NOT_FOUND'
+								}
+							})
 		})
 
 		it('should handle database errors gracefully', async () => {
@@ -228,6 +258,40 @@ describe('Toggle Like Integration Tests', () => {
 			// Mock do Prisma para retornar erro
 			IntegrationTestSetup.setupMocks({
 				prisma: {
+					idea: {
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.id === ideaId) {
+								return Promise.resolve({
+									id: ideaId,
+									title: 'Test Idea',
+									description: 'Test Description',
+									authorId: TestData.generateUUID(),
+									created_at: new Date(),
+									updated_at: new Date(),
+									author: {
+										id: TestData.generateUUID(),
+										username: 'testuser',
+										email: 'test@example.com',
+										userProfile: {
+											id: TestData.generateUUID(),
+											name: 'Test User',
+											bio: null,
+											icon: null
+										}
+									},
+									images: [],
+									tags: [],
+									links: [],
+									_count: {
+										likes: 0,
+										comments: 0,
+										views: 0
+									}
+								})
+							}
+							return Promise.resolve(null)
+						})
+					},
 					like: {
 						findFirst: jest.fn().mockRejectedValue(new Error('Database connection failed'))
 					}

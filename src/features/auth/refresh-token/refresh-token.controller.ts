@@ -75,6 +75,11 @@ export class RefreshTokenController extends Controller {
 			return 'USER_NOT_FOUND'
 		}
 
+		if (!user.verified) {
+			this.setStatus(403)
+			return 'USER_NOT_VERIFIED'
+		}
+
 		const data = {
 			accessToken: JwtManager.generateToken({
 				sub: user.id,

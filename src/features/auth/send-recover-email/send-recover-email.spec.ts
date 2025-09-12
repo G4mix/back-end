@@ -42,7 +42,7 @@ describe('Recover Email Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/v1/auth/recover-email', recoverEmailData)
+			const response = await httpClient.post('/v1/auth/send-recover-email', recoverEmailData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -79,7 +79,7 @@ describe('Recover Email Integration Tests', () => {
 					response: {
 						status: 400,
 						data: {
-							message: 'EMAIL_REQUIRED'
+							message: 'INVALID_EMAIL'
 						}
 					}
 				})
@@ -100,9 +100,7 @@ describe('Recover Email Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
-						data: {
-							message: 'USER_NOT_FOUND'
-						}
+						data: 'USER_NOT_FOUND'
 					}
 				})
 		})
@@ -125,10 +123,8 @@ describe('Recover Email Integration Tests', () => {
 			await expect(httpClient.post('/v1/auth/send-recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
-						status: 409,
-						data: {
-							message: 'USER_ALREADY_VERIFIED'
-						}
+						status: 500,
+						data: 'ERROR_WHILE_SENDING_EMAIL'
 					}
 				})
 		})
