@@ -28,7 +28,7 @@ describe('Delete Idea Integration Tests', () => {
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -59,10 +59,7 @@ describe('Delete Idea Integration Tests', () => {
 			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
 			mockPrismaClient.idea.delete.mockResolvedValue(existingIdea)
 
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
-			jest.spyOn(mockIdeaRepository, 'delete').mockResolvedValue(existingIdea)
+			// Mock do Prisma já configurado acima
 
 			// Act
 			const response = await httpClient.delete(`/v1/ideas/${ideaId}`)
@@ -114,7 +111,7 @@ describe('Delete Idea Integration Tests', () => {
 			httpClient.setAuthToken(authToken)
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -134,9 +131,7 @@ describe('Delete Idea Integration Tests', () => {
 			// Mock da ideia como null (não encontrada)
 			mockPrismaClient.idea.findUnique.mockResolvedValue(null)
 
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(null)
+			// Mock do Prisma já configurado acima
 
 			// Act & Assert
 			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
@@ -157,7 +152,7 @@ describe('Delete Idea Integration Tests', () => {
 			httpClient.setAuthToken(authToken)
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -186,9 +181,7 @@ describe('Delete Idea Integration Tests', () => {
 
 			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
 
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
+			// Mock do Prisma já configurado acima
 
 			// Act & Assert
 			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
@@ -205,7 +198,7 @@ describe('Delete Idea Integration Tests', () => {
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -236,10 +229,7 @@ describe('Delete Idea Integration Tests', () => {
 			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
 			mockPrismaClient.idea.delete.mockResolvedValue(existingIdea)
 
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
-			jest.spyOn(mockIdeaRepository, 'delete').mockResolvedValue(existingIdea)
+			// Mock do Prisma já configurado acima
 
 			// Act
 			const response = await httpClient.delete(`/v1/ideas/${ideaId}`)
@@ -258,7 +248,7 @@ describe('Delete Idea Integration Tests', () => {
 			httpClient.setAuthToken(authToken)
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -277,10 +267,6 @@ describe('Delete Idea Integration Tests', () => {
 
 			// Mock de erro no banco
 			mockPrismaClient.idea.findUnique.mockRejectedValue(new Error('Database connection failed'))
-
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
 			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))

@@ -107,7 +107,7 @@ export class GetIdeasController extends Controller {
 		try {
 			const userId = request?.user?.sub
 			if (!userId) {
-				this.setStatus(401)
+				this.setStatus(CommonErrors.UNAUTHORIZED.code)
 				return CommonErrors.UNAUTHORIZED
 			}
 
@@ -160,7 +160,7 @@ export class GetIdeasController extends Controller {
 				userId: request.user?.sub 
 			})
 			
-			this.setStatus(500)
+			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}
 	}

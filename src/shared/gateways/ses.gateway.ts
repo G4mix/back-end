@@ -4,6 +4,7 @@ import {
 	GetIdentityVerificationAttributesCommand,
 	VerifyEmailIdentityCommand
 } from '@aws-sdk/client-ses'
+import { CommonErrors, ErrorResponse } from '@shared/utils/error-response'
 import { inject, injectable, singleton } from 'tsyringe'
 
 export type Email = {
@@ -21,7 +22,7 @@ export class SESGateway {
 
 	public async sendEmail(
 		{ template, receiver, data }: Email
-	): Promise<{ MessageId: string; } | 'ERROR_WHILE_SENDING_EMAIL'> {
+	): Promise<{ MessageId: string; } | ErrorResponse> {
 		const email = new SendTemplatedEmailCommand({
 			Source: 'System - Gamix <gamix.app.prod@gmail.com>',
 			Template: template as string,
@@ -37,11 +38,11 @@ export class SESGateway {
 			return { MessageId: response.MessageId! }
 		} catch (error) {
 			console.error('Error sending email:', error)
-			return 'ERROR_WHILE_SENDING_EMAIL'
+			return CommonErrors.ERROR_WHILE_SENDING_EMAIL
 		}
 	}
 
-	public async verifyIdentity({ receiver }: { receiver: string }): Promise<{ MessageId: string; } | 'ERROR_WHILE_VERIFYING_EMAIL'> {
+	public async verifyIdentity({ receiver }: { receiver: string }): Promise<{ MessageId: string; } | ErrorResponse> {
 		const command = new VerifyEmailIdentityCommand({
 			EmailAddress: receiver
 		})
@@ -51,11 +52,11 @@ export class SESGateway {
 			return { MessageId: 'verification-sent' }
 		} catch (error) {
 			console.error('Error verifying email:', error)
-			return 'ERROR_WHILE_VERIFYING_EMAIL'
+			return CommonErrors.ERROR_WHILE_VERIFYING_EMAIL
 		}
 	}
 
-	public async checkEmailStatus(email: string): Promise<{ status: EmailStatus } | 'ERROR_WHILE_CHECKING_EMAIL_STATUS'> {
+	public async checkEmailStatus(email: string): Promise<{ status: EmailStatus } | ErrorResponse> {
 		const command = new GetIdentityVerificationAttributesCommand({
 			Identities: [email]
 		})
@@ -66,7 +67,7 @@ export class SESGateway {
 			return { status: verificationStatus as EmailStatus }
 		} catch (error) {
 			console.error('Error checking email status:', error)
-			return 'ERROR_WHILE_CHECKING_EMAIL_STATUS'
+			return CommonErrors.ERROR_WHILE_CHECKING_EMAIL_STATUS
 		}
 	}
 }

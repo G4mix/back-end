@@ -28,7 +28,7 @@ describe('Delete User Integration Tests', () => {
 		it('should delete user successfully', async () => {
 			// Arrange
 			// Mock do Prisma para autenticação
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique.mockResolvedValue({
 				id: 'user-123',
 				username: 'testuser',
@@ -68,15 +68,15 @@ describe('Delete User Integration Tests', () => {
 			}
 			
 			// Mock do Prisma
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 			mockPrismaClient.user.delete.mockResolvedValue({
 				id: mockUser.id
 			})
 
-			// Mock do S3Gateway
-			const mockS3Gateway = container.resolve('S3Gateway') as any
-			jest.spyOn(mockS3Gateway, 'deleteFile').mockResolvedValue({})
+			// Mock do S3Client para deletar arquivo
+			const mockS3Client = container.resolve('S3Client') as any
+			mockS3Client.send.mockResolvedValue({})
 
 			// Act
 			const response = await httpClient.delete('/v1/users')
@@ -107,7 +107,7 @@ describe('Delete User Integration Tests', () => {
 			const authToken = TestTokens.generateValidToken()
 			httpClient.setAuthToken(authToken)
 			
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
@@ -139,7 +139,7 @@ describe('Delete User Integration Tests', () => {
 			}
 			
 			// Mock do Prisma
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 			mockPrismaClient.user.delete.mockResolvedValue({
 				id: mockUser.id
@@ -175,7 +175,7 @@ describe('Delete User Integration Tests', () => {
 				}
 			}
 			
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			// Mock para autenticação funcionar
 			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 			// Mock para simular erro no delete
@@ -207,7 +207,7 @@ describe('Delete User Integration Tests', () => {
 			}
 			
 			// Mock do Prisma
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 			mockPrismaClient.user.delete.mockResolvedValue({
 				id: mockUser.id
@@ -216,10 +216,6 @@ describe('Delete User Integration Tests', () => {
 			// Mock do S3 para deletar arquivos
 			const mockS3Client = container.resolve('S3Client') as any
 			mockS3Client.send.mockResolvedValue({})
-			
-			// Mock do S3Gateway
-			const mockS3Gateway = container.resolve('S3Gateway') as any
-			jest.spyOn(mockS3Gateway, 'deleteFile').mockResolvedValue({})
 
 			// Act
 			const response = await httpClient.delete('/v1/users')

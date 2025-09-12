@@ -45,7 +45,7 @@ export class GetFollowingController extends Controller {
 		try {
 			const userProfileId = request?.user?.userProfileId
 			if (!userProfileId) {
-				this.setStatus(401)
+				this.setStatus(CommonErrors.UNAUTHORIZED.code)
 				return CommonErrors.UNAUTHORIZED
 			}
 
@@ -102,7 +102,7 @@ export class GetFollowingController extends Controller {
 				error: error instanceof Error ? error.message : 'Unknown error',
 				userProfileId: request.user?.userProfileId 
 			})
-			this.setStatus(500)
+			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}
 	}

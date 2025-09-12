@@ -29,7 +29,7 @@ describe('Signup Integration Tests', () => {
 			}
 
 			// Mock do Prisma
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique
 				.mockResolvedValueOnce(null) // Email não existe
 				.mockResolvedValueOnce(null) // Username não existe
@@ -126,6 +126,104 @@ describe('Signup Integration Tests', () => {
 						data: {
 							message: 'INVALID_NAME'
 						}
+					}
+				})
+		})
+
+		it('should return USER_ALREADY_EXISTS when user already exists', async () => {
+			// Arrange
+			const userData = {
+				username: 'existinguser',
+				email: 'existing@example.com',
+				password: 'TestPassword123!'
+			}
+
+			// Mock do UserRepository para retornar usuário existente
+			const mockUserRepository = container.resolve('UserRepository') as any
+			mockUserRepository.findByEmail.mockResolvedValue({
+				id: 'existing-user-123',
+				username: 'existinguser',
+				email: 'existing@example.com',
+				verified: false,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfile: {
+					id: 'profile-existing-123',
+					displayName: null,
+					autobiography: null,
+					icon: null,
+					backgroundImage: null,
+					links: [],
+					_count: {
+						followers: 0,
+						following: 0
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/signup', userData))
+				.rejects.toMatchObject({
+					response: {
+						status: 409,
+						data: {
+							message: 'USER_ALREADY_EXISTS'
+						}
+					}
+				})
+		})
+
+		it('should return error when email verification fails', async () => {
+			// Arrange
+			const userData = {
+				username: 'newuser',
+				email: 'unverified@example.com',
+				password: 'TestPassword123!'
+			}
+
+			// Mock do PostgresqlClient para retornar null (usuário não existe)
+			const { container } = require('tsyringe')
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			mockPrismaClient.user.findUnique.mockResolvedValue(null)
+
+			// Mock do SESClient para retornar erro
+			const mockSESClient = container.resolve('SESClient') as any
+			mockSESClient.send.mockRejectedValue(new Error('SES verification failed'))
+
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/signup', userData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500,
+						data: {
+							message: 'ERROR_WHILE_VERIFYING_EMAIL'
+						}
+					}
+				})
+		})
+
+		it('should handle database errors gracefully', async () => {
+			// Arrange
+			const userData = {
+				username: 'testuser',
+				email: 'test@example.com',
+				password: 'TestPassword123!'
+			}
+
+			// Mock do Prisma para simular erro de banco
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					user: {
+						findUnique: jest.fn().mockRejectedValue(new Error('Database connection error'))
+					}
+				}
+			})
+
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/signup', userData))
+				.rejects.toMatchObject({
+					response: {
+						status: 500
 					}
 				})
 		})

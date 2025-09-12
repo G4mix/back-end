@@ -29,14 +29,19 @@
 				"additionalProperties": false
 			},
 			"ErrorResponse": {
-				"description": "Utilitário para padronizar retornos de erro\nGarante que todos os erros sigam o formato: { message: 'ERROR_CODE' }",
+				"description": "Interface para respostas de erro padronizadas",
 				"properties": {
 					"message": {
 						"type": "string"
+					},
+					"code": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
-					"message"
+					"message",
+					"code"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1365,15 +1370,22 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"properties": {
-										"message": {
-											"type": "string"
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/ErrorResponse"
+										},
+										{
+											"properties": {
+												"message": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"message"
+											],
+											"type": "object"
 										}
-									},
-									"required": [
-										"message"
-									],
-									"type": "object"
+									]
 								}
 							}
 						}

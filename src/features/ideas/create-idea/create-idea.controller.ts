@@ -74,7 +74,7 @@ export class CreateIdeaController extends Controller {
 		try {
 			const userProfileId = request.user?.userProfileId
 			if (!userProfileId) {
-				this.setStatus(401)
+				this.setStatus(CommonErrors.UNAUTHORIZED.code)
 				return CommonErrors.UNAUTHORIZED
 			}
 
@@ -87,7 +87,7 @@ export class CreateIdeaController extends Controller {
 			// Validate that title is unique
 			const existingIdea = await this.ideaRepository.findByTitle(body.title)
 			if (existingIdea) {
-				this.setStatus(409)
+				this.setStatus(CommonErrors.USER_ALREADY_EXISTS.code)
 				return CommonErrors.USER_ALREADY_EXISTS // Usando a constante existente para conflito
 			}
 
@@ -129,7 +129,7 @@ export class CreateIdeaController extends Controller {
 				userProfileId: request.user?.userProfileId 
 			})
 			
-			this.setStatus(500)
+			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}
 	}

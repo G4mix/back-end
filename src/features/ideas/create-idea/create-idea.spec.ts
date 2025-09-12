@@ -66,9 +66,9 @@ describe('Create Idea Integration Tests', () => {
 				}
 			})
 			
-			// Mock do IdeaGateway
-			const mockIdeaGateway = container.resolve('IdeaGateway') as any
-			jest.spyOn(mockIdeaGateway, 'uploadIdeaImages').mockResolvedValue([]) // Nenhuma imagem processada
+			// Mock do S3Client para upload de imagens
+			const mockS3Client = container.resolve('S3Client') as any
+			mockS3Client.send.mockResolvedValue({})
 
 			// Act
 			httpClient.setAuthToken(authToken)

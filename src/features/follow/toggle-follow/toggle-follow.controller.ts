@@ -80,7 +80,7 @@ export class ToggleFollowController extends Controller {
 			const userId = request.user?.sub
 			const userProfileId = request.user?.userProfileId
 			if (!userId || !userProfileId) {
-				this.setStatus(401)
+				this.setStatus(CommonErrors.UNAUTHORIZED.code)
 				return CommonErrors.UNAUTHORIZED
 			}
 
@@ -97,14 +97,14 @@ export class ToggleFollowController extends Controller {
 
 			// Prevent self-following
 			if (userProfileId === followingId) {
-				this.setStatus(400)
-				return { message: 'CANNOT_FOLLOW_SELF' }
+				this.setStatus(CommonErrors.CANNOT_FOLLOW_SELF.code)
+				return CommonErrors.CANNOT_FOLLOW_SELF
 			}
 
 			// Validate that target user profile exists
 			const targetUser = await this.userRepository.findUserByProfileId({ userProfileId: followingId })
 			if (!targetUser) {
-				this.setStatus(404)
+				this.setStatus(CommonErrors.USER_NOT_FOUND.code)
 				return CommonErrors.USER_NOT_FOUND
 			}
 
@@ -124,8 +124,8 @@ export class ToggleFollowController extends Controller {
 				})
 
 				if (unfollowResult === 'FOLLOW_NOT_FOUND') {
-					this.setStatus(404)
-					return { message: 'FOLLOW_NOT_FOUND' }
+					this.setStatus(CommonErrors.FOLLOW_NOT_FOUND.code)
+					return CommonErrors.FOLLOW_NOT_FOUND
 				}
 
 				response = {
@@ -140,8 +140,8 @@ export class ToggleFollowController extends Controller {
 				})
 
 				if (followResult === 'YOU_CANT_FOLLOW_YOURSELF') {
-					this.setStatus(400)
-					return { message: 'CANNOT_FOLLOW_SELF' }
+					this.setStatus(CommonErrors.CANNOT_FOLLOW_SELF.code)
+					return CommonErrors.CANNOT_FOLLOW_SELF
 				}
 
 				if (followResult === 'ALREADY_FOLLOWING') {
@@ -174,7 +174,7 @@ export class ToggleFollowController extends Controller {
 				followingId: body.followingId,
 			})
 			
-			this.setStatus(500)
+			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}
 	}

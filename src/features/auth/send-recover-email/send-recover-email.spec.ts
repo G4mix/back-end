@@ -29,7 +29,8 @@ describe('Recover Email Integration Tests', () => {
 			}
 
 			// Mock do Prisma
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const { container } = require('tsyringe')
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique.mockResolvedValue({
 				id: TestData.generateUUID(),
 				email: recoverEmailData.email,
@@ -92,7 +93,8 @@ describe('Recover Email Integration Tests', () => {
 			}
 
 			// Mock do Prisma para retornar null
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const { container } = require('tsyringe')
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
@@ -112,7 +114,8 @@ describe('Recover Email Integration Tests', () => {
 			}
 
 			// Mock do Prisma para retornar usuário já verificado
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const { container } = require('tsyringe')
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique.mockResolvedValue({
 				id: TestData.generateUUID(),
 				email: recoverEmailData.email,

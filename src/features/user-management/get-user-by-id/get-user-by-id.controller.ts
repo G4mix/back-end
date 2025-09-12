@@ -72,7 +72,7 @@ export class GetUserByIdController extends Controller {
 		const user = await this.userRepository.findById({ id: userId })
 		
 		if (!user) {
-			this.setStatus(404)
+			this.setStatus(CommonErrors.USER_NOT_FOUND.code)
 			return CommonErrors.USER_NOT_FOUND
 		}
 

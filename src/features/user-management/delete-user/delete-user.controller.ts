@@ -76,7 +76,7 @@ export class DeleteUserController extends Controller {
 			const user = await this.userRepository.findById({ id: req.user.sub })
 			console.log('🔍 Delete user - user found:', user)
 			if (!user) {
-				this.setStatus(404)
+				this.setStatus(CommonErrors.USER_NOT_FOUND.code)
 				return CommonErrors.USER_NOT_FOUND
 			}
 
@@ -97,7 +97,7 @@ export class DeleteUserController extends Controller {
 			return { message: 'USER_DELETED_SUCCESSFULLY' }
 		} catch (error) {
 			console.log('🔍 Delete user - error:', error)
-			this.setStatus(500)
+			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}
 	}

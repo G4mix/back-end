@@ -66,18 +66,18 @@ export class RefreshTokenController extends Controller {
 		try {
 			userId = JwtManager.decode(token).sub
 		} catch (err) {
-			this.setStatus(401)
+			this.setStatus(CommonErrors.UNAUTHORIZED.code)
 			return CommonErrors.UNAUTHORIZED
 		}
 
 		const user = await this.userRepository.findById({ id: userId })
 		if (!user) {
-			this.setStatus(404)
+			this.setStatus(CommonErrors.USER_NOT_FOUND.code)
 			return CommonErrors.USER_NOT_FOUND
 		}
 
 		if (!user.verified) {
-			this.setStatus(403)
+			this.setStatus(CommonErrors.EMAIL_NOT_VERIFIED.code)
 			return CommonErrors.EMAIL_NOT_VERIFIED
 		}
 

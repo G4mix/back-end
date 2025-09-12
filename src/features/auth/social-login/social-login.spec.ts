@@ -20,46 +20,6 @@ describe('Social Login Integration Tests', () => {
 	beforeEach(() => {
 		// Limpa mocks antes de cada teste
 		IntegrationTestSetup.clearMocks()
-		
-		// Mock do AuthGateway diretamente para evitar problemas com axios
-		const AuthGateway = require('@shared/gateways/auth.gateway').AuthGateway
-		jest.spyOn(AuthGateway.prototype, 'validateSocialLogin').mockResolvedValue({
-			valid: true,
-			userData: {
-				name: 'Test User',
-				email: 'test@example.com'
-			}
-		})
-
-		// Mock do Prisma para retornar um usuário OAuth existente
-		const { container } = require('tsyringe')
-		const mockPrismaClient = container.resolve('PostgresqlClient')
-		
-		mockPrismaClient.userOAuth.findUnique.mockResolvedValue({
-			id: 'oauth-123',
-			userId: 'user-123',
-			provider: 'google',
-			email: 'test@example.com',
-			created_at: new Date(),
-			updated_at: new Date(),
-			user: {
-				id: 'user-123',
-				username: 'testuser',
-				email: 'test@example.com',
-				verified: true,
-				userProfileId: 'profile-123',
-				created_at: new Date(),
-				updated_at: new Date(),
-				userProfile: {
-					id: 'profile-123',
-					name: 'Test User',
-					bio: 'Test bio',
-					avatar: 'https://example.com/avatar.jpg',
-					created_at: new Date(),
-					updated_at: new Date()
-				}
-			}
-		})
 	})
 
 	describe('POST /v1/auth/social-login', () => {

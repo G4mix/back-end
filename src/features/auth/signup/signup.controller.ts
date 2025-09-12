@@ -10,15 +10,15 @@ import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants/jwt'
 import { UserWithProfile, UserDTO } from '@shared/dto/simple.dto'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
-import { createErrorResponse, ErrorResponse, CommonErrors } from '@shared/utils/error-response'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/auth')
 @Tags('Authentication')
 export class SignupController extends Controller {
 	constructor(
-		private userRepository: UserRepository,
-		private sesGateway: SESGateway,
+		@inject('UserRepository') private userRepository: UserRepository,
+		@inject('SESGateway') private sesGateway: SESGateway,
 		@inject('Logger') private logger: Logger
 	) {
 		super()
@@ -80,10 +80,16 @@ export class SignupController extends Controller {
 		const normalizedEmail = email.toLowerCase()
 
 		const existingUser = await this.userRepository.findByEmail({ email: normalizedEmail })
-		if (existingUser) return CommonErrors.USER_ALREADY_EXISTS
+		if (existingUser) {
+			this.setStatus(CommonErrors.USER_ALREADY_EXISTS.code)
+			return CommonErrors.USER_ALREADY_EXISTS
+		}
 
 		const emailVerification = await this.sesGateway.verifyIdentity({ receiver: normalizedEmail })
-		if (typeof emailVerification === 'string') return createErrorResponse(emailVerification)
+		if ('message' in emailVerification) {
+			this.setStatus(emailVerification.code)
+			return emailVerification
+		}
 
 		const createdUser = await this.userRepository.create({
 			password: BCryptEncoder.encode(password),
@@ -106,6 +112,7 @@ export class SignupController extends Controller {
 
 		await this.userRepository.update({ id: createdUser.id, token: data.refreshToken })
 
+		this.setStatus(201)
 		return data
 	}
 }

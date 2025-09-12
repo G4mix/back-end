@@ -4,7 +4,7 @@ import { injectable } from 'tsyringe'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
-import { createErrorResponse, ErrorResponse, CommonErrors } from '@shared/utils/error-response'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/auth')
@@ -64,7 +64,7 @@ export class VerifyEmailCodeController extends Controller {
 
 		const user = await this.userRepository.findByEmail({ email: normalizedEmail })
 		if (!user || !user.userCode) {
-			this.setStatus(404)
+			this.setStatus(CommonErrors.USER_NOT_FOUND.code)
 			return CommonErrors.USER_NOT_FOUND
 		}
 
@@ -77,12 +77,12 @@ export class VerifyEmailCodeController extends Controller {
 		}
 
 		if (isCodeExpired()) {
-			this.setStatus(400)
-			return createErrorResponse('CODE_EXPIRED') // Este erro específico não está nas constantes comuns
+			this.setStatus(CommonErrors.CODE_EXPIRED.code)
+			return CommonErrors.CODE_EXPIRED
 		}
 		if (user.userCode.code !== normalizedCode) {
-			this.setStatus(400)
-			return createErrorResponse('CODE_NOT_EQUALS') // Este erro específico não está nas constantes comuns
+			this.setStatus(CommonErrors.CODE_NOT_EQUALS.code)
+			return CommonErrors.CODE_NOT_EQUALS
 		}
 
 		const { JwtManager } = await import('@shared/utils/jwt-manager')

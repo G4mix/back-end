@@ -74,6 +74,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "message": {"dataType":"string","required":true},
+            "code": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
     },

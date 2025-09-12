@@ -12,8 +12,11 @@ Para todo e qualquer teste que for modificado deve-se seguir as seguintes regras
 9 - Nunca fazer requisições para banco de dados, ou serviços externos, sempre fazer mock disso;
 10 - No jest.setup tem os mocks qualquer mock pode ser manipulado através dele das importações de lá, lide com isso da melhor forma possível;
 11 - Os mocks devem ser feitos apenas nas seguintes injeções que são as interações diretas que devem ser mockadas, os testes devem funcionar mockando apenas essas injeções:
-- @inject('SESClient') private ses: SESClient
-- @inject('S3Client') private s3: S3Client
-- @inject('PostgresqlClient') private prisma: PrismaClient
+- @inject('SESClient') private ses: SESClient;
+- @inject('S3Client') private s3: S3Client;
+- @inject('PostgresqlClient') private prisma: PrismaClient;
+- No axios quando necessário, e deve usar os mocks existentes no setup de testes lá tem alguns já;
+12 - Cada branch, function, line e statement deve estar 100% na pasta coverage;
+13 - Os mocks devem ser apenas dos principais já citados e nos 3 primeiros citados: SESClient, S3Client, PostgresqlClient, o mock deve ser feito fazendo um import { container } from 'tsyringe' no topo do arquivo e importando do container as any para então realizar o mock.
 
-Objetivo final: Quero 100% de cobertura na minha aplicação fazendo apenas essas requisições sem ter que criar um teste para um arquivo específico, apenas fazendo as requisições dessa forma e claro deixando um pouco de lado os arquivos puramente pra tipagem, esses da pasta types nem precisam ser contados no coverage.
+Objetivo final: Quero 100% de cobertura na minha aplicação de acordo com a regra 12, fazendo apenas requisições sem ter que criar um teste para um arquivo específico. Os que não forem necessário serem testados eu tiro do coverage.

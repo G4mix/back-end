@@ -67,7 +67,7 @@ export class GetIdeaByIdController extends Controller {
 		try {
 			const userProfileId = request.user?.userProfileId
 			if (!userProfileId) {
-				this.setStatus(401)
+				this.setStatus(CommonErrors.UNAUTHORIZED.code)
 				return CommonErrors.UNAUTHORIZED
 			}
 
@@ -79,7 +79,7 @@ export class GetIdeaByIdController extends Controller {
 			// Retrieve idea from database
 			const idea = await this.ideaRepository.findById(id)
 			if (!idea) {
-				this.setStatus(404)
+				this.setStatus(CommonErrors.IDEA_NOT_FOUND.code)
 				return CommonErrors.IDEA_NOT_FOUND
 			}
 
@@ -104,7 +104,7 @@ export class GetIdeaByIdController extends Controller {
 				userProfileId: request.user?.userProfileId,
 				ideaId: id
 			})
-			this.setStatus(500)
+			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}
 	}

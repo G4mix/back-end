@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { Logger } from '@shared/utils/logger'
-import { messages } from '@shared/constants/messages'
+import { CommonErrors } from '@shared/utils/error-response'
 import { DTORegistry } from '@shared/utils/dto-registry'
 import { initializeAllDTOs } from '@shared/utils/dto-initializer'
 
@@ -313,7 +313,7 @@ export class AutoValidationMiddleware {
 	 */
 	private handleValidationError(error: any, req: Request, res: Response) {
 		if (error instanceof ValidationError) {
-			const statusCode = messages[error.code as keyof typeof messages] || 400
+			const statusCode = CommonErrors[error.code as keyof typeof CommonErrors]?.code || 400
 
 			this.logger.warn('Validation failed', {
 				path: req.path,

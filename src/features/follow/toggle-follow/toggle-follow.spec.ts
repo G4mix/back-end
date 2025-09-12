@@ -192,8 +192,9 @@ describe('Toggle Follow Integration Tests', () => {
 			})
 
 			// Mock do UserRepository para retornar null (usuário não encontrado)
-			const { UserRepository } = require('@shared/repositories/user.repository')
-			jest.spyOn(UserRepository.prototype, 'findUserByProfileId').mockResolvedValue(null)
+			const { container } = require('tsyringe')
+			const mockUserRepository = container.resolve('UserRepository') as any
+			mockUserRepository.findUserByProfileId.mockResolvedValue(null)
 
 			// Act & Assert
 			await expect(httpClient.post('/v1/follow/toggle', followData))
@@ -215,7 +216,8 @@ describe('Toggle Follow Integration Tests', () => {
 			}
 
 			// Mock do Prisma para retornar erro de auto-follow
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const { container } = require('tsyringe')
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			mockPrismaClient.user.findUnique.mockResolvedValue({
 				id: 'user-123',
 				userProfileId: followingId,
@@ -242,21 +244,15 @@ describe('Toggle Follow Integration Tests', () => {
 				followingId: TestData.generateUUID()
 			}
 
-			// Mock do Prisma para retornar erro
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: 'user-123',
-							userProfileId: TestData.generateUUID(),
-							email: 'test@example.com'
-						})
-					},
-					follow: {
-						findFirst: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-					}
-				}
+			// Mock do PostgresqlClient para retornar erro
+			const { container } = require('tsyringe')
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: TestData.generateUUID(),
+				email: 'test@example.com'
 			})
+			mockPrismaClient.follow.findFirst.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
 			await expect(httpClient.post('/v1/follow/toggle', followData))

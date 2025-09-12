@@ -64,7 +64,7 @@ export class UpdateIdeaController extends Controller {
 		try {
 			const userProfileId = request?.user?.userProfileId
 			if (!userProfileId) {
-				this.setStatus(401)
+				this.setStatus(CommonErrors.UNAUTHORIZED.code)
 				return CommonErrors.UNAUTHORIZED
 			}
 
@@ -78,13 +78,13 @@ export class UpdateIdeaController extends Controller {
 			// Check if idea exists
 			const existingIdea = await this.ideaRepository.findById(id)
 			if (!existingIdea) {
-				this.setStatus(404)
+				this.setStatus(CommonErrors.IDEA_NOT_FOUND.code)
 				return CommonErrors.IDEA_NOT_FOUND
 			}
 
 			// Check if user is the author
 			if (existingIdea.authorId !== userProfileId) {
-				this.setStatus(403)
+				this.setStatus(CommonErrors.FORBIDDEN.code)
 				return CommonErrors.FORBIDDEN
 			}
 
@@ -129,7 +129,7 @@ export class UpdateIdeaController extends Controller {
 				userProfileId: request.user?.userProfileId,
 				ideaId: id
 			})
-			this.setStatus(500)
+			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}
 	}

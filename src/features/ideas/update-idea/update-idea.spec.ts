@@ -36,7 +36,7 @@ describe('Update Idea Integration Tests', () => {
 			}
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -74,15 +74,12 @@ describe('Update Idea Integration Tests', () => {
 			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
 			mockPrismaClient.idea.update.mockResolvedValue(updatedIdea)
 			
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
-			jest.spyOn(mockIdeaRepository, 'update').mockResolvedValue(updatedIdea)
+			// Mock do Prisma já configurado acima
 			
 			
-			// Mock do IdeaGateway
-			const mockIdeaGateway = container.resolve('IdeaGateway') as any
-			jest.spyOn(mockIdeaGateway, 'uploadIdeaImages').mockResolvedValue([]) // Nenhuma imagem processada
+			// Mock do S3Client para upload de imagens
+			const mockS3Client = container.resolve('S3Client') as any
+			mockS3Client.send.mockResolvedValue({})
 
 			// Act & Assert
 			try {
@@ -111,7 +108,7 @@ describe('Update Idea Integration Tests', () => {
 			}
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -140,9 +137,7 @@ describe('Update Idea Integration Tests', () => {
 			
 			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
 			
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
+			// Mock do Prisma já configurado acima
 
 			// Act & Assert
 			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
@@ -168,7 +163,7 @@ describe('Update Idea Integration Tests', () => {
 			}
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -197,9 +192,7 @@ describe('Update Idea Integration Tests', () => {
 			
 			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
 			
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
+			// Mock do Prisma já configurado acima
 
 			// Act & Assert
 			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
@@ -253,7 +246,7 @@ describe('Update Idea Integration Tests', () => {
 			httpClient.setAuthToken(authToken)
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -273,9 +266,7 @@ describe('Update Idea Integration Tests', () => {
 			// Mock da ideia como null (não encontrada)
 			mockPrismaClient.idea.findUnique.mockResolvedValue(null)
 			
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(null)
+			// Mock do Prisma já configurado acima
 
 			// Act & Assert
 			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
@@ -303,7 +294,7 @@ describe('Update Idea Integration Tests', () => {
 			httpClient.setAuthToken(authToken)
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -332,9 +323,7 @@ describe('Update Idea Integration Tests', () => {
 			
 			mockPrismaClient.idea.findUnique.mockResolvedValue(existingIdea)
 			
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockResolvedValue(existingIdea)
+			// Mock do Prisma já configurado acima
 
 			// Act & Assert
 			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
@@ -362,7 +351,7 @@ describe('Update Idea Integration Tests', () => {
 			httpClient.setAuthToken(authToken)
 
 			// Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 			
 			// Mock do usuário para o middleware de segurança
 			mockPrismaClient.user.findUnique.mockResolvedValue({
@@ -381,10 +370,6 @@ describe('Update Idea Integration Tests', () => {
 			
 			// Mock de erro no banco
 			mockPrismaClient.idea.findUnique.mockRejectedValue(new Error('Database connection failed'))
-			
-			// Mock do IdeaRepository
-			const mockIdeaRepository = container.resolve('IdeaRepository') as any
-			jest.spyOn(mockIdeaRepository, 'findById').mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
 			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))

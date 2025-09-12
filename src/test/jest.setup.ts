@@ -9,130 +9,47 @@ import { S3Client } from '@aws-sdk/client-s3'
 import { SESClient } from '@aws-sdk/client-ses'
 import { S3ClientOptions, SESClientOptions } from '@shared/constants/aws'
 import { RouteLister } from '@shared/utils/route-lister'
-import { IdeaRepository } from '@shared/repositories/idea.repository'
+
+// Import repositories (não precisam ser mockados - usam Prisma mockado)
 import { UserRepository } from '@shared/repositories/user.repository'
-import { FollowRepository } from '@shared/repositories/follow.repository'
-import { LinkRepository } from '@shared/repositories/link.repository'
+import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { CommentRepository } from '@shared/repositories/comment.repository'
+import { FollowRepository } from '@shared/repositories/follow.repository'
 import { LikeRepository } from '@shared/repositories/like.repository'
 import { ViewRepository } from '@shared/repositories/view.repository'
-import { RecordViewController } from '@features/views/record-view/record-view.controller'
-import { CreateCommentController } from '@features/comments/create-comment/create-comment.controller'
-import { ToggleLikeController } from '@features/likes/toggle-like/toggle-like.controller'
-import { SendRecoverEmailController } from '@features/auth/send-recover-email/send-recover-email.controller'
-import { VerifyEmailCodeController } from '@features/auth/verify-email-code/verify-email-code.controller'
-import { SocialLoginController } from '@features/auth/social-login/social-login.controller'
-import { IdeaGateway } from '@shared/gateways/idea.gateway'
-import { UserGateway } from '@shared/gateways/user.gateway'
-import { S3Gateway } from '@shared/gateways/s3.gateway'
+
+// Import gateways (não precisam ser mockados - usam serviços externos mockados)
 import { AuthGateway } from '@shared/gateways/auth.gateway'
+import { UserGateway } from '@shared/gateways/user.gateway'
 import { SESGateway } from '@shared/gateways/ses.gateway'
+import { S3Gateway } from '@shared/gateways/s3.gateway'
+
+// Helper para criar mocks padrão do Prisma
+const createPrismaTableMock = () => ({
+	findMany: jest.fn(),
+	findUnique: jest.fn(),
+	findFirst: jest.fn(),
+	create: jest.fn(),
+	update: jest.fn(),
+	delete: jest.fn(),
+	count: jest.fn(),
+	upsert: jest.fn()
+})
 
 // Mock do Prisma
 jest.mock('@prisma/client', () => ({
 	PrismaClient: jest.fn().mockImplementation(() => ({
-		user: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn()
-		},
-		userProfile: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn()
-		},
-		idea: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn()
-		},
-		comment: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn()
-		},
-		like: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			deleteMany: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn()
-		},
-		view: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn(),
-			createMany: jest.fn()
-		},
-		follow: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn()
-		},
-		tag: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn()
-		},
-		image: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn()
-		},
-		link: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			findFirst: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn(),
-			upsert: jest.fn()
-		},
+		user: createPrismaTableMock(),
+		userProfile: createPrismaTableMock(),
+		idea: createPrismaTableMock(),
+		comment: createPrismaTableMock(),
+		like: { ...createPrismaTableMock(), deleteMany: jest.fn() },
+		view: { ...createPrismaTableMock(), createMany: jest.fn() },
+		follow: createPrismaTableMock(),
+		tag: createPrismaTableMock(),
+		image: createPrismaTableMock(),
+		link: createPrismaTableMock(),
+		userOAuth: createPrismaTableMock(),
 		$transaction: jest.fn(),
 		$connect: jest.fn(),
 		$disconnect: jest.fn(),
@@ -206,420 +123,18 @@ export class IntegrationTestSetup {
 			MessageId: 'test-message-id-123'
 		})
 
-		// Mock das operações do Prisma para testes
-		Object.assign(mockPrismaClient, {
-			user: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'user-123',
-					userProfileId: 'profile-123',
-					email: 'test@example.com',
-					username: 'testuser',
-					verified: true,
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'user-123',
-					userProfileId: 'profile-123',
-					email: 'test@example.com',
-					username: 'testuser',
-					verified: true,
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'user-123',
-					userProfileId: 'profile-123',
-					email: 'test@example.com',
-					username: 'testuser',
-					verified: true,
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'user-123',
-					userProfileId: 'profile-123',
-					email: 'test@example.com',
-					username: 'testuser',
-					verified: true,
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			idea: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'idea-123',
-					title: 'Test Idea',
-					description: 'Test Description',
-					authorId: 'user-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'idea-123',
-					title: 'Test Idea',
-					description: 'Test Description',
-					authorId: 'user-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'idea-123',
-					title: 'Test Idea',
-					description: 'Test Description',
-					authorId: 'user-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'idea-123',
-					title: 'Test Idea',
-					description: 'Test Description',
-					authorId: 'user-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			userProfile: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'profile-123',
-					user_id: 'user-123',
-					name: 'Test User',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'profile-123',
-					user_id: 'user-123',
-					name: 'Test User',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'profile-123',
-					user_id: 'user-123',
-					name: 'Test User',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'profile-123',
-					user_id: 'user-123',
-					name: 'Test User',
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			comment: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'comment-123',
-					content: 'Test Comment',
-					authorId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'comment-123',
-					content: 'Test Comment',
-					authorId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'comment-123',
-					content: 'Test Comment',
-					authorId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'comment-123',
-					content: 'Test Comment',
-					authorId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			like: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'like-123',
-					userId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'like-123',
-					userId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'like-123',
-					userId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'like-123',
-					userId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			view: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'view-123',
-					userId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'view-123',
-					userId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'view-123',
-					userId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'view-123',
-					userId: 'user-123',
-					ideaId: 'idea-123',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				createMany: jest.fn().mockResolvedValue({ count: 1 })
-			},
-			follow: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'follow-123',
-					followerId: 'user-123',
-					followingId: 'user-456',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'follow-123',
-					followerId: 'user-123',
-					followingId: 'user-456',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'follow-123',
-					followerId: 'user-123',
-					followingId: 'user-456',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'follow-123',
-					followerId: 'user-123',
-					followingId: 'user-456',
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			link: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'link-123',
-					userId: 'user-123',
-					url: 'https://example.com',
-					title: 'Example Link',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'link-123',
-					userId: 'user-123',
-					url: 'https://example.com',
-					title: 'Example Link',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'link-123',
-					userId: 'user-123',
-					url: 'https://example.com',
-					title: 'Example Link',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'link-123',
-					userId: 'user-123',
-					url: 'https://example.com',
-					title: 'Example Link',
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			tag: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'tag-123',
-					name: 'test',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'tag-123',
-					name: 'test',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'tag-123',
-					name: 'test',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'tag-123',
-					name: 'test',
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			image: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'image-123',
-					ideaId: 'idea-123',
-					url: 'https://example.com/image.jpg',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'image-123',
-					ideaId: 'idea-123',
-					url: 'https://example.com/image.jpg',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'image-123',
-					ideaId: 'idea-123',
-					url: 'https://example.com/image.jpg',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'image-123',
-					ideaId: 'idea-123',
-					url: 'https://example.com/image.jpg',
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			// Mock das operações de transação
-			$transaction: jest.fn().mockImplementation(async (queries: any[]) => {
-				console.log('🔍 Mock $transaction - Iniciando com queries:', queries.length)
-				try {
-					// Executa as queries em paralelo
-					const results = await Promise.all(queries.map((query: any) => query()))
-					console.log('✅ Mock $transaction - Sucesso:', results)
-					return results
-				} catch (error) {
-					console.error('❌ Mock $transaction - Erro:', error)
-					throw error
-				}
-			}),
-			userOAuth: {
-				findMany: jest.fn().mockResolvedValue([]),
-				findUnique: jest.fn().mockResolvedValue(null),
-				findFirst: jest.fn().mockResolvedValue(null),
-				create: jest.fn().mockResolvedValue({
-					id: 'oauth-123',
-					userId: 'user-123',
-					provider: 'google',
-					email: 'test@example.com',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				update: jest.fn().mockResolvedValue({
-					id: 'oauth-123',
-					userId: 'user-123',
-					provider: 'google',
-					email: 'test@example.com',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				delete: jest.fn().mockResolvedValue({
-					id: 'oauth-123',
-					userId: 'user-123',
-					provider: 'google',
-					email: 'test@example.com',
-					created_at: new Date(),
-					updated_at: new Date()
-				}),
-				count: jest.fn().mockResolvedValue(0),
-				upsert: jest.fn().mockResolvedValue({
-					id: 'oauth-123',
-					userId: 'user-123',
-					provider: 'google',
-					email: 'test@example.com',
-					created_at: new Date(),
-					updated_at: new Date()
-				})
-			},
-			// Mock das operações de conexão
-			$connect: jest.fn().mockResolvedValue(undefined),
-			$disconnect: jest.fn().mockResolvedValue(undefined)
+		// Configura mocks específicos do Prisma
+		mockPrismaClient.$queryRaw = jest.fn()
+			.mockResolvedValueOnce([{ test: 1 }]) // Para o primeiro $queryRaw (SELECT 1 as test)
+			.mockResolvedValueOnce([{ // Para o segundo $queryRaw (database info)
+				database_name: 'test_db',
+				current_user: 'test_user',
+				postgres_version: 'PostgreSQL 15.0'
+			}])
+
+		// Mock das operações de transação
+		;(mockPrismaClient.$transaction as jest.Mock).mockImplementation(async (callback: any) => {
+			return await callback(mockPrismaClient)
 		})
 
 		// Registra as dependências necessárias
@@ -631,28 +146,19 @@ export class IntegrationTestSetup {
 			.register('RouteLister', { useClass: RouteLister })
 			.register('StartupModuleManager', { useClass: StartupModuleManager })
 			.register('AppModule', { useClass: AppModule })
-
-		// Exportar mockPrismaClient para uso em testes
-		container
 			.register('Logger', { useClass: Logger })
-			.register('IdeaRepository', { useClass: IdeaRepository })
+			// Registra repositories
 			.register('UserRepository', { useClass: UserRepository })
-			.register('FollowRepository', { useClass: FollowRepository })
-			.register('LinkRepository', { useClass: LinkRepository })
+			.register('IdeaRepository', { useClass: IdeaRepository })
 			.register('CommentRepository', { useClass: CommentRepository })
+			.register('FollowRepository', { useClass: FollowRepository })
 			.register('LikeRepository', { useClass: LikeRepository })
 			.register('ViewRepository', { useClass: ViewRepository })
-			.register('S3Gateway', { useClass: S3Gateway })
-			.register('IdeaGateway', { useClass: IdeaGateway })
-			.register('UserGateway', { useClass: UserGateway })
+			// Registra gateways
 			.register('AuthGateway', { useClass: AuthGateway })
+			.register('UserGateway', { useClass: UserGateway })
 			.register('SESGateway', { useClass: SESGateway })
-			.register('RecordViewController', { useClass: RecordViewController })
-			.register('CreateCommentController', { useClass: CreateCommentController })
-			.register('ToggleLikeController', { useClass: ToggleLikeController })
-			.register('SendRecoverEmailController', { useClass: SendRecoverEmailController })
-			.register('VerifyEmailCodeController', { useClass: VerifyEmailCodeController })
-			.register('SocialLoginController', { useClass: SocialLoginController })
+			.register('S3Gateway', { useClass: S3Gateway })
 
 		// Cria instância do App
 		this.app = new App(
@@ -660,17 +166,18 @@ export class IntegrationTestSetup {
 			container.resolve('Logger')
 		)
 
-		// Aplica mocks padrão antes de iniciar o servidor
-		this.setupDefaultMocks()
-
 		// Inicia o servidor
 		await this.app.start()
+
+		// Aplica mocks padrão
+		this.setupDefaultMocks()
 
 		// Aguarda um pouco para o servidor inicializar
 		await new Promise(resolve => setTimeout(resolve, 2000))
 
 		return 'http://localhost:8080'
 	}
+
 
 	/**
 	 * Para o servidor após os testes
@@ -706,85 +213,25 @@ export class IntegrationTestSetup {
 	 * Aplica mocks padrão para todos os testes
 	 */
 	static setupDefaultMocks(): void {
-		// Mock padrão do Prisma
 		const mockPrismaClient = container.resolve('PostgresqlClient') as any
+		const tables = ['user', 'idea', 'userProfile', 'comment', 'like', 'view', 'follow', 'link', 'tag', 'image', 'userOAuth']
 
-		// Mock das operações básicas do Prisma usando a abordagem correta
-		mockPrismaClient.user.findUnique.mockResolvedValue(null)
-		mockPrismaClient.user.findFirst.mockResolvedValue(null)
-		mockPrismaClient.user.findMany.mockResolvedValue([])
-		mockPrismaClient.user.create.mockResolvedValue({})
-		mockPrismaClient.user.update.mockResolvedValue({})
-		mockPrismaClient.user.delete.mockResolvedValue({})
-		mockPrismaClient.user.count.mockResolvedValue(0)
-
-		mockPrismaClient.idea.findUnique.mockResolvedValue(null)
-		mockPrismaClient.idea.findMany.mockResolvedValue([])
-		mockPrismaClient.idea.create.mockResolvedValue({})
-		mockPrismaClient.idea.update.mockResolvedValue({})
-		mockPrismaClient.idea.delete.mockResolvedValue({})
-		mockPrismaClient.idea.count.mockResolvedValue(0)
-
-		mockPrismaClient.userProfile.findUnique.mockResolvedValue(null)
-		mockPrismaClient.userProfile.findMany.mockResolvedValue([])
-		mockPrismaClient.userProfile.create.mockResolvedValue({})
-		mockPrismaClient.userProfile.update.mockResolvedValue({})
-		mockPrismaClient.userProfile.delete.mockResolvedValue({})
-		mockPrismaClient.userProfile.count.mockResolvedValue(0)
-
-		mockPrismaClient.comment.findUnique.mockResolvedValue(null)
-		mockPrismaClient.comment.findMany.mockResolvedValue([])
-		mockPrismaClient.comment.create.mockResolvedValue({})
-		mockPrismaClient.comment.update.mockResolvedValue({})
-		mockPrismaClient.comment.delete.mockResolvedValue({})
-		mockPrismaClient.comment.count.mockResolvedValue(0)
-
-		mockPrismaClient.like.findUnique.mockResolvedValue(null)
-		mockPrismaClient.like.findMany.mockResolvedValue([])
-		mockPrismaClient.like.findFirst.mockResolvedValue(null)
-		mockPrismaClient.like.create.mockResolvedValue({})
-		mockPrismaClient.like.update.mockResolvedValue({})
-		mockPrismaClient.like.delete.mockResolvedValue({})
-		mockPrismaClient.like.count.mockResolvedValue(0)
-
-		mockPrismaClient.view.findUnique.mockResolvedValue(null)
-		mockPrismaClient.view.findMany.mockResolvedValue([])
-		mockPrismaClient.view.create.mockResolvedValue({})
-		mockPrismaClient.view.update.mockResolvedValue({})
-		mockPrismaClient.view.delete.mockResolvedValue({})
-		mockPrismaClient.view.count.mockResolvedValue(0)
-
-		mockPrismaClient.follow.findUnique.mockResolvedValue(null)
-		mockPrismaClient.follow.findMany.mockResolvedValue([]) // Comentado para não interferir nos testes
-		mockPrismaClient.follow.create.mockResolvedValue({})
-		mockPrismaClient.follow.update.mockResolvedValue({})
-		mockPrismaClient.follow.delete.mockResolvedValue({})
-		mockPrismaClient.follow.count.mockResolvedValue(0) // Comentado para não interferir nos testes
-
-		mockPrismaClient.link.findUnique.mockResolvedValue(null)
-		mockPrismaClient.link.findMany.mockResolvedValue([])
-		mockPrismaClient.link.create.mockResolvedValue({})
-		mockPrismaClient.link.update.mockResolvedValue({})
-		mockPrismaClient.link.delete.mockResolvedValue({})
-		mockPrismaClient.link.count.mockResolvedValue(0)
-
-		mockPrismaClient.tag.findUnique.mockResolvedValue(null)
-		mockPrismaClient.tag.findMany.mockResolvedValue([])
-		mockPrismaClient.tag.create.mockResolvedValue({})
-		mockPrismaClient.tag.update.mockResolvedValue({})
-		mockPrismaClient.tag.delete.mockResolvedValue({})
-		mockPrismaClient.tag.count.mockResolvedValue(0)
-
-		mockPrismaClient.image.findUnique.mockResolvedValue(null)
-		mockPrismaClient.image.findMany.mockResolvedValue([])
-		mockPrismaClient.image.create.mockResolvedValue({})
-		mockPrismaClient.image.update.mockResolvedValue({})
-		mockPrismaClient.image.delete.mockResolvedValue({})
-		mockPrismaClient.image.count.mockResolvedValue(0)
-
-		mockPrismaClient.$transaction.mockImplementation(async (callback: any) => {
-			return await callback(mockPrismaClient)
+		// Aplica mocks padrão para todas as tabelas
+		tables.forEach(table => {
+			const tableMock = mockPrismaClient[table]
+			tableMock.findUnique.mockResolvedValue(null)
+			tableMock.findFirst.mockResolvedValue(null)
+			tableMock.findMany.mockResolvedValue([])
+			tableMock.create.mockResolvedValue({})
+			tableMock.update.mockResolvedValue({})
+			tableMock.delete.mockResolvedValue({})
+			tableMock.count.mockResolvedValue(0)
+			tableMock.upsert.mockResolvedValue({})
 		})
+
+		// Mocks específicos para operações especiais
+		mockPrismaClient.like.deleteMany.mockResolvedValue({ count: 1 })
+		mockPrismaClient.view.createMany.mockResolvedValue({ count: 1 })
 		mockPrismaClient.$connect.mockResolvedValue(undefined)
 		mockPrismaClient.$disconnect.mockResolvedValue(undefined)
 	}
@@ -829,10 +276,8 @@ export class IntegrationTestSetup {
 		if (mocks.repositories) {
 			Object.keys(mocks.repositories).forEach(repositoryName => {
 				const repository = container.resolve(repositoryName) as any
-				console.log(`🔧 Mocking ${repositoryName}:`, Object.keys(mocks.repositories[repositoryName]))
 				Object.keys(mocks.repositories[repositoryName]).forEach(method => {
 					jest.spyOn(repository, method).mockImplementation(mocks.repositories[repositoryName][method])
-					console.log(`  ✅ Mocked ${method}`)
 				})
 			})
 		}
@@ -841,10 +286,8 @@ export class IntegrationTestSetup {
 		if (mocks.gateways) {
 			Object.keys(mocks.gateways).forEach(gatewayName => {
 				const gateway = container.resolve(gatewayName) as any
-				console.log(`🔧 Mocking ${gatewayName}:`, Object.keys(mocks.gateways[gatewayName]))
 				Object.keys(mocks.gateways[gatewayName]).forEach(method => {
 					jest.spyOn(gateway, method).mockImplementation(mocks.gateways[gatewayName][method])
-					console.log(`  ✅ Mocked ${method}`)
 				})
 			})
 		}
@@ -884,30 +327,24 @@ export class IntegrationTestSetup {
 let globalBaseUrl: string
 
 beforeAll(async () => {
-	console.log('🚀 Starting Integration Tests...')
+	// Configura mocks do axios
+	AxiosMockHelper.setupAxiosMock()
+	AxiosMockHelper.mockSocialLoginCalls()
 
 	// Inicia o servidor uma única vez para todos os testes
 	globalBaseUrl = await IntegrationTestSetup.startServer()
-
-	console.log(`🌐 Test server started at ${globalBaseUrl}`)
 })
 
 afterAll(async () => {
-	console.log('🔄 Stopping test server...')
-
 	// Para o servidor após todos os testes
 	await IntegrationTestSetup.stopServer()
-
-	console.log('✅ Integration Tests Completed')
 })
 
 // Configurações para cada teste
 beforeEach(() => {
-	// Limpa console.log para evitar spam nos testes
-	// jest.spyOn(console, 'log').mockImplementation(() => {})
-	jest.spyOn(console, 'warn').mockImplementation(() => { })
-	jest.spyOn(console, 'error').mockImplementation(() => { })
-
+	// Suprime logs de console durante os testes para evitar spam
+	jest.spyOn(console, 'warn').mockImplementation(() => {})
+	jest.spyOn(console, 'error').mockImplementation(() => {})
 
 	// Limpa mocks antes de cada teste
 	IntegrationTestSetup.clearMocks()
@@ -922,47 +359,33 @@ export class AxiosMockHelper {
 		const axios = require('axios')
 		this.originalAxios = axios
 		
-		// Mock dos métodos do axios
-		const mockGet = jest.fn()
-		const mockPost = jest.fn()
-		const mockPut = jest.fn()
-		const mockDelete = jest.fn()
-		const mockPatch = jest.fn()
+		const isLocalUrl = (url: string) => 
+			url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('/')
 
-		// Mock padrão que permite chamadas reais para rotas locais
-		const defaultMock = (url: string, ...args: any[]) => {
-			// Se for uma URL local (nossa aplicação), permite chamada real
-			if (url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('/')) {
-				return this.originalAxios.get(url, ...args)
-			}
-			// Para URLs externas, usa mock
-			return Promise.resolve({ data: {} })
+		const createMockMethod = (method: string) => {
+			const mock = jest.fn().mockImplementation((url: string, ...args: any[]) => {
+				if (isLocalUrl(url)) {
+					return this.originalAxios[method](url, ...args)
+				}
+				return Promise.resolve({ data: {} })
+			})
+			this.mockImplementations.set(method, mock)
+			jest.spyOn(axios, method).mockImplementation(mock)
+			return mock
 		}
 
-		mockGet.mockImplementation(defaultMock)
-		mockPost.mockImplementation(defaultMock)
-		mockPut.mockImplementation(defaultMock)
-		mockDelete.mockImplementation(defaultMock)
-		mockPatch.mockImplementation(defaultMock)
-
-		this.mockImplementations.set('get', mockGet)
-		this.mockImplementations.set('post', mockPost)
-		this.mockImplementations.set('put', mockPut)
-		this.mockImplementations.set('delete', mockDelete)
-		this.mockImplementations.set('patch', mockPatch)
-
-		jest.spyOn(axios, 'get').mockImplementation(mockGet)
-		jest.spyOn(axios, 'post').mockImplementation(mockPost)
-		jest.spyOn(axios, 'put').mockImplementation(mockPut)
-		jest.spyOn(axios, 'delete').mockImplementation(mockDelete)
-		jest.spyOn(axios, 'patch').mockImplementation(mockPatch)
+		// Cria mocks para todos os métodos HTTP
+		createMockMethod('get')
+		createMockMethod('post')
+		createMockMethod('put')
+		createMockMethod('delete')
+		createMockMethod('patch')
 	}
 
 	static mockExternalCall(method: 'get' | 'post' | 'put' | 'delete' | 'patch', urlPattern: string, response: any) {
 		const mock = this.mockImplementations.get(method)
 		if (!mock) return
 
-		// Mock que permite chamadas reais para URLs locais e mocka URLs externas específicas
 		mock.mockImplementation((url: string, ...args: any[]) => {
 			// Se for uma URL local, permite chamada real
 			if (url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('/')) {
@@ -978,7 +401,7 @@ export class AxiosMockHelper {
 	}
 
 	static mockSocialLoginCalls() {
-		// Mock para Google
+		// Mock para Google - getUserData
 		this.mockExternalCall('get', 'www.googleapis.com/userinfo/v2/me', {
 			data: {
 				id: 'mock-google-user-id',
@@ -1000,7 +423,7 @@ export class AxiosMockHelper {
 			data: {}
 		})
 
-		// Mock para GitHub
+		// Mock para GitHub - getUserData
 		this.mockExternalCall('get', 'api.github.com/user', {
 			data: {
 				id: 'mock-github-user-id',
@@ -1011,6 +434,7 @@ export class AxiosMockHelper {
 			}
 		})
 
+		// Mock para GitHub - getUserPrimaryEmail
 		this.mockExternalCall('get', 'api.github.com/user/emails', {
 			data: [
 				{ email: 'test@example.com', primary: true, verified: true },
@@ -1030,12 +454,14 @@ export class AxiosMockHelper {
 			data: {}
 		})
 
-		// Mock para LinkedIn
+		// Mock para LinkedIn - getUser
 		this.mockExternalCall('get', 'api.linkedin.com/v2/userinfo', {
 			data: {
 				id: 'mock-linkedin-user-id',
 				firstName: { localized: { 'en_US': 'Test' } },
 				lastName: { localized: { 'en_US': 'User' } },
+				email: 'test@example.com',
+				name: 'Test User',
 				profilePicture: { 'displayImage~': { elements: [{ identifiers: [{ identifier: 'https://example.com/avatar.jpg' }] }] } }
 			}
 		})
@@ -1060,12 +486,16 @@ export class AxiosMockHelper {
 }
 
 afterEach(() => {
-	// Restaura console.log após cada teste
+	// Restaura mocks após cada teste
 	jest.restoreAllMocks()
 })
 
-// Configurações de timeout
-jest.setTimeout(30000) // 30 segundos por teste
+// Configurações de timeout otimizadas
+jest.setTimeout(20000) // 20 segundos por teste (reduzido de 30s)
+
+// Configurações adicionais do Jest
+jest.retryTimes(0) // Não tenta novamente em caso de falha
+jest.clearAllMocks() // Limpa todos os mocks automaticamente
 
 // Exporta a URL base global para os testes
 export { globalBaseUrl }

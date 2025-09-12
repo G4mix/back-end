@@ -9,7 +9,7 @@ import { EXPIRATION_TIME_REFRESH_TOKEN } from '@shared/constants/jwt'
 import { UserDTO } from '@shared/dto/simple.dto'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { Logger } from '@shared/utils/logger'
-import { createErrorResponse, ErrorResponse, CommonErrors } from '@shared/utils/error-response'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/auth')
@@ -81,14 +81,14 @@ export class SigninController extends Controller {
 		let user = await this.userRepository.findByEmail({ email: normalizedEmail })
 		if (!user) {
 			this.logger.warn('Signin failed - user not found', { email: normalizedEmail })
-			this.setStatus(404)
+			this.setStatus(CommonErrors.USER_NOT_FOUND.code)
 			return CommonErrors.USER_NOT_FOUND
 		}
 
 		if (!user.verified) {
 			this.logger.info('Checking email verification status', { userId: user.id, email: normalizedEmail })
 			const emailStatus = await this.sesGateway.checkEmailStatus(normalizedEmail)
-			if (typeof emailStatus === 'object' && emailStatus.status === 'Success') {
+			if (typeof emailStatus === 'object' && 'status' in emailStatus && emailStatus.status === 'Success') {
 				user = await this.userRepository.update({ id: user.id, verified: true })
 				await this.sesGateway.sendEmail({ template: 'SignUp', receiver: user.email })
 				this.logger.info('Email verified and welcome email sent', { userId: user.id })
@@ -103,7 +103,7 @@ export class SigninController extends Controller {
 		if (moreThanFiveAttempts) {
 			if (blockedByTime) {
 				this.logger.warn('Signin blocked - too many attempts', { userId: user.id, attempts })
-				this.setStatus(429)
+				this.setStatus(CommonErrors.EXCESSIVE_LOGIN_ATTEMPTS.code)
 				return CommonErrors.EXCESSIVE_LOGIN_ATTEMPTS
 			}
 			attempts = 0
@@ -133,8 +133,8 @@ export class SigninController extends Controller {
 				'WRONG_PASSWORD_FOUR_TIMES',
 				'WRONG_PASSWORD_FIVE_TIMES',
 			]
-			this.setStatus(401)
-			return createErrorResponse(possibleErrors[attempts - 1])
+			this.setStatus(CommonErrors.UNAUTHORIZED.code)
+			return CommonErrors[possibleErrors[attempts - 1]]
 		}
 
 		const data: SigninOutput = {

@@ -1,4 +1,4 @@
-import { ApiMessage, messages } from '@shared/constants/messages'
+import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 import * as express from 'express'
 import { Claims, JwtManager } from '@shared/utils/jwt-manager'
 import { container } from 'tsyringe'
@@ -11,18 +11,18 @@ export async function expressAuthentication(
 	const token = req.headers['authorization']?.substring(7)
 	console.log('Passou no middleware')
 
-	const sendErrorMessage = ({ res, message='INVALID_TOKEN' }: { res: express.Response; message?: ApiMessage; }) => {
-		return res
-			.status(messages[message])
-			.json({ message })
-	}
+	const sendErrorMessage = (
+		res: express.Response,
+		commonError: ErrorResponse = CommonErrors.INVALID_TOKEN
+	) => res.status(commonError.code).json(commonError)
+	
 	
 	if (token) {
 		let claims: Claims
 		try {
 			claims = JwtManager.decode(token)
 		} catch (err) {
-			return sendErrorMessage({ res, message: 'UNAUTHORIZED' })
+			return sendErrorMessage(res, CommonErrors.UNAUTHORIZED)
 		}
 	
 		// Verifica se o token tem rotas válidas definidas (JWT limitado)
@@ -34,7 +34,7 @@ export async function expressAuthentication(
 			
 			if (!isRouteAllowed) {
 				console.log('JWT Middleware - Rota não permitida:', currentRoute, 'Rotas válidas:', claims.validRoutes)
-				return sendErrorMessage({ res, message: 'UNAUTHORIZED' })
+				return sendErrorMessage(res, CommonErrors.UNAUTHORIZED)
 			}
 		}
 	
@@ -42,11 +42,11 @@ export async function expressAuthentication(
 		console.log('JWT Middleware - Buscando user com ID:', claims['sub'])
 		const user = await pg.user.findUnique({ where: { id: claims['sub'] } })
 		console.log('JWT Middleware - User encontrado:', user)
-		if (!user) return sendErrorMessage({ res, message: 'USER_NOT_FOUND' })
+		if (!user) return sendErrorMessage(res, CommonErrors.USER_NOT_FOUND)
 	
 		// Retorna o usuário completo com a propriedade sub para compatibilidade
 		console.log(claims)
 		return claims
 	}
-	return Promise.resolve(res.status(messages['UNAUTHORIZED']).json({ message: 'UNAUTHORIZED' }))
+	return Promise.resolve(sendErrorMessage(res, CommonErrors.UNAUTHORIZED))
 }

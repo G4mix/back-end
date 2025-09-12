@@ -93,7 +93,7 @@ export class ToggleLikeController extends Controller {
 		try {
 			const userProfileId = request.user?.userProfileId
 			if (!userProfileId) {
-				this.setStatus(401)
+				this.setStatus(CommonErrors.UNAUTHORIZED.code)
 				return CommonErrors.UNAUTHORIZED
 			}
 
@@ -110,7 +110,7 @@ export class ToggleLikeController extends Controller {
 			if (ideaId) {
 				const idea = await this.ideaRepository.findById(ideaId)
 				if (!idea) {
-					this.setStatus(404)
+					this.setStatus(CommonErrors.IDEA_NOT_FOUND.code)
 					return CommonErrors.IDEA_NOT_FOUND
 				}
 			}
@@ -119,7 +119,7 @@ export class ToggleLikeController extends Controller {
 			if (commentId) {
 				const comment = await this.commentRepository.findById(commentId)
 				if (!comment) {
-					this.setStatus(404)
+					this.setStatus(CommonErrors.COMMENT_NOT_FOUND.code)
 					return CommonErrors.COMMENT_NOT_FOUND
 				}
 			}
@@ -186,7 +186,7 @@ export class ToggleLikeController extends Controller {
 				commentId: body.commentId
 			})
 			
-			this.setStatus(500)
+			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}
 	}

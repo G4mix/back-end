@@ -107,7 +107,7 @@ export class CreateCommentController extends Controller {
 			console.log('CreateCommentController - UserProfileId:', userProfileId)
 			if (!userProfileId) {
 				console.log('CreateCommentController - UNAUTHORIZED - sem userProfileId')
-				this.setStatus(401)
+				this.setStatus(CommonErrors.UNAUTHORIZED.code)
 				return CommonErrors.UNAUTHORIZED
 			}
 
@@ -132,7 +132,7 @@ export class CreateCommentController extends Controller {
 			console.log('CreateCommentController - Idea encontrada:', idea)
 			if (!idea) {
 				console.log('CreateCommentController - IDEA_NOT_FOUND')
-				this.setStatus(404)
+				this.setStatus(CommonErrors.IDEA_NOT_FOUND.code)
 				return CommonErrors.IDEA_NOT_FOUND
 			}
 
@@ -143,7 +143,7 @@ export class CreateCommentController extends Controller {
 				console.log('CreateCommentController - Parent comment encontrado:', parentComment)
 				if (!parentComment) {
 					console.log('CreateCommentController - PARENT_COMMENT_NOT_FOUND')
-					this.setStatus(404)
+					this.setStatus(CommonErrors.COMMENT_NOT_FOUND.code)
 					return CommonErrors.COMMENT_NOT_FOUND
 				}
 			}
@@ -176,7 +176,7 @@ export class CreateCommentController extends Controller {
 				ideaId: body.ideaId
 			})
 			
-			this.setStatus(500)
+			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}
 	}
