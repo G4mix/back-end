@@ -76,6 +76,20 @@ describe('Record View Integration Tests', () => {
 							return Promise.resolve(null)
 						})
 					},
+					idea: {
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.id === ideaId) {
+								return Promise.resolve({
+									id: ideaId,
+									title: 'Test Idea',
+									description: 'Test Description',
+									created_at: new Date(),
+									updated_at: new Date()
+								})
+							}
+							return Promise.resolve(null)
+						})
+					},
 					view: {
 						findFirst: jest.fn().mockResolvedValue(null), // View não existe
 						create: jest.fn().mockResolvedValue({
@@ -83,7 +97,9 @@ describe('Record View Integration Tests', () => {
 							ideaId: ideaId,
 							userId: userId,
 							created_at: new Date()
-						})
+						}),
+						createMany: jest.fn().mockResolvedValue({ count: 1 }),
+						count: jest.fn().mockResolvedValue(5)
 					}
 				}
 			})
@@ -98,20 +114,37 @@ describe('Record View Integration Tests', () => {
 
 		it('should not record duplicate view for same user and idea', async () => {
 			// Arrange
+			const ideaId = TestData.generateUUID()
 			const viewData = {
-				ideaId: TestData.generateUUID()
+				ideas: [ideaId]
 			}
 			
 			// Mock do Prisma
 			IntegrationTestSetup.setupMocks({
 				prisma: {
+					idea: {
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.id === ideaId) {
+								return Promise.resolve({
+									id: ideaId,
+									title: 'Test Idea',
+									description: 'Test Description',
+									created_at: new Date(),
+									updated_at: new Date()
+								})
+							}
+							return Promise.resolve(null)
+						})
+					},
 					view: {
 						findFirst: jest.fn().mockResolvedValue({
 							id: TestData.generateUUID(),
-							ideaId: viewData.ideaId,
+							ideaId: ideaId,
 							userId: TestData.generateUUID(),
 							created_at: new Date()
-						}) // View já existe
+						}), // View já existe
+						createMany: jest.fn().mockResolvedValue({ count: 0 }),
+						count: jest.fn().mockResolvedValue(5)
 					}
 				}
 			})
@@ -126,21 +159,38 @@ describe('Record View Integration Tests', () => {
 
 		it('should record multiple views for different ideas', async () => {
 			// Arrange
+			const ideaId = TestData.generateUUID()
 			const viewData = {
-				ideaId: TestData.generateUUID()
+				ideas: [ideaId]
 			}
 			
 			// Mock do Prisma
 			IntegrationTestSetup.setupMocks({
 				prisma: {
+					idea: {
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.id === ideaId) {
+								return Promise.resolve({
+									id: ideaId,
+									title: 'Test Idea',
+									description: 'Test Description',
+									created_at: new Date(),
+									updated_at: new Date()
+								})
+							}
+							return Promise.resolve(null)
+						})
+					},
 					view: {
 						findFirst: jest.fn().mockResolvedValue(null), // View não existe
 						create: jest.fn().mockResolvedValue({
 							id: TestData.generateUUID(),
-							ideaId: viewData.ideaId,
+							ideaId: ideaId,
 							userId: TestData.generateUUID(),
 							created_at: new Date()
-						})
+						}),
+						createMany: jest.fn().mockResolvedValue({ count: 1 }),
+						count: jest.fn().mockResolvedValue(5)
 					}
 				}
 			})
@@ -156,7 +206,7 @@ describe('Record View Integration Tests', () => {
 		it('should return validation error for invalid idea ID', async () => {
 			// Arrange
 			const viewData = {
-				ideaId: 'invalid-uuid'
+				ideas: ['invalid-uuid']
 			}
 
 			// Act & Assert
@@ -171,10 +221,10 @@ describe('Record View Integration Tests', () => {
 				})
 		})
 
-		it('should return validation error for empty idea ID', async () => {
+		it('should return validation error for empty ideas array', async () => {
 			// Arrange
 			const viewData = {
-				ideaId: ''
+				ideas: []
 			}
 
 			// Act & Assert
@@ -183,7 +233,7 @@ describe('Record View Integration Tests', () => {
 					response: {
 						status: 400,
 						data: {
-							message: 'IDEA_ID_REQUIRED'
+							message: 'IDEAS_REQUIRED'
 						}
 					}
 				})
@@ -192,7 +242,7 @@ describe('Record View Integration Tests', () => {
 		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
 			const viewData = {
-				ideaId: TestData.generateUUID()
+				ideas: [TestData.generateUUID()]
 			}
 			httpClient.clearAuthToken()
 
@@ -210,13 +260,28 @@ describe('Record View Integration Tests', () => {
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
+			const ideaId = TestData.generateUUID()
 			const viewData = {
-				ideaId: TestData.generateUUID()
+				ideas: [ideaId]
 			}
 
 			// Mock do Prisma para retornar erro
 			IntegrationTestSetup.setupMocks({
 				prisma: {
+					idea: {
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.id === ideaId) {
+								return Promise.resolve({
+									id: ideaId,
+									title: 'Test Idea',
+									description: 'Test Description',
+									created_at: new Date(),
+									updated_at: new Date()
+								})
+							}
+							return Promise.resolve(null)
+						})
+					},
 					view: {
 						findFirst: jest.fn().mockRejectedValue(new Error('Database connection failed'))
 					}
@@ -234,21 +299,37 @@ describe('Record View Integration Tests', () => {
 
 		it('should handle bulk view recording', async () => {
 			// Arrange
+			const ideaIds = [
+				TestData.generateUUID(),
+				TestData.generateUUID(),
+				TestData.generateUUID()
+			]
 			const viewData = {
-				ideas: [
-					TestData.generateUUID(),
-					TestData.generateUUID(),
-					TestData.generateUUID()
-				]
+				ideas: ideaIds
 			}
 			
 			// Mock do Prisma
 			IntegrationTestSetup.setupMocks({
 				prisma: {
+					idea: {
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (ideaIds.includes(where.id)) {
+								return Promise.resolve({
+									id: where.id,
+									title: 'Test Idea',
+									description: 'Test Description',
+									created_at: new Date(),
+									updated_at: new Date()
+								})
+							}
+							return Promise.resolve(null)
+						})
+					},
 					view: {
 						createMany: jest.fn().mockResolvedValue({
 							count: 3
-						})
+						}),
+						count: jest.fn().mockResolvedValue(5)
 					}
 				}
 			})
