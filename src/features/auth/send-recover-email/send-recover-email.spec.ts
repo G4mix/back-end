@@ -18,8 +18,7 @@ describe('Recover Email Integration Tests', () => {
 	})
 
 	beforeEach(() => {
-		// Limpa mocks antes de cada teste
-		IntegrationTestSetup.clearMocks()
+		// Mocks são configurados individualmente nos testes
 	})
 
 	describe('POST /v1/auth/recover-email', () => {
@@ -28,30 +27,18 @@ describe('Recover Email Integration Tests', () => {
 			const recoverEmailData = {
 				email: 'test@example.com'
 			}
-			
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							email: recoverEmailData.email,
-							verified: false
-						}),
-						update: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							email: recoverEmailData.email,
-							verificationCode: '123456'
-						})
-					}
-				}
-			})
 
-			// Mock do SES
-			IntegrationTestSetup.setupMocks({
-				ses: {
-					send: jest.fn().mockResolvedValue({ MessageId: 'test-message-id' })
-				}
+			// Mock do Prisma
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: TestData.generateUUID(),
+				email: recoverEmailData.email,
+				verified: false
+			})
+			mockPrismaClient.user.update.mockResolvedValue({
+				id: TestData.generateUUID(),
+				email: recoverEmailData.email,
+				verificationCode: '123456'
 			})
 
 			// Act
@@ -59,7 +46,7 @@ describe('Recover Email Integration Tests', () => {
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.data).toHaveProperty('message')
+			expect(response.data).toHaveProperty('email')
 		})
 
 		it('should return validation error for invalid email format', async () => {
@@ -69,7 +56,7 @@ describe('Recover Email Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/send-recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -87,7 +74,7 @@ describe('Recover Email Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/send-recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -105,16 +92,11 @@ describe('Recover Email Integration Tests', () => {
 			}
 
 			// Mock do Prisma para retornar null
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue(null)
-					}
-				}
-			})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/send-recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -132,20 +114,15 @@ describe('Recover Email Integration Tests', () => {
 			}
 
 			// Mock do Prisma para retornar usuário já verificado
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							email: recoverEmailData.email,
-							verified: true
-						})
-					}
-				}
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: TestData.generateUUID(),
+				email: recoverEmailData.email,
+				verified: true
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/send-recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 409,
@@ -188,7 +165,7 @@ describe('Recover Email Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/send-recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500
@@ -212,7 +189,7 @@ describe('Recover Email Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/auth/recover-email', recoverEmailData))
+			await expect(httpClient.post('/v1/auth/send-recover-email', recoverEmailData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

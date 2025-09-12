@@ -58,18 +58,22 @@ export class RefreshTokenController extends Controller {
 	@SuccessResponse(200)
 	@Post('/refresh-token')
 	@LogResponseTime()
-	public async refreshToken(@Body() body: { token: string }): Promise<{ accessToken: string; refreshToken: string } | string> {
-		const { token } = body
+	public async refreshToken(@Body() body: { refreshToken: string }): Promise<{ accessToken: string; refreshToken: string } | string> {
+		const { refreshToken: token } = body
 
 		let userId: string
 		try {
 			userId = JwtManager.decode(token).sub
 		} catch (err) {
+			this.setStatus(401)
 			return 'UNAUTHORIZED'
 		}
 
 		const user = await this.userRepository.findById({ id: userId })
-		if (!user) return 'USER_NOT_FOUND'
+		if (!user) {
+			this.setStatus(404)
+			return 'USER_NOT_FOUND'
+		}
 
 		const data = {
 			accessToken: JwtManager.generateToken({

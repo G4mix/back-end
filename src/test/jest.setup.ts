@@ -11,9 +11,17 @@ import { S3ClientOptions, SESClientOptions } from '@shared/constants/aws'
 import { RouteLister } from '@shared/utils/route-lister'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { UserRepository } from '@shared/repositories/user.repository'
+import { FollowRepository } from '@shared/repositories/follow.repository'
+import { LinkRepository } from '@shared/repositories/link.repository'
+import { CommentRepository } from '@shared/repositories/comment.repository'
+import { LikeRepository } from '@shared/repositories/like.repository'
+import { ViewRepository } from '@shared/repositories/view.repository'
+import { RecordViewController } from '@features/views/record-view/record-view.controller'
 import { IdeaGateway } from '@shared/gateways/idea.gateway'
 import { UserGateway } from '@shared/gateways/user.gateway'
 import { S3Gateway } from '@shared/gateways/s3.gateway'
+import { AuthGateway } from '@shared/gateways/auth.gateway'
+import { SESGateway } from '@shared/gateways/ses.gateway'
 
 // Mock do Prisma
 jest.mock('@prisma/client', () => ({
@@ -138,6 +146,7 @@ jest.mock('@aws-sdk/client-s3', () => ({
 	})),
 	PutObjectCommand: jest.fn(),
 	DeleteObjectCommand: jest.fn(),
+	DeleteObjectsCommand: jest.fn(),
 	GetObjectCommand: jest.fn()
 }))
 
@@ -564,6 +573,7 @@ export class IntegrationTestSetup {
 		})
 
 		// Registra as dependências necessárias
+		// Apenas os 3 serviços externos devem ser mockados conforme guidelines
 		container
 			.register<PrismaClient>('PostgresqlClient', { useValue: mockPrismaClient })
 			.register('S3Client', { useValue: mockS3Client })
@@ -574,9 +584,17 @@ export class IntegrationTestSetup {
 			.register('Logger', { useClass: Logger })
 			.register('IdeaRepository', { useClass: IdeaRepository })
 			.register('UserRepository', { useClass: UserRepository })
+			.register('FollowRepository', { useClass: FollowRepository })
+			.register('LinkRepository', { useClass: LinkRepository })
+			.register('CommentRepository', { useClass: CommentRepository })
+			.register('LikeRepository', { useClass: LikeRepository })
+			.register('ViewRepository', { useClass: ViewRepository })
 			.register('S3Gateway', { useClass: S3Gateway })
 			.register('IdeaGateway', { useClass: IdeaGateway })
 			.register('UserGateway', { useClass: UserGateway })
+			.register('AuthGateway', { useClass: AuthGateway })
+			.register('SESGateway', { useClass: SESGateway })
+			.register('RecordViewController', { useClass: RecordViewController })
 
 		// Cria instância do App
 		this.app = new App(
@@ -677,11 +695,11 @@ export class IntegrationTestSetup {
 		mockPrismaClient.view.count.mockResolvedValue(0)
 
 		mockPrismaClient.follow.findUnique.mockResolvedValue(null)
-		mockPrismaClient.follow.findMany.mockResolvedValue([])
+		mockPrismaClient.follow.findMany.mockResolvedValue([]) // Comentado para não interferir nos testes
 		mockPrismaClient.follow.create.mockResolvedValue({})
 		mockPrismaClient.follow.update.mockResolvedValue({})
 		mockPrismaClient.follow.delete.mockResolvedValue({})
-		mockPrismaClient.follow.count.mockResolvedValue(0)
+		mockPrismaClient.follow.count.mockResolvedValue(0) // Comentado para não interferir nos testes
 
 		mockPrismaClient.link.findUnique.mockResolvedValue(null)
 		mockPrismaClient.link.findMany.mockResolvedValue([])
@@ -726,6 +744,8 @@ export class IntegrationTestSetup {
 		s3?: any
 		ses?: any
 		logger?: any
+		repositories?: any
+		gateways?: any
 	}): void {
 		const mockPrismaClient = container.resolve('PostgresqlClient') as any
 		const mockS3Client = container.resolve('S3Client') as any
@@ -741,6 +761,30 @@ export class IntegrationTestSetup {
 					} else {
 						mockPrismaClient[table][method].mockResolvedValue(mocks.prisma[table][method])
 					}
+				})
+			})
+		}
+
+		// Aplica mocks de repositories
+		if (mocks.repositories) {
+			Object.keys(mocks.repositories).forEach(repositoryName => {
+				const repository = container.resolve(repositoryName) as any
+				console.log(`🔧 Mocking ${repositoryName}:`, Object.keys(mocks.repositories[repositoryName]))
+				Object.keys(mocks.repositories[repositoryName]).forEach(method => {
+					jest.spyOn(repository, method).mockImplementation(mocks.repositories[repositoryName][method])
+					console.log(`  ✅ Mocked ${method}`)
+				})
+			})
+		}
+
+		// Aplica mocks de gateways
+		if (mocks.gateways) {
+			Object.keys(mocks.gateways).forEach(gatewayName => {
+				const gateway = container.resolve(gatewayName) as any
+				console.log(`🔧 Mocking ${gatewayName}:`, Object.keys(mocks.gateways[gatewayName]))
+				Object.keys(mocks.gateways[gatewayName]).forEach(method => {
+					jest.spyOn(gateway, method).mockImplementation(mocks.gateways[gatewayName][method])
+					console.log(`  ✅ Mocked ${method}`)
 				})
 			})
 		}

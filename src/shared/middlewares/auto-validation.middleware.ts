@@ -26,7 +26,23 @@ const ROUTE_SCHEMAS: Record<string, {
 	},
 	'POST /v1/auth/change-password': {
 		input: z.object({
-			password: z.string().regex(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, 'INVALID_PASSWORD')
+			newPassword: z.string().regex(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, 'INVALID_PASSWORD')
+		})
+	},
+	'POST /v1/auth/send-recover-email': {
+		input: z.object({
+			email: z.string().email('INVALID_EMAIL').min(1, 'EMAIL_REQUIRED')
+		})
+	},
+	'POST /v1/auth/verify-email-code': {
+		input: z.object({
+			email: z.string().email('INVALID_EMAIL').min(1, 'EMAIL_REQUIRED'),
+			code: z.string().min(1, 'CODE_REQUIRED')
+		})
+	},
+	'POST /v1/views/record': {
+		input: z.object({
+			ideas: z.array(z.string().uuid('INVALID_IDEA_ID')).min(1, 'IDEAS_REQUIRED')
 		})
 	},
 	'POST /v1/auth/recover-email/send': {
@@ -101,7 +117,7 @@ const ROUTE_SCHEMAS: Record<string, {
 	},
 
 	// Comments routes
-	'POST /v1/comments': {
+	'POST /v1/comment/': {
 		input: z.object({
 			ideaId: z.string().uuid('INVALID_IDEA_ID'),
 			content: z.string().min(1, 'CONTENT_REQUIRED').max(200, 'CONTENT_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_CONTENT'),
@@ -162,6 +178,14 @@ const ROUTE_SCHEMAS: Record<string, {
 	},
 
 	// User management routes
+	'PATCH /v1/users': {
+		input: z.object({
+			displayName: z.string().min(3, 'NAME_TOO_SHORT').max(255, 'NAME_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_NAME').optional(),
+			autobiography: z.string().min(10, 'BIO_TOO_SHORT').max(500, 'BIO_TOO_LONG').regex(/^[^{}]+$/, 'INVALID_BIO').optional(),
+			icon: z.string().url('INVALID_ICON_URL').max(700, 'ICON_URL_TOO_LONG').optional(),
+			backgroundImage: z.string().url('INVALID_BACKGROUND_IMAGE_URL').max(700, 'BACKGROUND_IMAGE_URL_TOO_LONG').optional()
+		})
+	},
 	'PUT /v1/users/:id': {
 		input: z.object({
 			username: z.string().regex(/^[^{}]{3,255}$/, 'INVALID_NAME').optional(),
@@ -236,7 +260,6 @@ export class AutoValidationMiddleware {
 				const routeKey = `${req.method} ${req.route?.path || req.path}`
 				const schema = this.getSchemaForRoute(routeKey)
 
-
 				if (!schema) {
 					return next()
 				}
@@ -268,37 +291,37 @@ export class AutoValidationMiddleware {
 		// Se não encontrou mensagem customizada, tenta inferir pelo tipo de erro
 		for (const issue of issues) {
 			switch (issue.code) {
-			case 'invalid_type':
-				if (issue.expected === 'string' && issue.received === 'undefined') {
-					return 'REQUIRED_FIELD'
-				}
-				return 'INVALID_TYPE'
-			case 'too_small':
-				if (issue.type === 'string') {
-					return 'TOO_SHORT'
-				}
-				return 'TOO_SMALL'
-			case 'too_big':
-				if (issue.type === 'string') {
-					return 'TOO_LONG'
-				}
-				return 'TOO_BIG'
-			case 'invalid_string':
-				if (issue.validation === 'email') {
-					return 'INVALID_EMAIL'
-				}
-				if (issue.validation === 'url') {
-					return 'INVALID_URL'
-				}
-				return 'INVALID_STRING'
-			case 'invalid_enum_value':
-				return 'INVALID_ENUM'
-			case 'invalid_literal':
-				return 'INVALID_VALUE'
-			case 'custom':
-				return issue.message || 'CUSTOM_ERROR'
-			default:
-				continue
+				case 'invalid_type':
+					if (issue.expected === 'string' && issue.received === 'undefined') {
+						return 'REQUIRED_FIELD'
+					}
+					return 'INVALID_TYPE'
+				case 'too_small':
+					if (issue.type === 'string') {
+						return 'TOO_SHORT'
+					}
+					return 'TOO_SMALL'
+				case 'too_big':
+					if (issue.type === 'string') {
+						return 'TOO_LONG'
+					}
+					return 'TOO_BIG'
+				case 'invalid_string':
+					if (issue.validation === 'email') {
+						return 'INVALID_EMAIL'
+					}
+					if (issue.validation === 'url') {
+						return 'INVALID_URL'
+					}
+					return 'INVALID_STRING'
+				case 'invalid_enum_value':
+					return 'INVALID_ENUM'
+				case 'invalid_literal':
+					return 'INVALID_VALUE'
+				case 'custom':
+					return issue.message || 'CUSTOM_ERROR'
+				default:
+					continue
 			}
 		}
 
@@ -339,7 +362,7 @@ export class AutoValidationMiddleware {
 			if (Object.keys(params).length === 0) {
 				params = this.extractParamsFromUrl(req.path)
 			}
-			
+
 			const paramsResult = schema.params.safeParse(params)
 			if (!paramsResult.success) {
 				const errorCode = this.extractErrorCode(paramsResult.error.issues, 'INVALID_PARAMS')
@@ -355,7 +378,7 @@ export class AutoValidationMiddleware {
 	 */
 	private extractParamsFromUrl(path: string): any {
 		const params: any = {}
-		
+
 		// Para PATCH /v1/ideas/:id, extrai o ID da URL
 		if (path.includes('/v1/ideas/') && path !== '/v1/ideas') {
 			const pathParts = path.split('/')
@@ -364,7 +387,7 @@ export class AutoValidationMiddleware {
 				params.id = pathParts[idIndex]
 			}
 		}
-		
+
 		// Para outras rotas com parâmetros dinâmicos, adicione lógica similar
 		// GET /v1/users/:id
 		if (path.includes('/v1/users/') && path !== '/v1/users') {
@@ -374,7 +397,7 @@ export class AutoValidationMiddleware {
 				params.id = pathParts[idIndex]
 			}
 		}
-		
+
 		// GET /v1/follow/followers/:userId
 		if (path.includes('/v1/follow/followers/')) {
 			const pathParts = path.split('/')
@@ -383,7 +406,7 @@ export class AutoValidationMiddleware {
 				params.userId = pathParts[userIdIndex]
 			}
 		}
-		
+
 		// GET /v1/follow/following/:userId
 		if (path.includes('/v1/follow/following/')) {
 			const pathParts = path.split('/')
@@ -392,7 +415,7 @@ export class AutoValidationMiddleware {
 				params.userId = pathParts[userIdIndex]
 			}
 		}
-		
+
 		// DELETE /v1/users/links/:linkId
 		if (path.includes('/v1/users/links/')) {
 			const pathParts = path.split('/')
@@ -401,7 +424,7 @@ export class AutoValidationMiddleware {
 				params.linkId = pathParts[linkIdIndex]
 			}
 		}
-		
+
 		return params
 	}
 
@@ -410,7 +433,7 @@ export class AutoValidationMiddleware {
 	 */
 	private interceptResponse(res: Response, schema: any) {
 		const originalJson = res.json.bind(res)
-		
+
 		res.json = (body?: any) => {
 			try {
 				let processedBody = body
@@ -451,7 +474,7 @@ export class AutoValidationMiddleware {
 
 		if (typeof data === 'object' && data.constructor === Object) {
 			const serialized: any = {}
-			
+
 			for (const [key, value] of Object.entries(data)) {
 				if (value instanceof Date) {
 					serialized[key] = value.toISOString()
@@ -461,7 +484,7 @@ export class AutoValidationMiddleware {
 					serialized[key] = value
 				}
 			}
-			
+
 			return serialized
 		}
 
@@ -509,16 +532,16 @@ export class AutoValidationMiddleware {
 			if (patternParts[i].startsWith(':') && !patternParts[i].startsWith('/:')) {
 				continue // Parâmetro dinâmico
 			}
-			
+
 			// Compara caminhos dividindo por /
 			if (patternParts[i].includes('/') && routeParts[i].includes('/')) {
 				const patternPathParts = patternParts[i].split('/')
 				const routePathParts = routeParts[i].split('/')
-				
+
 				if (patternPathParts.length !== routePathParts.length) {
 					return false
 				}
-				
+
 				let pathMatches = true
 				for (let j = 0; j < patternPathParts.length; j++) {
 					if (patternPathParts[j].startsWith(':')) {
@@ -529,13 +552,13 @@ export class AutoValidationMiddleware {
 						break
 					}
 				}
-				
+
 				if (!pathMatches) {
 					return false
 				}
 				continue
 			}
-			
+
 			if (patternParts[i] !== routeParts[i]) {
 				return false
 			}
@@ -550,7 +573,7 @@ export class AutoValidationMiddleware {
 	private handleValidationError(error: any, req: Request, res: Response) {
 		if (error instanceof ValidationError) {
 			const statusCode = messages[error.code as keyof typeof messages] || 400
-			
+
 			this.logger.warn('Validation failed', {
 				path: req.path,
 				method: req.method,
@@ -599,9 +622,9 @@ class ValidationError extends Error {
  */
 export function setupAutoValidationMiddleware(app: any, logger: Logger) {
 	const autoValidationMiddleware = new AutoValidationMiddleware(logger)
-	
+
 	// Aplica middleware globalmente
 	app.use(autoValidationMiddleware.process())
-	
+
 	logger.info('AutoValidationMiddleware configured successfully')
 }

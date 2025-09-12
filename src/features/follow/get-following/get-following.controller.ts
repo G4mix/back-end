@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, Query, Get, SuccessResponse, Security, Request } from 'tsoa'
+import { Route, Tags, Controller, Query, Get, SuccessResponse, Security, Request, Path } from 'tsoa'
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { Logger } from '@shared/utils/logger'
@@ -33,10 +33,10 @@ export class GetFollowingController extends Controller {
 	 * @returns Promise resolving to paginated following list or error string
 	 */
 	@SuccessResponse(200, 'Following retrieved successfully')
-	@Get('/following')
+	@Get('/following/:userId')
 	@LogResponseTime()
 	public async getFollowing(
-		@Query() userId: string,
+		@Path() userId: string,
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Request() request?: any

@@ -38,7 +38,7 @@ export class ChangePasswordController extends Controller {
 	 * ```typescript
 	 * // Request body
 	 * {
-	 *   "password": "NewSecurePassword123!"
+	 *   "newPassword": "NewSecurePassword123!"
 	 * }
 	 * 
 	 * // Success response
@@ -60,18 +60,20 @@ export class ChangePasswordController extends Controller {
 	@Security('jwt', [])
 	@LogResponseTime()
 	public async changePassword(
-		@Body() body: { password: string }, 
+		@Body() body: { newPassword: string }, 
 		@Request() req: TsoaRequest
 	): Promise<SigninOutput | string> {
-		const { password } = body
+		const { newPassword } = body
 		const userId = req.user.sub
 
 		const user = await this.userRepository.findById({ id: userId })
 		if (!user) return 'USER_NOT_FOUND'
 
+		// Não precisa verificar senha atual pois o usuário esqueceu
+
 		await this.userRepository.update({ 
 			id: userId, 
-			password: BCryptEncoder.encode(password) 
+			password: BCryptEncoder.encode(newPassword) 
 		})
 
 		const data: SigninOutput = {

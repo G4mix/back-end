@@ -25,33 +25,50 @@ describe('Refresh Token Integration Tests', () => {
 	describe('POST /v1/auth/refresh-token', () => {
 		it('should refresh token successfully with valid refresh token', async () => {
 			// Arrange
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			const userData = {
+				id: userId,
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfileId: userProfileId,
+				loginAttempts: 0,
+				blockedUntil: null,
+				userProfile: {
+					id: userProfileId,
+					name: null,
+					bio: null,
+					icon: null,
+					created_at: new Date(),
+					updated_at: new Date()
+				}
+			}
+
+			// Gera um JWT válido para o refresh token
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const validRefreshToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId
+			})
+
 			const refreshTokenData = {
-				refreshToken: 'valid-refresh-token'
+				refreshToken: validRefreshToken
 			}
 			
 			// Mock do Prisma
 			IntegrationTestSetup.setupMocks({
 				prisma: {
 					user: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							username: 'testuser',
-							email: 'test@example.com',
-							verified: true,
-							created_at: new Date(),
-							updated_at: new Date(),
-							userProfileId: TestData.generateUUID(),
-							loginAttempts: 0,
-							blockedUntil: null,
-							userProfile: {
-								id: TestData.generateUUID(),
-								name: null,
-								bio: null,
-								icon: null,
-								created_at: new Date(),
-								updated_at: new Date()
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.id === userId) {
+								return Promise.resolve(userData)
 							}
-						})
+							return Promise.resolve(null)
+						}),
+						update: jest.fn().mockResolvedValue(userData)
 					}
 				}
 			})
@@ -63,7 +80,6 @@ describe('Refresh Token Integration Tests', () => {
 			expect(response.status).toBe(200)
 			expect(response.data).toHaveProperty('accessToken')
 			expect(response.data).toHaveProperty('refreshToken')
-			expect(response.data).toHaveProperty('user')
 		})
 
 		it('should return validation error for empty refresh token', async () => {
@@ -84,7 +100,7 @@ describe('Refresh Token Integration Tests', () => {
 				})
 		})
 
-		it('should return INVALID_REFRESH_TOKEN when token is invalid', async () => {
+		it('should return UNAUTHORIZED when token is invalid', async () => {
 			// Arrange
 			const refreshTokenData = {
 				refreshToken: 'invalid-refresh-token'
@@ -104,9 +120,7 @@ describe('Refresh Token Integration Tests', () => {
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
-						data: {
-							message: 'INVALID_REFRESH_TOKEN'
-						}
+						data: 'UNAUTHORIZED'
 					}
 				})
 		})

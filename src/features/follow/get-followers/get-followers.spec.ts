@@ -1,6 +1,7 @@
 import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
+import { TestTokens } from '@test/helpers/test-tokens'
 
 describe('Get Followers Integration Tests', () => {
 	let httpClient: HttpClient
@@ -13,7 +14,7 @@ describe('Get Followers Integration Tests', () => {
 		httpClient = new HttpClient(baseUrl)
 		
 		// Simula login para obter token
-		authToken = TestData.generateFakeToken()
+		authToken = TestTokens.generateValidToken()
 		httpClient.setAuthToken(authToken)
 	})
 
@@ -25,6 +26,19 @@ describe('Get Followers Integration Tests', () => {
 	beforeEach(() => {
 		// Limpa mocks antes de cada teste
 		IntegrationTestSetup.clearMocks()
+		
+		// Mock do usuário para autenticação
+		const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+		mockPrismaClient.user.findUnique.mockResolvedValue({
+			id: 'user-123',
+			userProfileId: 'profile-123',
+			email: 'test@example.com',
+			username: 'testuser',
+			verified: true,
+			created_at: new Date(),
+			updated_at: new Date()
+		})
+		
 	})
 
 	describe('GET /v1/follow/followers/:userId', () => {
@@ -37,14 +51,12 @@ describe('Get Followers Integration Tests', () => {
 					followerId: TestData.generateUUID(),
 					followingId: userId,
 					created_at: new Date(),
-					follower: {
+					followerUser: {
 						id: TestData.generateUUID(),
-						username: 'follower1',
-						email: 'follower1@example.com',
-						userProfile: {
-							name: 'Follower 1',
-							bio: 'Bio of follower 1',
-							icon: 'https://example.com/follower1.jpg'
+						displayName: 'Follower 1',
+						icon: 'https://example.com/follower1.jpg',
+						user: {
+							username: 'follower1'
 						}
 					}
 				},
@@ -53,28 +65,21 @@ describe('Get Followers Integration Tests', () => {
 					followerId: TestData.generateUUID(),
 					followingId: userId,
 					created_at: new Date(),
-					follower: {
+					followerUser: {
 						id: TestData.generateUUID(),
-						username: 'follower2',
-						email: 'follower2@example.com',
-						userProfile: {
-							name: 'Follower 2',
-							bio: 'Bio of follower 2',
-							icon: 'https://example.com/follower2.jpg'
+						displayName: 'Follower 2',
+						icon: 'https://example.com/follower2.jpg',
+						user: {
+							username: 'follower2'
 						}
 					}
 				}
 			]
 
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					follow: {
-						findMany: jest.fn().mockResolvedValue(mockFollowers),
-						count: jest.fn().mockResolvedValue(2)
-					}
-				}
-			})
+			// Mock do Prisma para FollowRepository.findFollowers
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.follow.findMany.mockResolvedValue(mockFollowers)
+			mockPrismaClient.follow.count.mockResolvedValue(2)
 
 			// Act
 			const response = await httpClient.get(`/v1/follow/followers/${userId}`, {
@@ -140,14 +145,9 @@ describe('Get Followers Integration Tests', () => {
 			const userId = TestData.generateUUID()
 
 			// Mock do Prisma para retornar array vazio
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					follow: {
-						findMany: jest.fn().mockResolvedValue([]),
-						count: jest.fn().mockResolvedValue(0)
-					}
-				}
-			})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.follow.findMany.mockResolvedValue([])
+			mockPrismaClient.follow.count.mockResolvedValue(0)
 
 			// Act
 			const response = await httpClient.get(`/v1/follow/followers/${userId}`, {
@@ -170,14 +170,12 @@ describe('Get Followers Integration Tests', () => {
 					followerId: TestData.generateUUID(),
 					followingId: userId,
 					created_at: new Date('2024-01-02'),
-					follower: {
+					followerUser: {
 						id: TestData.generateUUID(),
-						username: 'newfollower',
-						email: 'newfollower@example.com',
-						userProfile: {
-							name: 'New Follower',
-							bio: 'Bio of new follower',
-							icon: 'https://example.com/newfollower.jpg'
+						displayName: 'New Follower',
+						icon: 'https://example.com/newfollower.jpg',
+						user: {
+							username: 'newfollower'
 						}
 					}
 				},
@@ -186,28 +184,21 @@ describe('Get Followers Integration Tests', () => {
 					followerId: TestData.generateUUID(),
 					followingId: userId,
 					created_at: new Date('2024-01-01'),
-					follower: {
+					followerUser: {
 						id: TestData.generateUUID(),
-						username: 'oldfollower',
-						email: 'oldfollower@example.com',
-						userProfile: {
-							name: 'Old Follower',
-							bio: 'Bio of old follower',
-							icon: 'https://example.com/oldfollower.jpg'
+						displayName: 'Old Follower',
+						icon: 'https://example.com/oldfollower.jpg',
+						user: {
+							username: 'oldfollower'
 						}
 					}
 				}
 			]
 
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					follow: {
-						findMany: jest.fn().mockResolvedValue(mockFollowers),
-						count: jest.fn().mockResolvedValue(2)
-					}
-				}
-			})
+			// Mock do Prisma para FollowRepository.findFollowers
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.follow.findMany.mockResolvedValue(mockFollowers)
+			mockPrismaClient.follow.count.mockResolvedValue(2)
 
 			// Act
 			const response = await httpClient.get(`/v1/follow/followers/${userId}`, {
@@ -218,8 +209,8 @@ describe('Get Followers Integration Tests', () => {
 			// Assert
 			expect(response.status).toBe(200)
 			expect(response.data.followers).toHaveLength(2)
-			expect(response.data.followers[0].follower.username).toBe('newfollower')
-			expect(response.data.followers[1].follower.username).toBe('oldfollower')
+			expect(response.data.followers[0].followerUser.username).toBe('newfollower')
+			expect(response.data.followers[1].followerUser.username).toBe('oldfollower')
 		})
 
 		it('should handle database errors gracefully', async () => {
@@ -227,13 +218,8 @@ describe('Get Followers Integration Tests', () => {
 			const userId = TestData.generateUUID()
 
 			// Mock do Prisma para retornar erro
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					follow: {
-						findMany: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-					}
-				}
-			})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.follow.findMany.mockRejectedValueOnce(new Error('Database connection failed'))
 
 			// Act & Assert
 			await expect(httpClient.get(`/v1/follow/followers/${userId}`, { page: 0, limit: 10 }))

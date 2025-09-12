@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -14,35 +14,44 @@ describe('Toggle Like Integration Tests', () => {
 		httpClient = new HttpClient(baseUrl)
 		
 		// Cria um usuário e obtém token de autenticação
-		const userData = TestData.createUser()
+		const userDataInput = TestData.createUser()
+		const userId = TestData.generateUUID()
+		const userProfileId = TestData.generateUUID()
+		const userData = {
+			id: userId,
+			username: userDataInput.username,
+			email: userDataInput.email,
+			verified: true,
+			created_at: new Date(),
+			updated_at: new Date(),
+			userProfileId: userProfileId,
+			loginAttempts: 0,
+			blockedUntil: null,
+			userProfile: {
+				id: userProfileId,
+				name: null,
+				bio: null,
+				icon: null,
+				created_at: new Date(),
+				updated_at: new Date()
+			}
+		}
+
 		IntegrationTestSetup.setupMocks({
 			prisma: {
 				user: {
-					findUnique: jest.fn().mockResolvedValue(null),
-					create: jest.fn().mockResolvedValue({
-						id: TestData.generateUUID(),
-						username: userData.username,
-						email: userData.email,
-						verified: true,
-						created_at: new Date(),
-						updated_at: new Date(),
-						userProfileId: TestData.generateUUID(),
-						loginAttempts: 0,
-						blockedUntil: null,
-						userProfile: {
-							id: TestData.generateUUID(),
-							name: null,
-							bio: null,
-							icon: null,
-							created_at: new Date(),
-							updated_at: new Date()
+					findUnique: jest.fn().mockImplementation(({ where }) => {
+						if (where.id === userId) {
+							return Promise.resolve(userData)
 						}
-					})
+						return Promise.resolve(null)
+					}),
+					create: jest.fn().mockResolvedValue(userData)
 				}
 			}
 		})
 		
-		const signupResponse = await httpClient.post('/v1/auth/signup', userData)
+		const signupResponse = await httpClient.post('/v1/auth/signup', userDataInput)
 		authToken = signupResponse.data.accessToken
 		httpClient.setAuthToken(authToken)
 		
@@ -117,7 +126,7 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/v1/likes', likeData)
+			const response = await httpClient.post('/v1/likes/toggle', likeData)
 
 			// Assert
 			expect(response.status).toBe(201)
@@ -147,7 +156,7 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/v1/likes', likeData)
+			const response = await httpClient.post('/v1/likes/toggle', likeData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -159,7 +168,7 @@ describe('Toggle Like Integration Tests', () => {
 			const likeData = { ideaId: 'invalid-uuid' }
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/likes', likeData))
+			await expect(httpClient.post('/v1/likes/toggle', likeData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -176,7 +185,7 @@ describe('Toggle Like Integration Tests', () => {
 			const clientWithoutAuth = new HttpClient(baseUrl)
 
 			// Act & Assert
-			await expect(clientWithoutAuth.post('/v1/likes', likeData))
+			await expect(clientWithoutAuth.post('/v1/likes/toggle', likeData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -201,7 +210,7 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/likes', likeData))
+			await expect(httpClient.post('/v1/likes/toggle', likeData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -226,7 +235,7 @@ describe('Toggle Like Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.post('/v1/likes', likeData))
+			await expect(httpClient.post('/v1/likes/toggle', likeData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

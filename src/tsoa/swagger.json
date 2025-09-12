@@ -241,81 +241,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"LinkResponse": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"url": {
-						"type": "string"
-					},
-					"created_at": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"id",
-					"url",
-					"created_at"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"GetLinksResponse": {
-				"properties": {
-					"links": {
-						"items": {
-							"$ref": "#/components/schemas/LinkResponse"
-						},
-						"type": "array"
-					}
-				},
-				"required": [
-					"links"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"AddLinkResponse": {
-				"properties": {
-					"link": {
-						"properties": {
-							"created_at": {
-								"type": "string"
-							},
-							"url": {
-								"type": "string"
-							},
-							"id": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"created_at",
-							"url",
-							"id"
-						],
-						"type": "object"
-					}
-				},
-				"required": [
-					"link"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"AddLinkInput": {
-				"properties": {
-					"url": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"url"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"ToggleLikeResponse": {
 				"properties": {
 					"liked": {
@@ -1456,43 +1381,6 @@
 				"parameters": []
 			}
 		},
-		"/v1/user/links/{linkId}": {
-			"delete": {
-				"operationId": "RemoveLink",
-				"responses": {
-					"200": {
-						"description": "Link removed successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "string"
-								}
-							}
-						}
-					}
-				},
-				"description": "Remove a personal link from user profile\n\nThis endpoint allows authenticated users to remove personal links from their profile.\nOnly the owner of the link can remove it.",
-				"tags": [
-					"User Links"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"description": "- The ID of the link to remove",
-						"in": "path",
-						"name": "linkId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
 		"/v1/users/{userId}": {
 			"get": {
 				"operationId": "GetUserById",
@@ -1522,94 +1410,6 @@
 						}
 					}
 				]
-			}
-		},
-		"/v1/user/links": {
-			"get": {
-				"operationId": "GetLinks",
-				"responses": {
-					"200": {
-						"description": "Links retrieved successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"$ref": "#/components/schemas/GetLinksResponse"
-										},
-										{
-											"type": "string"
-										}
-									]
-								}
-							}
-						}
-					}
-				},
-				"description": "Get personal links of a user\n\nThis endpoint allows authenticated users to retrieve their personal links\nor view another user's public links.",
-				"tags": [
-					"User Links"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [
-					{
-						"description": "- Optional user profile ID to get links for (defaults to current user)",
-						"in": "query",
-						"name": "userId",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			},
-			"post": {
-				"operationId": "AddLink",
-				"responses": {
-					"201": {
-						"description": "Link added successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"$ref": "#/components/schemas/AddLinkResponse"
-										},
-										{
-											"type": "string"
-										}
-									]
-								}
-							}
-						}
-					}
-				},
-				"description": "Add a personal link to user profile\n\nThis endpoint allows authenticated users to add personal links to their profile.\nLinks can be social media profiles, websites, portfolios, etc.",
-				"tags": [
-					"User Links"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": [],
-				"requestBody": {
-					"description": "- Object containing the link URL",
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/AddLinkInput",
-								"description": "- Object containing the link URL"
-							}
-						}
-					}
-				}
 			}
 		},
 		"/v1/likes/toggle": {
@@ -1977,7 +1777,7 @@
 				}
 			}
 		},
-		"/v1/follow/following": {
+		"/v1/follow/following/{userId}": {
 			"get": {
 				"operationId": "GetFollowing",
 				"responses": {
@@ -2011,7 +1811,7 @@
 				"parameters": [
 					{
 						"description": "- The user profile ID to get following for",
-						"in": "query",
+						"in": "path",
 						"name": "userId",
 						"required": true,
 						"schema": {
@@ -2041,7 +1841,7 @@
 				]
 			}
 		},
-		"/v1/follow/followers": {
+		"/v1/follow/followers/{userId}": {
 			"get": {
 				"operationId": "GetFollowers",
 				"responses": {
@@ -2075,7 +1875,7 @@
 				"parameters": [
 					{
 						"description": "- The user profile ID to get followers for",
-						"in": "query",
+						"in": "path",
 						"name": "userId",
 						"required": true,
 						"schema": {
@@ -2207,6 +2007,68 @@
 							"schema": {
 								"$ref": "#/components/schemas/CreateCommentInput",
 								"description": "- Object containing ideaId, content, and optional parentCommentId"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/v1/auth/verify-email-code": {
+			"post": {
+				"operationId": "VerifyEmailCode",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"accessToken": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"accessToken"
+											],
+											"type": "object"
+										},
+										{
+											"type": "string"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Verify recovery code and generate temporary access token\r\n\r\nThis endpoint verifies the recovery code sent to the user's email and generates\r\na temporary access token that allows the user to change their password. The\r\ncode must be used within 10 minutes of generation.\r\n\r\nVerification Process:\r\n- Validates user exists by email\r\n- Checks code expiration (10 minutes)\r\n- Verifies provided code matches stored code\r\n- Generates temporary access token for password change\r\n- Clears recovery code from user account",
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "- Object containing email and verification code",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"email": {
+										"type": "string"
+									},
+									"code": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"email",
+									"code"
+								],
+								"type": "object",
+								"description": "- Object containing email and verification code"
 							}
 						}
 					}
@@ -2488,68 +2350,6 @@
 				}
 			}
 		},
-		"/v1/auth/refresh-token": {
-			"post": {
-				"operationId": "RefreshToken",
-				"responses": {
-					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"properties": {
-												"refreshToken": {
-													"type": "string"
-												},
-												"accessToken": {
-													"type": "string"
-												}
-											},
-											"required": [
-												"refreshToken",
-												"accessToken"
-											],
-											"type": "object"
-										},
-										{
-											"type": "string"
-										}
-									]
-								}
-							}
-						}
-					}
-				},
-				"description": "Refresh authentication tokens using refresh token\n\nThis endpoint allows users to obtain new access and refresh tokens using their\ncurrent refresh token. It validates the refresh token, verifies the user exists,\nand generates a new token pair. This is essential for maintaining user sessions\nwithout requiring re-authentication.\n\nToken Refresh Process:\n- Validates refresh token signature and expiration\n- Extracts user ID from token payload\n- Verifies user exists and is active\n- Generates new access and refresh tokens\n- Updates refresh token in database",
-				"tags": [
-					"Authentication"
-				],
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"description": "- Object containing the refresh token",
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"token": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"token"
-								],
-								"type": "object",
-								"description": "- Object containing the refresh token"
-							}
-						}
-					}
-				}
-			}
-		},
 		"/v1/auth/send-recover-email": {
 			"post": {
 				"operationId": "SendRecoverEmail",
@@ -2608,9 +2408,9 @@
 				}
 			}
 		},
-		"/v1/auth/verify-email-code": {
+		"/v1/auth/refresh-token": {
 			"post": {
-				"operationId": "VerifyEmailCode",
+				"operationId": "RefreshToken",
 				"responses": {
 					"200": {
 						"description": "",
@@ -2620,11 +2420,15 @@
 									"anyOf": [
 										{
 											"properties": {
+												"refreshToken": {
+													"type": "string"
+												},
 												"accessToken": {
 													"type": "string"
 												}
 											},
 											"required": [
+												"refreshToken",
 												"accessToken"
 											],
 											"type": "object"
@@ -2638,32 +2442,28 @@
 						}
 					}
 				},
-				"description": "Verify recovery code and generate temporary access token\n\nThis endpoint verifies the recovery code sent to the user's email and generates\na temporary access token that allows the user to change their password. The\ncode must be used within 10 minutes of generation.\n\nVerification Process:\n- Validates user exists by email\n- Checks code expiration (10 minutes)\n- Verifies provided code matches stored code\n- Generates temporary access token for password change\n- Clears recovery code from user account",
+				"description": "Refresh authentication tokens using refresh token\n\nThis endpoint allows users to obtain new access and refresh tokens using their\ncurrent refresh token. It validates the refresh token, verifies the user exists,\nand generates a new token pair. This is essential for maintaining user sessions\nwithout requiring re-authentication.\n\nToken Refresh Process:\n- Validates refresh token signature and expiration\n- Extracts user ID from token payload\n- Verifies user exists and is active\n- Generates new access and refresh tokens\n- Updates refresh token in database",
 				"tags": [
 					"Authentication"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
-					"description": "- Object containing email and verification code",
+					"description": "- Object containing the refresh token",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"properties": {
-									"email": {
-										"type": "string"
-									},
-									"code": {
+									"refreshToken": {
 										"type": "string"
 									}
 								},
 								"required": [
-									"email",
-									"code"
+									"refreshToken"
 								],
 								"type": "object",
-								"description": "- Object containing email and verification code"
+								"description": "- Object containing the refresh token"
 							}
 						}
 					}
@@ -2709,12 +2509,12 @@
 						"application/json": {
 							"schema": {
 								"properties": {
-									"password": {
+									"newPassword": {
 										"type": "string"
 									}
 								},
 								"required": [
-									"password"
+									"newPassword"
 								],
 								"type": "object",
 								"description": "- Object containing the new password"

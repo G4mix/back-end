@@ -1,6 +1,5 @@
 import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
-import { TestData } from '@test/helpers/test-data'
 import { TestTokens } from '@test/helpers/test-tokens'
 
 describe('Update User Integration Tests', () => {
@@ -30,50 +29,31 @@ describe('Update User Integration Tests', () => {
 				displayName: 'Updated Name',
 				autobiography: 'Updated bio with enough characters to pass validation'
 			}
-			
+
 			// Mock do Prisma
 			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
 			mockPrismaClient.user.findUnique.mockResolvedValue({
 				id: 'user-123',
 				userProfileId: 'profile-123',
-				username: 'testuser',
 				email: 'test@example.com',
+				username: 'testuser',
 				verified: true,
-				created_at: new Date(),
-				updated_at: new Date(),
 				userProfile: {
 					id: 'profile-123',
 					displayName: 'Original Name',
-					autobiography: 'Original bio',
-					icon: null,
-					backgroundImage: null,
-					links: [],
-					_count: {
-						followers: 10,
-						following: 5
-					}
+					autobiography: 'Original bio'
 				}
 			})
-			
 			mockPrismaClient.user.update.mockResolvedValue({
 				id: 'user-123',
 				userProfileId: 'profile-123',
-				username: 'testuser',
 				email: 'test@example.com',
+				username: 'testuser',
 				verified: true,
-				created_at: new Date(),
-				updated_at: new Date(),
 				userProfile: {
 					id: 'profile-123',
 					displayName: updateData.displayName,
-					autobiography: updateData.autobiography,
-					icon: null,
-					backgroundImage: null,
-					links: [],
-					_count: {
-						followers: 10,
-						following: 5
-					}
+					autobiography: updateData.autobiography
 				}
 			})
 
@@ -90,8 +70,8 @@ describe('Update User Integration Tests', () => {
 		it('should return validation error for long name', async () => {
 			// Arrange
 			const updateData = {
-				name: 'A'.repeat(101), // Excede 100 caracteres
-				bio: 'Valid bio with enough characters'
+				displayName: 'A'.repeat(256), // Excede 255 caracteres
+				autobiography: 'Valid bio with enough characters'
 			}
 
 			// Act & Assert
@@ -109,8 +89,8 @@ describe('Update User Integration Tests', () => {
 		it('should return validation error for long bio', async () => {
 			// Arrange
 			const updateData = {
-				name: 'Valid Name',
-				bio: 'A'.repeat(501) // Excede 500 caracteres
+				displayName: 'Valid Name',
+				autobiography: 'A'.repeat(501) // Excede 500 caracteres
 			}
 
 			// Act & Assert
@@ -128,8 +108,8 @@ describe('Update User Integration Tests', () => {
 		it('should return validation error for invalid icon URL', async () => {
 			// Arrange
 			const updateData = {
-				name: 'Valid Name',
-				bio: 'Valid bio',
+				displayName: 'Valid Name',
+				autobiography: 'Valid bio with enough characters to pass validation',
 				icon: 'invalid-url'
 			}
 
@@ -148,8 +128,8 @@ describe('Update User Integration Tests', () => {
 		it('should return validation error for invalid background image URL', async () => {
 			// Arrange
 			const updateData = {
-				name: 'Valid Name',
-				bio: 'Valid bio',
+				displayName: 'Valid Name',
+				autobiography: 'Valid bio with enough characters to pass validation',
 				backgroundImage: 'invalid-url'
 			}
 
@@ -167,11 +147,12 @@ describe('Update User Integration Tests', () => {
 
 		it('should return UNAUTHORIZED when no token provided', async () => {
 			// Arrange
-			const updateData = {
-				name: 'Updated Name',
-				bio: 'Updated bio'
-			}
 			httpClient.clearAuthToken()
+
+			const updateData = {
+				displayName: 'Updated Name',
+				autobiography: 'Updated bio'
+			}
 
 			// Act & Assert
 			await expect(httpClient.patch('/v1/users', updateData))
@@ -187,19 +168,17 @@ describe('Update User Integration Tests', () => {
 
 		it('should return USER_NOT_FOUND when user does not exist', async () => {
 			// Arrange
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
+			
 			const updateData = {
-				name: 'Updated Name',
-				bio: 'Updated bio'
+				displayName: 'Updated Name',
+				autobiography: 'Updated bio'
 			}
 
 			// Mock do Prisma para retornar null
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue(null)
-					}
-				}
-			})
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
 			await expect(httpClient.patch('/v1/users', updateData))
@@ -215,33 +194,37 @@ describe('Update User Integration Tests', () => {
 
 		it('should update user with partial data', async () => {
 			// Arrange
-			const updateData = {
-				name: 'Updated Name Only'
-			}
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
 			
+			const updateData = {
+				displayName: 'Updated Name Only'
+			}
+
 			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							username: 'testuser',
-							email: 'test@example.com',
-							verified: true
-						}),
-						update: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							username: 'testuser',
-							email: 'test@example.com',
-							verified: true,
-							userProfile: {
-								name: updateData.name,
-								bio: 'Old bio',
-								icon: 'https://example.com/old-icon.jpg',
-								backgroundImage: 'https://example.com/old-background.jpg'
-							}
-						})
-					}
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Original Name',
+					autobiography: 'Original bio'
+				}
+			})
+			mockPrismaClient.user.update.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Updated Name Only',
+					autobiography: 'Original bio'
 				}
 			})
 
@@ -250,24 +233,36 @@ describe('Update User Integration Tests', () => {
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.data.user.userProfile.name).toBe(updateData.name)
+			expect(response.data).toHaveProperty('user')
+			expect(response.data.user.userProfile.displayName).toBe('Updated Name Only')
+			expect(response.data.user.userProfile.autobiography).toBe('Original bio')
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
+			const authToken = TestTokens.generateValidToken()
+			httpClient.setAuthToken(authToken)
+			
 			const updateData = {
-				name: 'Updated Name',
-				bio: 'Updated bio'
+				displayName: 'Updated Name',
+				autobiography: 'Updated bio'
 			}
 
-			// Mock do Prisma para retornar erro
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-					}
+			// Mock do Prisma para simular erro no update
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				userProfile: {
+					id: 'profile-123',
+					displayName: 'Original Name',
+					autobiography: 'Original bio'
 				}
 			})
+			mockPrismaClient.user.update.mockRejectedValue(new Error('Database error'))
 
 			// Act & Assert
 			await expect(httpClient.patch('/v1/users', updateData))

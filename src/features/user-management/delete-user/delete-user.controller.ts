@@ -70,21 +70,34 @@ export class DeleteUserController extends Controller {
 	public async deleteUser(
 		@Request() req: TsoaRequest
 	) {
-		const user = await this.userRepository.findById({ id: req.user.sub })
-		if (!user) {
-			this.setStatus(404)
-			return { message: 'USER_NOT_FOUND' }
-		}
+		try {
+			console.log('🔍 Delete user - req.user.sub:', req.user.sub)
+			const user = await this.userRepository.findById({ id: req.user.sub })
+			console.log('🔍 Delete user - user found:', user)
+			if (!user) {
+				this.setStatus(404)
+				return { message: 'USER_NOT_FOUND' }
+			}
 
-		if (user.userProfile.icon) {
-			await this.userGateway.deleteUserFile({ key: user.userProfile.icon })
-		}
-		if (user.userProfile.backgroundImage) {
-			await this.userGateway.deleteUserFile({ key: user.userProfile.backgroundImage })
-		}
+			console.log('🔍 Delete user - userProfile:', user.userProfile)
+			if (user.userProfile.icon) {
+				console.log('🔍 Delete user - deleting icon:', user.userProfile.icon)
+				await this.userGateway.deleteUserFile({ key: user.userProfile.icon })
+			}
+			if (user.userProfile.backgroundImage) {
+				console.log('🔍 Delete user - deleting background:', user.userProfile.backgroundImage)
+				await this.userGateway.deleteUserFile({ key: user.userProfile.backgroundImage })
+			}
 
-		await this.userRepository.delete({ id: req.user.sub })
+			console.log('🔍 Delete user - deleting user from repository')
+			await this.userRepository.delete({ id: req.user.sub })
 
-		return { message: 'USER_DELETED_SUCCESSFULLY' }
+			console.log('🔍 Delete user - success')
+			return { message: 'USER_DELETED_SUCCESSFULLY' }
+		} catch (error) {
+			console.log('🔍 Delete user - error:', error)
+			this.setStatus(500)
+			return { message: 'DELETION_FAILED' }
+		}
 	}
 }

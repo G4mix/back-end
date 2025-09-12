@@ -58,4 +58,75 @@ export class TestData {
 	static generateFakeToken(): string {
 		return 'fake-jwt-token-for-testing'
 	}
+
+	/**
+	 * Gera dados de verificação de email para teste
+	 */
+	static createVerifyEmailCodeData(overrides: any = {}) {
+		return {
+			email: 'test@example.com',
+			code: '123456',
+			...overrides
+		}
+	}
+
+	/**
+	 * Gera dados de recuperação de email para teste
+	 */
+	static createRecoverEmailData(overrides: any = {}) {
+		return {
+			email: 'test@example.com',
+			...overrides
+		}
+	}
+
+	/**
+	 * Gera dados de mudança de senha para teste
+	 */
+	static createChangePasswordData(overrides: any = {}) {
+		return {
+			newPassword: 'NewTest123!',
+			...overrides
+		}
+	}
+
+	/**
+	 * Gera dados de refresh token para teste
+	 */
+	static createRefreshTokenData(overrides: any = {}) {
+		return {
+			refreshToken: 'fake-refresh-token',
+			...overrides
+		}
+	}
+
+	/**
+	 * Gera dados de like para teste
+	 */
+	static createLikeData(overrides: any = {}) {
+		return {
+			ideaId: '123e4567-e89b-12d3-a456-426614174000',
+			...overrides
+		}
+	}
+
+	/**
+	 * Gera dados de view para teste
+	 */
+	static createViewData(overrides: any = {}) {
+		return {
+			ideaId: '123e4567-e89b-12d3-a456-426614174000',
+			...overrides
+		}
+	}
+
+	/**
+	 * Gera dados de view em lote para teste
+	 */
+	static createBulkViewData(overrides: any = {}) {
+		return {
+			ideas: ['123e4567-e89b-12d3-a456-426614174000', '123e4567-e89b-12d3-a456-426614174001'],
+			...overrides
+		}
+	}
 }

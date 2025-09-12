@@ -38,8 +38,7 @@ export class S3Gateway {
 			await this.s3.send(command)
 			return { success: true }
 		} catch (err) {
-			const errorMessage = (err as Error)?.message
-			return errorMessage
+			throw err
 		}
 	}
 

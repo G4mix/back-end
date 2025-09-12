@@ -27,31 +27,24 @@ describe('Delete User Integration Tests', () => {
 	describe('DELETE /v1/users', () => {
 		it('should delete user successfully', async () => {
 			// Arrange
-			const mockUser = {
-				id: TestData.generateUUID(),
+			// Mock do Prisma para autenticação
+			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
+			mockPrismaClient.user.findUnique.mockResolvedValue({
+				id: 'user-123',
 				username: 'testuser',
 				email: 'test@example.com',
 				verified: true,
 				userProfile: {
+					id: 'profile-123',
 					icon: 'https://example.com/icon.jpg',
 					backgroundImage: 'https://example.com/background.jpg'
 				}
 			}
-			
-			// Mock do Prisma
-			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
-			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
-			mockPrismaClient.user.delete.mockResolvedValue({
-				id: mockUser.id
-			})
+			)
 
-			// Mock do S3 para deletar arquivos
+			// Mock do S3 para UserGateway.deleteUserFile
 			const mockS3Client = container.resolve('S3Client') as any
 			mockS3Client.send.mockResolvedValue({})
-			
-			// Mock do S3Gateway
-			const mockS3Gateway = container.resolve('S3Gateway') as any
-			jest.spyOn(mockS3Gateway, 'deleteFile').mockResolvedValue({})
 
 			// Act
 			const response = await httpClient.delete('/v1/users')
@@ -155,10 +148,6 @@ describe('Delete User Integration Tests', () => {
 			// Mock do S3 para simular erro
 			const mockS3Client = container.resolve('S3Client') as any
 			mockS3Client.send.mockRejectedValue(new Error('S3 Error'))
-			
-			// Mock do S3Gateway
-			const mockS3Gateway = container.resolve('S3Gateway') as any
-			jest.spyOn(mockS3Gateway, 'deleteFile').mockRejectedValue(new Error('S3 Error'))
 
 			// Act & Assert
 			await expect(httpClient.delete('/v1/users'))
@@ -174,8 +163,23 @@ describe('Delete User Integration Tests', () => {
 			const authToken = TestTokens.generateValidToken()
 			httpClient.setAuthToken(authToken)
 			
+			const mockUser = {
+				id: 'user-123',
+				userProfileId: 'profile-123',
+				email: 'test@example.com',
+				username: 'testuser',
+				verified: true,
+				userProfile: {
+					icon: null,
+					backgroundImage: null
+				}
+			}
+			
 			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
-			mockPrismaClient.user.findUnique.mockRejectedValue(new Error('Database error'))
+			// Mock para autenticação funcionar
+			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
+			// Mock para simular erro no delete
+			mockPrismaClient.user.delete.mockRejectedValue(new Error('Database error'))
 
 			// Act & Assert
 			await expect(httpClient.delete('/v1/users'))

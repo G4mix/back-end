@@ -1,4 +1,4 @@
-import { IntegrationTestSetup } from '@test/setup/integration-test-setup'
+import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 
@@ -30,19 +30,58 @@ describe('Record View Integration Tests', () => {
 	describe('POST /v1/views/record', () => {
 		it('should record view for idea successfully', async () => {
 			// Arrange
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			const ideaId = TestData.generateUUID()
 			const viewData = {
-				ideaId: TestData.generateUUID()
+				ideas: [ideaId]
 			}
+
+			const userData = {
+				id: userId,
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfileId: userProfileId,
+				loginAttempts: 0,
+				blockedUntil: null,
+				userProfile: {
+					id: userProfileId,
+					name: null,
+					bio: null,
+					icon: null,
+					created_at: new Date(),
+					updated_at: new Date()
+				}
+			}
+
+			// Gera um JWT válido
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const authToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId
+			})
+			httpClient.setAuthToken(authToken)
 			
 			// Mock do Prisma
 			IntegrationTestSetup.setupMocks({
 				prisma: {
+					user: {
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.id === userId) {
+								return Promise.resolve(userData)
+							}
+							return Promise.resolve(null)
+						})
+					},
 					view: {
 						findFirst: jest.fn().mockResolvedValue(null), // View não existe
 						create: jest.fn().mockResolvedValue({
 							id: TestData.generateUUID(),
-							ideaId: viewData.ideaId,
-							userId: TestData.generateUUID(),
+							ideaId: ideaId,
+							userId: userId,
 							created_at: new Date()
 						})
 					}

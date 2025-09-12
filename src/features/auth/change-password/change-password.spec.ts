@@ -27,72 +27,113 @@ describe('Change Password Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('PATCH /v1/auth/change-password', () => {
-		it('should change password successfully with valid data', async () => {
-			// Arrange
-			const changePasswordData = {
-				currentPassword: 'OldPassword123!',
-				newPassword: 'NewPassword123!'
+	describe('POST /v1/auth/change-password', () => {
+		it('should change password successfully with limited JWT from verify-email-code', async () => {
+			// Arrange - Simula o fluxo completo de recuperação de senha
+			const userDataInput = TestData.createUser()
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			const userData = {
+				id: userId,
+				username: userDataInput.username,
+				email: userDataInput.email,
+				password: '$2b$10$hashedpassword', // Senha atual hasheada
+				verified: false,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfileId: userProfileId,
+				loginAttempts: 0,
+				blockedUntil: null,
+				userProfile: {
+					id: userProfileId,
+					name: null,
+					bio: null,
+					icon: null,
+					created_at: new Date(),
+					updated_at: new Date()
+				},
+				userCode: {
+					id: TestData.generateUUID(),
+					code: '123456',
+					updated_at: new Date() // Código válido (não expirado)
+				}
 			}
+
+			const changePasswordData = TestData.createChangePasswordData()
 			
 			// Mock do Prisma
 			IntegrationTestSetup.setupMocks({
 				prisma: {
 					user: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							password: '$2b$10$hashedpassword',
-							verified: true
+						findUnique: jest.fn().mockImplementation(({ where }) => {
+							if (where.email === userDataInput.email) {
+								return Promise.resolve(userData)
+							}
+							if (where.id === userId) {
+								return Promise.resolve(userData)
+							}
+							return Promise.resolve(null)
 						}),
 						update: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							password: '$2b$10$newhashedpassword'
+							...userData,
+							password: '$2b$10$newhashedpassword',
+							verified: true
 						})
 					}
 				}
 			})
 
+			// Step 1: Verify email code and get limited JWT
+			const verifyData = TestData.createVerifyEmailCodeData()
+			const verifyResponse = await httpClient.post('/v1/auth/verify-email-code', verifyData)
+			expect(verifyResponse.status).toBe(200)
+			expect(verifyResponse.data).toHaveProperty('accessToken')
+
+			// Step 2: Use limited JWT to change password
+			const limitedToken = verifyResponse.data.accessToken
+			httpClient.setAuthToken(limitedToken)
+
 			// Act
-			const response = await httpClient.patch('/v1/auth/change-password', changePasswordData)
+			const response = await httpClient.post('/v1/auth/change-password', changePasswordData)
 
 			// Assert
 			expect(response.status).toBe(200)
-			expect(response.data).toHaveProperty('message')
-		})
-
-		it('should return validation error for empty current password', async () => {
-			// Arrange
-			const changePasswordData = {
-				currentPassword: '',
-				newPassword: 'NewPassword123!'
-			}
-
-			// Act & Assert
-			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
-				.rejects.toMatchObject({
-					response: {
-						status: 400,
-						data: {
-							message: 'CURRENT_PASSWORD_REQUIRED'
-						}
-					}
-				})
+			expect(response.data).toHaveProperty('accessToken')
+			expect(response.data).toHaveProperty('refreshToken')
+			expect(response.data).toHaveProperty('user')
 		})
 
 		it('should return validation error for empty new password', async () => {
 			// Arrange
 			const changePasswordData = {
-				currentPassword: 'OldPassword123!',
 				newPassword: ''
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
 						data: {
-							message: 'NEW_PASSWORD_REQUIRED'
+							message: 'INVALID_PASSWORD'
+						}
+					}
+				})
+		})
+
+		it('should return validation error for weak new password', async () => {
+			// Arrange
+			const changePasswordData = {
+				newPassword: 'weak'
+			}
+
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'INVALID_PASSWORD'
 						}
 					}
 				})
@@ -106,7 +147,7 @@ describe('Change Password Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -125,7 +166,7 @@ describe('Change Password Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -144,7 +185,7 @@ describe('Change Password Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -164,7 +205,7 @@ describe('Change Password Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -192,7 +233,7 @@ describe('Change Password Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -224,7 +265,7 @@ describe('Change Password Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -252,7 +293,7 @@ describe('Change Password Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/auth/change-password', changePasswordData))
+			await expect(httpClient.post('/v1/auth/change-password', changePasswordData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

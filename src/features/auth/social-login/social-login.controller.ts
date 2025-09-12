@@ -12,6 +12,7 @@ import { UserWithProfile, UserDTO } from '@shared/dto/simple.dto'
 import { TsoaRequest } from '@shared/types/tsoa'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
+import { socialLoginRequests } from '@shared/utils/social-login-requests'
 
 @injectable()
 @Route('/v1/auth')
@@ -67,9 +68,9 @@ export class SocialLoginController extends Controller {
 	@Get('/callback/{provider}')
 	@LogResponseTime()
 	public async callbackSocialLoginGet(
-		@Path() provider: 'google' | 'linkedin' | 'github', 
-		@Request() req: TsoaRequest, 
-		@Query() code?: string, 
+		@Path() provider: 'google' | 'linkedin' | 'github',
+		@Request() req: TsoaRequest,
+		@Query() code?: string,
 		@Query() state?: string
 	) {
 		const token = await this.handleCallbackUrl({ provider, code, codeVerifier: state })
@@ -127,7 +128,7 @@ export class SocialLoginController extends Controller {
 	@Post('/social-login/{provider}')
 	@LogResponseTime()
 	public async socialLogin(
-		@Path() provider: 'google' | 'linkedin' | 'github', 
+		@Path() provider: 'google' | 'linkedin' | 'github',
 		@Body() body: { token: string }
 	): Promise<SigninOutput | string> {
 		const { token } = body
@@ -138,7 +139,7 @@ export class SocialLoginController extends Controller {
 		const userData = validation.userData
 
 		let oauthUser = await this.userRepository.findOAuthUser({ provider, email: userData.email })
-		
+
 		if (!oauthUser) {
 			let user = await this.userRepository.findByEmail({ email: userData.email })
 			if (user) return 'PROVIDER_NOT_LINKED'
@@ -217,8 +218,8 @@ export class SocialLoginController extends Controller {
 	@Security('jwt', [])
 	@LogResponseTime()
 	public async linkNewOAuthProvider(
-		@Path() provider: 'google' | 'linkedin' | 'github', 
-		@Body() body: { token: string }, 
+		@Path() provider: 'google' | 'linkedin' | 'github',
+		@Body() body: { token: string },
 		@Request() req: TsoaRequest
 	): Promise<{ success: boolean } | string> {
 		const { token } = body
@@ -240,8 +241,24 @@ export class SocialLoginController extends Controller {
 		return { success: true }
 	}
 
-	private async handleCallbackUrl(params: { provider: 'google' | 'github' | 'linkedin'; code?: string; codeVerifier?: string; }) {
-		console.log(params)
-		return null
+	private async handleCallbackUrl({ provider, code, codeVerifier }: { provider: 'google' | 'github' | 'linkedin'; code?: string; codeVerifier?: string; }) {
+		const { google, github, linkedin } = socialLoginRequests
+		if (!code) return null
+
+		const providers = {
+			google: async () => codeVerifier ? google.getToken({ code, codeVerifier }) : null,
+			linkedin: async () => linkedin.getToken({ code }),
+			github: async () => github.getToken({ code })
+		}
+
+		const executeSocialLogin = providers[provider]
+		if (!executeSocialLogin) return null
+
+		try {
+			return await executeSocialLogin()
+		} catch (err) {
+			console.log(err)
+			return null
+		}
 	}
 }

@@ -17,11 +17,10 @@ module.exports = {
 	collectCoverageFrom: [
 		'src/**/*.ts',
 		'!src/**/*.spec.ts',
-		'!src/**/*.e2e-spec.ts',
 		'!src/test/**/*.ts',
 		'!src/tsoa/**/*.ts'
 	],
-	coverageDirectory: 'coverage/e2e',
+	coverageDirectory: 'coverage',
 	testTimeout: 30000,
 	maxWorkers: 1,
 	verbose: true,

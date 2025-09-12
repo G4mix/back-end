@@ -94,17 +94,17 @@ export class ToggleFollowController extends Controller {
 				action: 'toggle_follow'
 			})
 
+			// Prevent self-following
+			if (userProfileId === followingId) {
+				this.setStatus(400)
+				return 'CANNOT_FOLLOW_SELF'
+			}
+
 			// Validate that target user profile exists
 			const targetUser = await this.userRepository.findUserByProfileId({ userProfileId: followingId })
 			if (!targetUser) {
 				this.setStatus(404)
 				return 'TARGET_NOT_FOUND'
-			}
-
-			// Prevent self-following
-			if (userProfileId === followingId) {
-				this.setStatus(400)
-				return 'CANNOT_FOLLOW_SELF'
 			}
 
 			// Check if user is already following

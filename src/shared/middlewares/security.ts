@@ -19,8 +19,18 @@ export async function expressAuthentication(
 			return sendErrorMessage({ res, message: 'UNAUTHORIZED' })
 		}
 	
-		// Verificação de validRoutes removida - sistema simplificado
-		// No futuro, aqui pode ser implementado controle de permissões por roles/teams
+		// Verifica se o token tem rotas válidas definidas (JWT limitado)
+		if (claims.validRoutes) {
+			const currentRoute = `${req.method} ${req.route?.path || req.path}`
+			const isRouteAllowed = claims.validRoutes.some((validRoute: any) => 
+				validRoute.method === req.method && req.path.includes(validRoute.route)
+			)
+			
+			if (!isRouteAllowed) {
+				console.log('JWT Middleware - Rota não permitida:', currentRoute, 'Rotas válidas:', claims.validRoutes)
+				return sendErrorMessage({ res, message: 'UNAUTHORIZED' })
+			}
+		}
 	
 		const pg = container.resolve<PrismaClient>('PostgresqlClient')
 		console.log('JWT Middleware - Buscando user com ID:', claims['sub'])
