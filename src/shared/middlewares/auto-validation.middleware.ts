@@ -49,16 +49,22 @@ export class AutoValidationMiddleware {
 	process() {
 		return (req: Request, res: Response, next: NextFunction) => {
 			try {
+				// Log básico para todas as requisições
+				this.logger.log('🔍 AutoValidationMiddleware executado para:', req.method, req.path)
+				
 				// Identifica a rota
 				const routeKey = `${req.method} ${req.route?.path || req.path}`
-				const schema = this.getSchemaForRoute(routeKey)
-
-
-				if (!schema) {
-					return next()
+				
+				// Debug log para todas as rotas
+				if (routeKey.includes('link-new-oauth-provider')) {
+					this.logger.log('🔍 DEBUG - Processando rota link-new-oauth-provider:', {
+						routeKey
+					})
 				}
-
-				// Processa entrada (body, query, params) e injeta diretamente no request
+				
+				const schema = this.getSchemaForRoute(routeKey)
+				if (!schema) return next()
+				
 				this.processInput(req, schema)
 
 				// Intercepta resposta para serialização
@@ -129,13 +135,20 @@ export class AutoValidationMiddleware {
 	private processInput(req: Request, schema: any): void {
 		// Processa body se schema de input existir
 		if (schema.input) {
-			const bodyResult = schema.input.safeParse(req.body)
-			if (!bodyResult.success) {
-				const errorCode = this.extractErrorCode(bodyResult.error.issues, 'INVALID_BODY')
-				throw new ValidationError(errorCode, bodyResult.error.issues)
+			// Para multipart/form-data, não processamos aqui - deixamos o TSOA/Multer fazer isso
+			// A validação será feita no controller através dos parâmetros @FormField
+			if (req.headers['content-type']?.includes('multipart/form-data')) {
+				return // Não processa validação aqui para multipart/form-data
+			} else {
+				// Processamento normal para JSON
+				const bodyResult = schema.input.safeParse(req.body)
+				if (!bodyResult.success) {
+					const errorCode = this.extractErrorCode(bodyResult.error.issues, 'INVALID_BODY')
+					throw new ValidationError(errorCode, bodyResult.error.issues)
+				}
+				// Injeta dados validados diretamente no body
+				req.body = bodyResult.data
 			}
-			// Injeta dados validados diretamente no body
-			req.body = bodyResult.data
 		}
 
 		// Processa query se schema de query existir
@@ -167,6 +180,7 @@ export class AutoValidationMiddleware {
 			req.params = paramsResult.data
 		}
 	}
+
 
 	/**
 	 * Extrai parâmetros da URL manualmente
@@ -290,7 +304,7 @@ export class AutoValidationMiddleware {
 		// 🎯 PRIORIDADE ABSOLUTA: DTOs registrados automaticamente
 		const dtoSchema = this.dtoRegistry.getSchema(routeKey)
 		if (dtoSchema) {
-			this.logger.info('🎯 USANDO DTO AUTOMATICAMENTE:', routeKey, {
+			this.logger.log('🎯 USANDO DTO AUTOMATICAMENTE:', routeKey, {
 				schemas: Object.keys(dtoSchema).filter(key => dtoSchema[key as keyof typeof dtoSchema])
 			})
 			return dtoSchema
@@ -298,7 +312,7 @@ export class AutoValidationMiddleware {
 
 		// ❌ NÃO HÁ MAIS SCHEMAS HARDCODED!
 		// Todos os schemas agora são injetados automaticamente dos DTOs
-		this.logger.warn('❌ Nenhum DTO encontrado para rota:', routeKey, {
+		this.logger.log('❌ Nenhum DTO encontrado para rota:', routeKey, {
 			message: 'Esta rota precisa ter um DTO padronizado!',
 			availableRoutes: this.dtoRegistry.listRoutes()
 		})

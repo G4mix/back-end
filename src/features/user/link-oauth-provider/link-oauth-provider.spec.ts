@@ -183,7 +183,11 @@ describe('Link OAuth Provider Integration Tests', () => {
 			await expect(httpClient.post('/v1/user/link-new-oauth-provider/google', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
-						status: 404
+						status: 404,
+						data: {
+							message: 'USER_NOT_FOUND',
+							code: 404
+						}
 					}
 				})
 		})
@@ -227,11 +231,17 @@ describe('Link OAuth Provider Integration Tests', () => {
 
 			// Act
 			httpClient.setAuthToken(validToken)
-			const response = await httpClient.post('/v1/user/link-new-oauth-provider/google', socialLoginData)
-
-			// Assert
-			expect(response.status).toBe(200)
-			expect(response.data).toBe('PROVIDER_ALREADY_LINKED')
+			await expect(httpClient.post('/v1/user/link-new-oauth-provider/google', socialLoginData))
+				// Assert
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'PROVIDER_ALREADY_LINKED',
+							code: 400
+						}
+					}
+				})
 		})
 
 		it('should return USER_NOT_FOUND when social token validation fails', async () => {
@@ -257,11 +267,16 @@ describe('Link OAuth Provider Integration Tests', () => {
 
 			// Act
 			httpClient.setAuthToken(validToken)
-			const response = await httpClient.post('/v1/user/link-new-oauth-provider/google', socialLoginData)
-
-			// Assert
-			expect(response.status).toBe(200)
-			expect(response.data).toBe('USER_NOT_FOUND')
+			await expect(httpClient.post('/v1/user/link-new-oauth-provider/google', socialLoginData))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: {
+							message: 'USER_NOT_FOUND',
+							code: 404
+						}
+					}
+				})
 		})
 
 		it('should return UNAUTHORIZED when token is invalid', async () => {
@@ -276,7 +291,11 @@ describe('Link OAuth Provider Integration Tests', () => {
 			await expect(httpClient.post('/v1/user/link-new-oauth-provider/google', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
-						status: 401
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED',
+							code: 401
+						}
 					}
 				})
 		})
@@ -291,7 +310,11 @@ describe('Link OAuth Provider Integration Tests', () => {
 			await expect(httpClient.post('/v1/user/link-new-oauth-provider/google', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
-						status: 401
+						status: 401,
+						data: {
+							message: 'UNAUTHORIZED',
+							code: 401
+						}
 					}
 				})
 		})

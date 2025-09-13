@@ -82,10 +82,6 @@ export class ToggleLikeController extends Controller {
 		@Body() body: ToggleLikeInput,
 		@Request() request: any
 	): Promise<ToggleLikeResponse | ErrorResponse> {
-		console.log('ToggleLikeController - Método toggleLike chamado')
-		console.log('ToggleLikeController - Body:', body)
-		console.log('ToggleLikeController - Request user:', request.user)
-		
 		try {
 			const userProfileId = request.user?.userProfileId
 			if (!userProfileId) {

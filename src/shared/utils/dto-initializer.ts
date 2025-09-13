@@ -113,11 +113,11 @@ export class DTOInitializer {
 		try {
 			// Create Comment
 			const { CreateCommentDTO } = await import('../../features/comments/create-comment/create-comment.dto')
-			this.registry.registerDTO('POST /v1/comment/', CreateCommentDTO)
+			this.registry.registerDTO('POST /v1/comment', CreateCommentDTO)
 
 			// Get Comments
 			const { GetCommentsDTO } = await import('../../features/comments/get-comments/get-comments.dto')
-			this.registry.registerDTO('GET /v1/comments', GetCommentsDTO)
+			this.registry.registerDTO('GET /v1/comment', GetCommentsDTO)
 
 			this.logger.debug('DTOs de comentários inicializados')
 		} catch (error) {

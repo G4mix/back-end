@@ -22,9 +22,7 @@ export class CommentRepository {
 			}
 		})
 
-		console.log('CommentRepository - Comment recebido:', comment)
 		const count = comment._count
-		console.log('CommentRepository - Count:', count)
 		delete (comment as any)['_count']
 		
 		return {

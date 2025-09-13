@@ -37,6 +37,7 @@ export class HttpClient {
 			},
 			(error) => {
 				console.log(`❌ ${error.response?.status || 'ERROR'} ${error.config?.method?.toUpperCase()} ${error.config?.url}`)
+				console.log(error.response?.data)
 				// Se for um erro de conexão, retorna um erro mais específico
 				if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
 					const connectionError = new Error('Connection refused')
@@ -72,22 +73,22 @@ export class HttpClient {
 	/**
 	 * Faz uma requisição POST
 	 */
-	async post<T = any>(url: string, data?: any): Promise<AxiosResponse<T>> {
-		return this.client.post(url, data)
+	async post<T = any>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
+		return this.client.post(url, data, config)
 	}
 
 	/**
 	 * Faz uma requisição PUT
 	 */
-	async put<T = any>(url: string, data?: any): Promise<AxiosResponse<T>> {
-		return this.client.put(url, data)
+	async put<T = any>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
+		return this.client.put(url, data, config)
 	}
 
 	/**
 	 * Faz uma requisição PATCH
 	 */
-	async patch<T = any>(url: string, data?: any): Promise<AxiosResponse<T>> {
-		return this.client.patch(url, data)
+	async patch<T = any>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
+		return this.client.patch(url, data, config)
 	}
 
 	/**

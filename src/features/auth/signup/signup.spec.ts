@@ -58,7 +58,6 @@ describe('Signup Integration Tests', () => {
 
 			// Act
 			const response = await httpClient.post('/v1/auth/signup', userData)
-			console.log(response.data)
 			// Assert
 			expect(response.status).toBe(201)
 			expect(response.data).toHaveProperty('accessToken')

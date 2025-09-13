@@ -25,6 +25,8 @@ export const CommonErrors: Record<string, ErrorResponse> = {
 	get USER_ALREADY_EXISTS() { return { message: 'USER_ALREADY_EXISTS', code: 409 } },
 	get INVALID_USER_ID() { return { message: 'INVALID_USER_ID', code: 400 } },
 	get INVALID_NAME() { return { message: 'INVALID_NAME', code: 400 } },
+	get NAME_TOO_LONG() { return { message: 'NAME_TOO_LONG', code: 400 } },
+	get BIO_TOO_LONG() { return { message: 'BIO_TOO_LONG', code: 400 } },
 
 	// Senhas
 	get INVALID_PASSWORD() { return { message: 'INVALID_PASSWORD', code: 400 } },

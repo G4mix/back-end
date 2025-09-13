@@ -55,6 +55,8 @@ import { expressAuthentication } from './../shared/middlewares/security';
 import { iocContainer } from './../config/ioc';
 import type { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
+const multer = require('multer');
+
 
 const expressAuthenticationRecasted = expressAuthentication as (req: ExRequest, securityName: string, scopes?: string[], res?: ExResponse) => Promise<any>;
 
@@ -97,38 +99,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Express.Multer.File": {
-        "dataType": "refObject",
-        "properties": {
-            "fieldname": {"dataType":"string","required":true},
-            "originalname": {"dataType":"string","required":true},
-            "encoding": {"dataType":"string","required":true},
-            "mimetype": {"dataType":"string","required":true},
-            "size": {"dataType":"double","required":true},
-            "stream": {"dataType":"buffer","required":true},
-            "destination": {"dataType":"string","required":true},
-            "filename": {"dataType":"string","required":true},
-            "path": {"dataType":"string","required":true},
-            "buffer": {"dataType":"buffer","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "UpdateUserInput": {
-        "dataType": "refObject",
-        "properties": {
-            "username": {"dataType":"string"},
-            "email": {"dataType":"string"},
-            "password": {"dataType":"string"},
-            "displayName": {"dataType":"string"},
-            "autobiography": {"dataType":"string"},
-            "links": {"dataType":"array","array":{"dataType":"string"}},
-            "icon": {"ref":"Express.Multer.File"},
-            "backgroundImage": {"ref":"Express.Multer.File"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ToggleLikeResponse": {
         "dataType": "refObject",
         "properties": {
@@ -152,6 +122,23 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "idea": {"dataType":"nestedObjectLiteral","nestedProperties":{"updated_at":{"dataType":"string","required":true},"created_at":{"dataType":"string","required":true},"links":{"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"url":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}}}},"images":{"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"height":{"dataType":"double","required":true},"width":{"dataType":"double","required":true},"alt":{"dataType":"string","required":true},"src":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}}}},"tags":{"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}}}},"authorId":{"dataType":"string","required":true},"description":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},"title":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},"id":{"dataType":"string","required":true}},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Express.Multer.File": {
+        "dataType": "refObject",
+        "properties": {
+            "fieldname": {"dataType":"string","required":true},
+            "originalname": {"dataType":"string","required":true},
+            "encoding": {"dataType":"string","required":true},
+            "mimetype": {"dataType":"string","required":true},
+            "size": {"dataType":"double","required":true},
+            "stream": {"dataType":"buffer","required":true},
+            "destination": {"dataType":"string","required":true},
+            "filename": {"dataType":"string","required":true},
+            "path": {"dataType":"string","required":true},
+            "buffer": {"dataType":"buffer","required":true},
         },
         "additionalProperties": false,
     },
@@ -323,13 +310,14 @@ const templateService = new ExpressTemplateService(models, {"noImplicitAdditiona
 
 
 
-export function RegisterRoutes(app: Router) {
+export function RegisterRoutes(app: Router,opts?:{multer?:ReturnType<typeof multer>}) {
 
     // ###########################################################################################################
     //  NOTE: If you do not see routes for all of your controllers in this file, then you might not have informed tsoa of where to look
     //      Please look into the "controllerPathGlobs" config option described in the readme: https://github.com/lukeautry/tsoa
     // ###########################################################################################################
 
+    const upload = opts?.multer ||  multer({"limits":{"fileSize":8388608}});
 
     
         app.post('/v1/views/record',
@@ -371,13 +359,21 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.patch('/v1/user',
             authenticateMiddleware([{"jwt":[]}]),
+            upload.fields([{"name":"icon","maxCount":1,"multiple":false},{"name":"backgroundImage","maxCount":1,"multiple":false}]),
             ...(fetchMiddlewares<RequestHandler>(UpdateUserController)),
             ...(fetchMiddlewares<RequestHandler>(UpdateUserController.prototype.updateUser)),
 
             async function UpdateUserController_updateUser(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    body: {"in":"body","name":"body","required":true,"ref":"UpdateUserInput"},
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                    username: {"in":"formData","name":"username","dataType":"string"},
+                    email: {"in":"formData","name":"email","dataType":"string"},
+                    password: {"in":"formData","name":"password","dataType":"string"},
+                    displayName: {"in":"formData","name":"displayName","dataType":"string"},
+                    autobiography: {"in":"formData","name":"autobiography","dataType":"string"},
+                    links: {"in":"formData","name":"links","dataType":"string"},
+                    icon: {"in":"formData","name":"icon","dataType":"file"},
+                    backgroundImage: {"in":"formData","name":"backgroundImage","dataType":"file"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

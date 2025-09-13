@@ -5,6 +5,7 @@ import { UserRepository } from '@shared/repositories/user.repository'
 import { CommonErrors, ErrorResponse } from '@shared/utils/error-response'
 import { TsoaRequest } from '@shared/types/tsoa'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
+import { Logger } from '@shared/utils/logger'
 
 @injectable()
 @Route('/v1/user')
@@ -12,9 +13,11 @@ import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 export class LinkOAuthProviderController extends Controller {
 	constructor(
 		@inject('AuthGateway') private authGateway: AuthGateway,
-		@inject('UserRepository') private userRepository: UserRepository
+		@inject('UserRepository') private userRepository: UserRepository,
+		@inject('Logger') private logger: Logger
 	) {
 		super()
+		void this.logger
 	}
 
 	/**
@@ -56,7 +59,7 @@ export class LinkOAuthProviderController extends Controller {
 	 * ```
 	 */
 	@SuccessResponse(200)
-	@Post('/link-new-oauth-provider/{provider}')
+	@Post('link-new-oauth-provider/{provider}')
 	@Security('jwt', [])
 	@LogResponseTime()
 	public async linkNewOAuthProvider(
@@ -66,7 +69,6 @@ export class LinkOAuthProviderController extends Controller {
 	): Promise<{ success: boolean } | ErrorResponse> {
 		const { token } = body
 		const userId = req.user.sub
-
 		const validation = await this.authGateway.validateSocialLogin({ provider, token })
 		if (!validation.valid || !validation.userData) {
 			this.setStatus(CommonErrors.USER_NOT_FOUND.code)

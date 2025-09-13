@@ -89,7 +89,7 @@ export class CreateCommentController extends Controller {
 	 * ```
 	 */
 	@SuccessResponse(201, 'Comment created successfully')
-	@Post('/')
+	@Post()
 	@LogResponseTime()
 	public async createComment(
 		@Body() body: CreateCommentInput,
@@ -147,7 +147,6 @@ export class CreateCommentController extends Controller {
 			this.setStatus(201)
 			return { comment: newComment }
 		} catch (error) {
-			console.log('CreateCommentController - Erro capturado:', error)
 			this.logger.error('Failed to create comment', { 
 				error: error instanceof Error ? error.message : 'Unknown error',
 				userProfileId: request.user?.userProfileId,

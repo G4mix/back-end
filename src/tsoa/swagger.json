@@ -163,102 +163,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Express.Multer.File": {
-				"description": "Object containing file metadata and access information.",
-				"properties": {
-					"fieldname": {
-						"type": "string",
-						"description": "Name of the form field associated with this file."
-					},
-					"originalname": {
-						"type": "string",
-						"description": "Name of the file on the uploader's computer."
-					},
-					"encoding": {
-						"type": "string",
-						"description": "Value of the `Content-Transfer-Encoding` header for this file.",
-						"deprecated": true
-					},
-					"mimetype": {
-						"type": "string",
-						"description": "Value of the `Content-Type` header for this file."
-					},
-					"size": {
-						"type": "number",
-						"format": "double",
-						"description": "Size of the file in bytes."
-					},
-					"stream": {
-						"type": "string",
-						"format": "byte",
-						"description": "A readable stream of this file. Only available to the `_handleFile`\ncallback for custom `StorageEngine`s."
-					},
-					"destination": {
-						"type": "string",
-						"description": "`DiskStorage` only: Directory to which this file has been uploaded."
-					},
-					"filename": {
-						"type": "string",
-						"description": "`DiskStorage` only: Name of this file within `destination`."
-					},
-					"path": {
-						"type": "string",
-						"description": "`DiskStorage` only: Full path to the uploaded file."
-					},
-					"buffer": {
-						"type": "string",
-						"format": "byte",
-						"description": "`MemoryStorage` only: A Buffer containing the entire file."
-					}
-				},
-				"required": [
-					"fieldname",
-					"originalname",
-					"encoding",
-					"mimetype",
-					"size",
-					"stream",
-					"destination",
-					"filename",
-					"path",
-					"buffer"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"UpdateUserInput": {
-				"properties": {
-					"username": {
-						"type": "string"
-					},
-					"email": {
-						"type": "string"
-					},
-					"password": {
-						"type": "string"
-					},
-					"displayName": {
-						"type": "string"
-					},
-					"autobiography": {
-						"type": "string"
-					},
-					"links": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"icon": {
-						"$ref": "#/components/schemas/Express.Multer.File"
-					},
-					"backgroundImage": {
-						"$ref": "#/components/schemas/Express.Multer.File"
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
 			"ToggleLikeResponse": {
 				"properties": {
 					"liked": {
@@ -398,6 +302,69 @@
 				},
 				"required": [
 					"idea"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Express.Multer.File": {
+				"description": "Object containing file metadata and access information.",
+				"properties": {
+					"fieldname": {
+						"type": "string",
+						"description": "Name of the form field associated with this file."
+					},
+					"originalname": {
+						"type": "string",
+						"description": "Name of the file on the uploader's computer."
+					},
+					"encoding": {
+						"type": "string",
+						"description": "Value of the `Content-Transfer-Encoding` header for this file.",
+						"deprecated": true
+					},
+					"mimetype": {
+						"type": "string",
+						"description": "Value of the `Content-Type` header for this file."
+					},
+					"size": {
+						"type": "number",
+						"format": "double",
+						"description": "Size of the file in bytes."
+					},
+					"stream": {
+						"type": "string",
+						"format": "byte",
+						"description": "A readable stream of this file. Only available to the `_handleFile`\ncallback for custom `StorageEngine`s."
+					},
+					"destination": {
+						"type": "string",
+						"description": "`DiskStorage` only: Directory to which this file has been uploaded."
+					},
+					"filename": {
+						"type": "string",
+						"description": "`DiskStorage` only: Name of this file within `destination`."
+					},
+					"path": {
+						"type": "string",
+						"description": "`DiskStorage` only: Full path to the uploaded file."
+					},
+					"buffer": {
+						"type": "string",
+						"format": "byte",
+						"description": "`MemoryStorage` only: A Buffer containing the entire file."
+					}
+				},
+				"required": [
+					"fieldname",
+					"originalname",
+					"encoding",
+					"mimetype",
+					"size",
+					"stream",
+					"destination",
+					"filename",
+					"path",
+					"buffer"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1265,13 +1232,39 @@
 				],
 				"parameters": [],
 				"requestBody": {
-					"description": "- User update data including profile fields and optional files",
-					"required": true,
+					"required": false,
 					"content": {
-						"application/json": {
+						"multipart/form-data": {
 							"schema": {
-								"$ref": "#/components/schemas/UpdateUserInput",
-								"description": "- User update data including profile fields and optional files"
+								"type": "object",
+								"properties": {
+									"username": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									},
+									"displayName": {
+										"type": "string"
+									},
+									"autobiography": {
+										"type": "string"
+									},
+									"links": {
+										"type": "string"
+									},
+									"icon": {
+										"type": "string",
+										"format": "binary"
+									},
+									"backgroundImage": {
+										"type": "string",
+										"format": "binary"
+									}
+								}
 							}
 						}
 					}

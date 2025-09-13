@@ -1,6 +1,6 @@
-import { Route, Tags, Controller, Body, SuccessResponse, Security, Request, Patch } from 'tsoa'
+import { Route, Tags, Controller, SuccessResponse, Security, Request, Patch, UploadedFile, FormField } from 'tsoa'
 import { injectable, inject } from 'tsyringe'
-import { UpdateUserInput, UpdateUserOutput } from '@shared/types/tsoa'
+import { UpdateUserOutput } from '@shared/types/tsoa'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { UserGateway } from '@shared/gateways/user.gateway'
 import { BCryptEncoder } from '@shared/utils/bcrypt-encoder'
@@ -10,6 +10,8 @@ import { TsoaRequest } from '@shared/types/tsoa'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { Logger } from '@shared/utils/logger'
 import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
+import { UpdateUserInputSchema } from './update-user.dto'
+import { FormValidationUtil } from '@shared/utils/form-validation.util'
 
 @injectable()
 @Route('/v1/user')
@@ -81,11 +83,19 @@ export class UpdateUserController extends Controller {
 	@Security('jwt', [])
 	@LogResponseTime()
 	public async updateUser(
-		@Body() body: UpdateUserInput,
-		@Request() req: TsoaRequest
+		@Request() req: TsoaRequest,
+		@FormField() username?: string,
+		@FormField() email?: string,
+		@FormField() password?: string,
+		@FormField() displayName?: string,
+		@FormField() autobiography?: string,
+		@FormField() links?: string,
+		@UploadedFile('icon') icon?: Express.Multer.File,
+		@UploadedFile('backgroundImage') backgroundImage?: Express.Multer.File
 	): Promise<UpdateUserOutput | ErrorResponse> {
 		const userId = req.user.sub
-		this.logger.info('Updating user profile', { userId, fields: Object.keys(body) })
+		const fields = [username, email, password, displayName, autobiography, links, icon, backgroundImage].filter(Boolean)
+		this.logger.info('Updating user profile', { userId, fields: fields.map(f => typeof f === 'string' ? f : 'file') })
 
 		const currentUser = await this.userRepository.findById({ id: userId })
 		if (!currentUser) {
@@ -95,46 +105,69 @@ export class UpdateUserController extends Controller {
 
 		const updateData: any = {}
 
-		if (body.username) updateData.username = body.username
-		if (body.email) updateData.email = body.email.toLowerCase()
-		if (body.password) updateData.password = BCryptEncoder.encode(body.password)
-		if (body.displayName !== undefined) updateData.displayName = body.displayName
-		if (body.autobiography !== undefined) updateData.autobiography = body.autobiography
-		if (body.links !== undefined) updateData.links = body.links
+		// Validação manual para campos @FormField usando o schema do DTO
+		const validationResult = FormValidationUtil.validateFields(
+			{ username, email, password, displayName, autobiography, links }, 
+			UpdateUserInputSchema
+		)
+		if (!validationResult.success) {
+			this.logger.warn('Validation failed for form fields', { userId, error: validationResult.error })
+			this.setStatus(validationResult.error!.code)
+			return validationResult.error!
+		}
 
-		if (body.icon && typeof body.icon === 'object') {
-			if (body.icon.size > MAX_SIZE) {
-				this.logger.warn('Icon file too large', { userId, size: body.icon.size })
-				throw new Error('FILE_TOO_LARGE')
+		if (username) updateData.username = username
+		if (email) updateData.email = email.toLowerCase()
+		if (password) updateData.password = BCryptEncoder.encode(password)
+		if (displayName !== undefined) updateData.displayName = displayName
+		if (autobiography !== undefined) updateData.autobiography = autobiography
+		if (links !== undefined) {
+			try {
+				updateData.links = JSON.parse(links)
+			} catch {
+				updateData.links = links.split(',').map(link => link.trim())
 			}
-			if (!Object.keys(SUPPORTED_IMAGES).includes(body.icon.mimetype)) {
-				this.logger.warn('Unsupported icon file type', { userId, mimetype: body.icon.mimetype })
-				throw new Error('UNSUPPORTED_FILE_TYPE')
+		}
+
+		if (icon) {
+			if (icon.size > MAX_SIZE) {
+				this.logger.warn('Icon file too large', { userId, size: icon.size })
+				this.setStatus(400)
+				return CommonErrors.EXCEEDED_MAX_SIZE
+			}
+			if (!Object.keys(SUPPORTED_IMAGES).includes(icon.mimetype)) {
+				this.logger.warn('Unsupported icon file type', { userId, mimetype: icon.mimetype })
+				this.setStatus(400)
+				return CommonErrors.INVALID_IMAGE_FORMAT
 			}
 			
-			const uploadResult = await this.userGateway.uploadUserIcon({ file: body.icon })
+			const uploadResult = await this.userGateway.uploadUserIcon({ file: icon })
 			if (typeof uploadResult === 'string') {
 				this.logger.error('Icon upload failed', { userId, error: uploadResult })
-				throw new Error(uploadResult)
+				this.setStatus(500)
+				return CommonErrors.PICTURE_UPDATE_FAIL
 			}
 			updateData.icon = uploadResult
 			this.logger.info('Icon uploaded successfully', { userId })
 		}
 
-		if (body.backgroundImage && typeof body.backgroundImage === 'object') {
-			if (body.backgroundImage.size > MAX_SIZE) {
-				this.logger.warn('Background image too large', { userId, size: body.backgroundImage.size })
-				throw new Error('FILE_TOO_LARGE')
+		if (backgroundImage) {
+			if (backgroundImage.size > MAX_SIZE) {
+				this.logger.warn('Background image too large', { userId, size: backgroundImage.size })
+				this.setStatus(400)
+				return CommonErrors.EXCEEDED_MAX_SIZE
 			}
-			if (!Object.keys(SUPPORTED_IMAGES).includes(body.backgroundImage.mimetype)) {
-				this.logger.warn('Unsupported background image type', { userId, mimetype: body.backgroundImage.mimetype })
-				throw new Error('UNSUPPORTED_FILE_TYPE')
+			if (!Object.keys(SUPPORTED_IMAGES).includes(backgroundImage.mimetype)) {
+				this.logger.warn('Unsupported background image type', { userId, mimetype: backgroundImage.mimetype })
+				this.setStatus(400)
+				return CommonErrors.INVALID_IMAGE_FORMAT
 			}
 			
-			const uploadResult = await this.userGateway.uploadUserBackground({ file: body.backgroundImage })
+			const uploadResult = await this.userGateway.uploadUserBackground({ file: backgroundImage })
 			if (typeof uploadResult === 'string') {
 				this.logger.error('Background image upload failed', { userId, error: uploadResult })
-				throw new Error(uploadResult)
+				this.setStatus(500)
+				return CommonErrors.PICTURE_UPDATE_FAIL
 			}
 			updateData.backgroundImage = uploadResult
 			this.logger.info('Background image uploaded successfully', { userId })
@@ -147,4 +180,5 @@ export class UpdateUserController extends Controller {
 			user: new UserDTO(updatedUser).toJSON()
 		}
 	}
+
 }

@@ -74,7 +74,7 @@ export class GetCommentsController extends Controller {
 	 * "Failed to retrieve comments"
 	 */
 	@SuccessResponse(200, 'Comments retrieved successfully')
-	@Get('/')
+	@Get()
 	@LogResponseTime()
 	public async getComments(
 		@Query() ideaId: string,

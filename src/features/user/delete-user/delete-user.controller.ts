@@ -72,31 +72,23 @@ export class DeleteUserController extends Controller {
 		@Request() req: TsoaRequest
 	) {
 		try {
-			console.log('🔍 Delete user - req.user.sub:', req.user.sub)
 			const user = await this.userRepository.findById({ id: req.user.sub })
-			console.log('🔍 Delete user - user found:', user)
 			if (!user) {
 				this.setStatus(CommonErrors.USER_NOT_FOUND.code)
 				return CommonErrors.USER_NOT_FOUND
 			}
 
-			console.log('🔍 Delete user - userProfile:', user.userProfile)
 			if (user.userProfile.icon) {
-				console.log('🔍 Delete user - deleting icon:', user.userProfile.icon)
 				await this.userGateway.deleteUserFile({ key: user.userProfile.icon })
 			}
 			if (user.userProfile.backgroundImage) {
-				console.log('🔍 Delete user - deleting background:', user.userProfile.backgroundImage)
 				await this.userGateway.deleteUserFile({ key: user.userProfile.backgroundImage })
 			}
 
-			console.log('🔍 Delete user - deleting user from repository')
 			await this.userRepository.delete({ id: req.user.sub })
 
-			console.log('🔍 Delete user - success')
 			return { message: 'USER_DELETED_SUCCESSFULLY' }
 		} catch (error) {
-			console.log('🔍 Delete user - error:', error)
 			this.setStatus(CommonErrors.DATABASE_ERROR.code)
 			return CommonErrors.DATABASE_ERROR
 		}

@@ -196,7 +196,6 @@ export class SocialLoginController extends Controller {
 		try {
 			return await executeSocialLogin()
 		} catch (err) {
-			console.log(err)
 			return null
 		}
 	}
