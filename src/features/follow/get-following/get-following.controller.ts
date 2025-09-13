@@ -20,16 +20,68 @@ export class GetFollowingController extends Controller {
 	}
 
 	/**
-	 * Get who a user is following
+	 * Get who a user is following with pagination
 	 * 
 	 * This endpoint allows authenticated users to retrieve a paginated list of users
-	 * that a specific user profile is following.
+	 * that a specific user profile is following. Users can see who they are following,
+	 * with complete following information including profile details and follow dates.
 	 * 
-	 * @param userId - The user profile ID to get following for
-	 * @param page - Page number (0-based)
-	 * @param limit - Number of items per page
+	 * Following Retrieval Process:
+	 * - Validates user authentication via JWT token
+	 * - Validates target user profile ID parameter
+	 * - Retrieves following relationships from database with pagination
+	 * - Includes complete following user profile information
+	 * - Calculates pagination metadata
+	 * - Returns serialized following data
+	 * 
+	 * Features:
+	 * - Pagination with configurable page size (default: 10)
+	 * - Complete following user profile information
+	 * - Follow relationship timestamps
+	 * - Comprehensive pagination metadata
+	 * - Performance optimized queries
+	 * - Real-time following count
+	 * 
+	 * @param userId - The user profile ID to get following for (UUID format)
+	 * @param page - Page number for pagination (default: 0, 0-based indexing)
+	 * @param limit - Number of items per page (default: 10)
 	 * @param request - Express request object containing authenticated user info
 	 * @returns Promise resolving to paginated following list or error string
+	 * 
+	 * @example
+	 * ```typescript
+	 * // URL: /v1/follow/following/uuid-123?page=0&limit=10
+	 * 
+	 * // Success response (200)
+	 * {
+	 *   "following": [
+	 *     {
+	 *       "id": "follow-uuid-456",
+	 *       "followingUser": {
+	 *         "id": "user-profile-uuid-789",
+	 *         "displayName": "Jane Smith",
+	 *         "icon": "https://s3.amazonaws.com/bucket/jane-icon.jpg",
+	 *         "username": "jane_smith"
+	 *       },
+	 *       "created_at": "2024-01-15T10:30:00.000Z"
+	 *     }
+	 *   ],
+	 *   "pagination": {
+	 *     "page": 0,
+	 *     "limit": 10,
+	 *     "total": 15,
+	 *     "totalPages": 2,
+	 *     "hasNext": true,
+	 *     "hasPrev": false
+	 *   }
+	 * }
+	 * 
+	 * // Error responses
+	 * "UNAUTHORIZED" // User not authenticated
+	 * "USER_NOT_FOUND" // Target user profile doesn't exist
+	 * "VALIDATION_ERROR" // Invalid parameters
+	 * "DATABASE_ERROR" // Database operation failed
+	 * ```
 	 */
 	@SuccessResponse(200, 'Following retrieved successfully')
 	@Get('/following/:userId')

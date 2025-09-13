@@ -19,20 +19,49 @@ export class GetIdeaByIdController extends Controller {
 	}
 
 	/**
-	 * Get a specific idea by ID
+	 * Get a specific idea by ID with complete details
 	 *
 	 * This endpoint allows authenticated users to retrieve a specific idea by its ID.
-	 * The response includes the idea details, author information, and engagement metrics.
+	 * The response includes complete idea details, author information, engagement metrics,
+	 * and all associated data. Useful for displaying individual idea pages and detailed views.
 	 *
-	 * @param id The unique identifier of the idea to retrieve.
-	 * @param request The Express request object, containing user authentication details.
-	 * @returns The idea details or an error message.
-	 * @example response-200
+	 * Idea Retrieval Process:
+	 * - Validates user authentication via JWT token
+	 * - Validates idea ID parameter format
+	 * - Searches for idea in database by ID
+	 * - Retrieves complete idea information including author details
+	 * - Includes engagement metrics (likes, views, comments)
+	 * - Serializes data with proper timestamps
+	 * - Returns comprehensive idea data or error
+	 *
+	 * Features:
+	 * - Complete idea information with all fields
+	 * - Author profile information and details
+	 * - Real-time engagement metrics
+	 * - Proper timestamp formatting
+	 * - Comprehensive error handling
+	 * - Performance optimized single-idea queries
+	 *
+	 * @param id The unique identifier of the idea to retrieve (UUID format)
+	 * @param request The Express request object, containing user authentication details
+	 * @returns Promise resolving to complete idea details or error message
+	 * 
+	 * @example
+	 * ```typescript
+	 * // URL: /v1/idea/uuid-of-idea
+	 * 
+	 * // Success response (200)
 	 * {
 	 *   "idea": {
 	 *     "id": "uuid-of-idea",
 	 *     "title": "Revolutionary Mobile App",
 	 *     "description": "A detailed description of the mobile app concept...",
+	 *     "summary": "Brief summary of the idea",
+	 *     "tags": "mobile,app,innovation",
+	 *     "images": [
+	 *       { "src": "https://s3.amazonaws.com/bucket/image1.jpg", "alt": "App mockup" }
+	 *     ],
+	 *     "links": ["https://github.com/project"],
 	 *     "authorId": "uuid-of-user-profile",
 	 *     "author": {
 	 *       "id": "uuid-of-user-profile",
@@ -48,12 +77,13 @@ export class GetIdeaByIdController extends Controller {
 	 *     }
 	 *   }
 	 * }
-	 * @example response-401
-	 * "UNAUTHORIZED"
-	 * @example response-404
-	 * "IDEA_NOT_FOUND"
-	 * @example response-500
-	 * "Failed to retrieve idea"
+	 * 
+	 * // Error responses
+	 * "UNAUTHORIZED" // User not authenticated
+	 * "IDEA_NOT_FOUND" // Idea with specified ID doesn't exist
+	 * "VALIDATION_ERROR" // Invalid idea ID format
+	 * "DATABASE_ERROR" // Database operation failed
+	 * ```
 	 */
 	@SuccessResponse(200, 'Idea retrieved successfully')
 	@Get('/{id}')

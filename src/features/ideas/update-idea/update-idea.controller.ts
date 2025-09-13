@@ -21,34 +21,72 @@ export class UpdateIdeaController extends Controller {
 	}
 
 	/**
-	 * Update an existing idea
+	 * Update an existing idea with comprehensive validation
 	 *
 	 * This endpoint allows authenticated users to update their own ideas.
-	 * Only the author of the idea can update it.
+	 * Only the author of the idea can update it. Supports partial updates
+	 * and includes image management with automatic cleanup of old images.
 	 *
-	 * @param id The unique identifier of the idea to update.
-	 * @param body The request body containing the updated idea details.
-	 * @param request The Express request object, containing user authentication details.
-	 * @returns A success message with the updated idea's details or an error message.
-	 * @example response-200
+	 * Idea Update Process:
+	 * - Validates user authentication via JWT token
+	 * - Validates idea ID parameter format
+	 * - Checks if idea exists in database
+	 * - Verifies user is the author of the idea
+	 * - Processes new images if provided (deletes old ones)
+	 * - Updates idea fields in database
+	 * - Returns updated idea with new timestamps
+	 *
+	 * Features:
+	 * - Author-only update permissions
+	 * - Partial update support (only provided fields)
+	 * - Image management with automatic cleanup
+	 * - Comprehensive input validation
+	 * - Secure file handling via IdeaGateway
+	 * - Proper timestamp updates
+	 *
+	 * @param id The unique identifier of the idea to update (UUID format)
+	 * @param body The request body containing the updated idea details
+	 * @param request The Express request object, containing user authentication details
+	 * @returns Promise resolving to updated idea details or error message
+	 * 
+	 * @example
+	 * ```typescript
+	 * // Request body
+	 * {
+	 *   "title": "Updated Mobile App Idea",
+	 *   "description": "An updated description of the mobile app concept...",
+	 *   "summary": "Updated brief summary",
+	 *   "tags": "mobile,app,innovation,updated",
+	 *   "images": [File], // Optional new images
+	 *   "links": ["https://github.com/updated-project"]
+	 * }
+	 * 
+	 * // Success response (200)
 	 * {
 	 *   "idea": {
 	 *     "id": "uuid-of-idea",
 	 *     "title": "Updated Mobile App Idea",
 	 *     "description": "An updated description of the mobile app concept...",
+	 *     "summary": "Updated brief summary",
+	 *     "tags": "mobile,app,innovation,updated",
+	 *     "images": [
+	 *       { "src": "https://s3.amazonaws.com/bucket/new-image.jpg", "alt": "Updated mockup" }
+	 *     ],
+	 *     "links": ["https://github.com/updated-project"],
 	 *     "authorId": "uuid-of-user-profile",
 	 *     "created_at": "2023-10-27T10:00:00Z",
 	 *     "updated_at": "2023-10-27T11:00:00Z"
 	 *   }
 	 * }
-	 * @example response-401
-	 * "UNAUTHORIZED"
-	 * @example response-403
-	 * "FORBIDDEN"
-	 * @example response-404
-	 * "IDEA_NOT_FOUND"
-	 * @example response-500
-	 * "Failed to update idea"
+	 * 
+	 * // Error responses
+	 * "UNAUTHORIZED" // User not authenticated
+	 * "IDEA_NOT_FOUND" // Idea with specified ID doesn't exist
+	 * "FORBIDDEN" // User is not the author of the idea
+	 * "VALIDATION_ERROR" // Invalid input data
+	 * "UPLOAD_ERROR" // Image upload failed
+	 * "DATABASE_ERROR" // Database operation failed
+	 * ```
 	 */
 	@SuccessResponse(200, 'Idea updated successfully')
 	@Patch('/{id}')

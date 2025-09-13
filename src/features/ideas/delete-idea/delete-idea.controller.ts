@@ -18,24 +18,48 @@ export class DeleteIdeaController extends Controller {
 	}
 
 	/**
-	 * Delete an existing idea
+	 * Delete an existing idea with comprehensive validation
 	 *
 	 * This endpoint allows authenticated users to delete their own ideas.
-	 * Only the author of the idea can delete it. This action is irreversible.
+	 * Only the author of the idea can delete it. This action is irreversible
+	 * and will permanently remove the idea and all associated data from the system.
 	 *
-	 * @param id The unique identifier of the idea to delete.
-	 * @param request The Express request object, containing user authentication details.
-	 * @returns A success message or an error message.
-	 * @example response-200
+	 * Idea Deletion Process:
+	 * - Validates user authentication via JWT token
+	 * - Validates idea ID parameter format
+	 * - Checks if idea exists in database
+	 * - Verifies user is the author of the idea
+	 * - Permanently deletes idea from database
+	 * - Cascades deletion to related data (likes, comments, views)
+	 * - Returns confirmation message
+	 *
+	 * Security Features:
+	 * - Author-only deletion permissions
+	 * - Comprehensive authorization checks
+	 * - Irreversible operation confirmation
+	 * - Complete data cleanup
+	 * - Proper error handling and logging
+	 *
+	 * @param id The unique identifier of the idea to delete (UUID format)
+	 * @param request The Express request object, containing user authentication details
+	 * @returns Promise resolving to deletion confirmation message or error string
+	 * 
+	 * @example
+	 * ```typescript
+	 * // URL: /v1/idea/uuid-of-idea
+	 * // Method: DELETE
+	 * // Headers: Authorization: Bearer jwt_token
+	 * 
+	 * // Success response (200)
 	 * "Idea deleted successfully"
-	 * @example response-401
-	 * "UNAUTHORIZED"
-	 * @example response-403
-	 * "FORBIDDEN"
-	 * @example response-404
-	 * "IDEA_NOT_FOUND"
-	 * @example response-500
-	 * "Failed to delete idea"
+	 * 
+	 * // Error responses
+	 * "UNAUTHORIZED" // User not authenticated
+	 * "IDEA_NOT_FOUND" // Idea with specified ID doesn't exist
+	 * "FORBIDDEN" // User is not the author of the idea
+	 * "VALIDATION_ERROR" // Invalid idea ID format
+	 * "DATABASE_ERROR" // Database operation failed
+	 * ```
 	 */
 	@SuccessResponse(200, 'Idea deleted successfully')
 	@Delete('/{id}')
