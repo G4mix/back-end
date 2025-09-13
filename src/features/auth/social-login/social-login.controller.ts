@@ -135,15 +135,13 @@ export class SocialLoginController extends Controller {
 		const { token } = body
 
 		const validation = await this.authGateway.validateSocialLogin({ provider, token })
-		if (!validation.valid || !validation.userData){
+		if (!validation.valid || !validation.userData) {
 			this.setStatus(CommonErrors.USER_NOT_FOUND.code)
 			return CommonErrors.USER_NOT_FOUND
 		}
 
 		const userData = validation.userData
-
 		let oauthUser = await this.userRepository.findOAuthUser({ provider, email: userData.email })
-
 		if (!oauthUser) {
 			let user = await this.userRepository.findByEmail({ email: userData.email })
 			if (user) {

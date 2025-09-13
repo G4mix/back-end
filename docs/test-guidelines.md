@@ -15,7 +15,18 @@ Para todo e qualquer teste que for modificado deve-se seguir as seguintes regras
 - @inject('SESClient') private ses: SESClient;
 - @inject('S3Client') private s3: S3Client;
 - @inject('PostgresqlClient') private prisma: PrismaClient;
-- No axios quando necessário, e deve usar os mocks existentes no setup de testes lá tem alguns já;
+- No axios quando necessário, e deve usar os mocks existentes no setup de testes lá tem alguns já, por exemplo só antes do social-login você ver como é o social-login-requests e identificar que você só precisa modificar algo assim, por exemplo:
+```ts
+// Mock do AuthGateway
+const axios = require('axios')
+jest.spyOn(axios, 'post').mockImplementation((url: any, payload: any) => {
+  if (url === 'https://oauth2.googleapis.com/token') {
+    return Promise.resolve(jest.fn().mockRejectedValue(new Error('error')))
+  }
+  return Promise.resolve(axios.post(url, payload)) // Essa parte é essencial em um mock desses, é para retornar o axios verdadeiro após o mockado.
+})
+```
+
 12 - Cada branch, function, line e statement deve estar 100% na pasta coverage;
 13 - Os mocks devem ser apenas dos principais já citados e nos 3 primeiros citados: SESClient, S3Client, PostgresqlClient, o mock deve ser feito fazendo um import { container } from 'tsyringe' no topo do arquivo e importando do container as any para então realizar o mock.
 

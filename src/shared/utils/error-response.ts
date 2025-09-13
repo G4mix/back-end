@@ -107,6 +107,7 @@ export const CommonErrors: Record<string, ErrorResponse> = {
 
 	// Outros recursos
 	get PROVIDER_NOT_FOUND() { return { message: 'PROVIDER_NOT_FOUND', code: 404 } },
+	get PROVIDER_NOT_LINKED() { return { message: 'PROVIDER_NOT_LINKED', code: 400 } },
 	get NOT_FOUNDED_DATA() { return { message: 'NOT_FOUNDED_DATA', code: 404 } },
 
 	// Follow/Unfollow

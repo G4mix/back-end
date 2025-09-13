@@ -7,8 +7,16 @@ export class AuthGateway {
 	constructor() {}
 
 	async validateSocialLogin({ provider, token }: { provider: string; token: string }): Promise<{ valid: boolean; userData?: any }> {
+		const providers = {
+			google: () => this.validateGoogleToken(token),
+			github: () => this.validateGithubToken(token),
+			linkedin: () => this.validateLinkedinToken(token)
+		}
+		const executeSocialLogin = providers[provider as keyof typeof providers]
+		if (!executeSocialLogin) return { valid: false }
+
 		try {
-			const userData = await this.getSocialUserData({ provider, token })
+			const userData = await executeSocialLogin()
 			return { valid: true, userData }
 		} catch (error) {
 			console.error('Social login validation failed:', error)
@@ -16,18 +24,6 @@ export class AuthGateway {
 		}
 	}
 
-	private async getSocialUserData({ provider, token }: { provider: string; token: string }) {
-		switch (provider) {
-		case 'google':
-			return await this.validateGoogleToken(token)
-		case 'github':
-			return await this.validateGithubToken(token)
-		case 'linkedin':
-			return await this.validateLinkedinToken(token)
-		default:
-			throw new Error('UNSUPPORTED_PROVIDER')
-		}
-	}
 
 	private async validateGoogleToken(token: string) {
 		const { google } = socialLoginRequests

@@ -23,8 +23,103 @@ describe('Social Login Integration Tests', () => {
 	})
 
 	beforeEach(() => {
-		// Limpa mocks antes de cada teste
+		// Limpa todos os mocks antes de cada teste
+		jest.clearAllMocks()
 		IntegrationTestSetup.clearMocks()
+		// Mock global do axios para todos os testes
+		const axios = require('axios')
+		jest.spyOn(axios, 'get').mockImplementation((url: any, config: any) => {
+			// Google
+			if (url === 'https://www.googleapis.com/userinfo/v2/me') {
+				// Verifica se o token é inválido
+				if (config?.headers?.Authorization?.includes('invalid-token')) {
+					return Promise.reject({
+						response: {
+							status: 401,
+							data: { error: { message: 'Invalid token' } }
+						}
+					})
+				}
+				return Promise.resolve({
+					data: {
+						name: 'Test User',
+						email: 'test@example.com'
+					}
+				})
+			}
+			// GitHub
+			if (url === 'https://api.github.com/user') {
+				return Promise.resolve({
+					data: {
+						name: 'Test User',
+						email: 'test@example.com'
+					}
+				})
+			}
+			if (url === 'https://api.github.com/user/emails') {
+				return Promise.resolve({
+					data: [
+						{ email: 'test@example.com', primary: true, verified: true }
+					]
+				})
+			}
+			// LinkedIn
+			if (url === 'https://api.linkedin.com/v2/people/~') {
+				return Promise.resolve({
+					data: {
+						firstName: { localized: { en_US: 'Test' } },
+						lastName: { localized: { en_US: 'User' } },
+						id: 'linkedin-user-id'
+					}
+				})
+			}
+			if (url === 'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))') {
+				return Promise.resolve({
+					data: {
+						elements: [
+							{
+								'handle~': {
+									emailAddress: 'test@example.com'
+								}
+							}
+						]
+					}
+				})
+			}
+			return Promise.resolve(axios.get(url, config))
+		})
+		
+		jest.spyOn(axios, 'post').mockImplementation((url: any, payload: any) => {
+			// Google OAuth
+			if (url === 'https://oauth2.googleapis.com/token') {
+				return Promise.resolve({ data: { access_token: 'mock-google-token' } })
+			}
+			// Google Revoke
+			if (url.includes('oauth2.googleapis.com/revoke')) {
+				return Promise.resolve({ data: {} })
+			}
+			// GitHub OAuth
+			if (url === 'https://github.com/login/oauth/access_token') {
+				return Promise.resolve({ data: { access_token: 'mock-github-token' } })
+			}
+			// LinkedIn OAuth
+			if (url === 'https://www.linkedin.com/oauth/v2/accessToken') {
+				return Promise.resolve({ data: { access_token: 'mock-linkedin-token' } })
+			}
+			// LinkedIn Revoke
+			if (url === 'https://www.linkedin.com/oauth/v2/revoke') {
+				return Promise.resolve({ data: {} })
+			}
+			return Promise.resolve(axios.post(url, payload))
+		})
+		
+		jest.spyOn(axios, 'delete').mockImplementation((url: any, config: any) => {
+			// GitHub revoke
+			if (url.includes('api.github.com/applications')) {
+				return Promise.resolve({ data: {} })
+			}
+			return Promise.resolve(axios.delete(url, config))
+		})
 	})
 
 	describe('GET /v1/auth/callback/{provider}', () => {
@@ -177,17 +272,6 @@ describe('Social Login Integration Tests', () => {
 			token: 'google-access-token'
 		}
 
-		// Mock do AuthGateway
-		const { AuthGateway } = await import('@shared/gateways/auth.gateway')
-		const authGatewayInstance = container.resolve(AuthGateway)
-		jest.spyOn(authGatewayInstance, 'validateSocialLogin').mockResolvedValue({
-			valid: true,
-			userData: {
-				name: 'Test User',
-				email: 'test@example.com'
-			}
-		})
-
 		// Mock do Prisma - aplica após o reset do beforeEach
 		const mockPrismaClient = container.resolve('PostgresqlClient') as any
 
@@ -257,17 +341,6 @@ describe('Social Login Integration Tests', () => {
 			token: 'linkedin-access-token'
 		}
 
-		// Mock do AuthGateway
-		const { AuthGateway } = await import('@shared/gateways/auth.gateway')
-		const authGatewayInstance = container.resolve(AuthGateway)
-		jest.spyOn(authGatewayInstance, 'validateSocialLogin').mockResolvedValue({
-			valid: true,
-			userData: {
-				name: 'Test User',
-				email: 'test@example.com'
-			}
-		})
-
 		// Mock do Prisma - aplica após o reset do beforeEach
 		const mockPrismaClient = container.resolve('PostgresqlClient') as any
 
@@ -336,17 +409,6 @@ describe('Social Login Integration Tests', () => {
 		const socialLoginData = {
 			token: 'github-access-token'
 		}
-
-		// Mock do AuthGateway
-		const { AuthGateway } = await import('@shared/gateways/auth.gateway')
-		const authGatewayInstance = container.resolve(AuthGateway)
-		jest.spyOn(authGatewayInstance, 'validateSocialLogin').mockResolvedValue({
-			valid: true,
-			userData: {
-				name: 'Test User',
-				email: 'test@example.com'
-			}
-		})
 
 		// Mock do Prisma - aplica após o reset do beforeEach
 		const mockPrismaClient = container.resolve('PostgresqlClient') as any
@@ -509,74 +571,11 @@ describe('Social Login Integration Tests', () => {
 		it('should login with Google fail with USER NOT FOUND', async () => {
 			// Arrange
 			const socialLoginData = {
-				token: 'google-access-token'
+				token: 'invalid-token' // Token inválido para forçar erro
 			}
 
-			// Mock do AuthGateway
-			const axios = require('axios')
-			jest.spyOn(axios, 'post').mockImplementation((url: any, payload: any) => {
-				if (url.includes('oauth2.googleapis.com/token')) {
-					return Promise.resolve(jest.fn().mockRejectedValue(new Error('error')))
-				}
-				return Promise.resolve(axios.post(url, payload))
-			})
-
-			// Mock do Prisma - aplica após o reset do beforeEach
-			const mockPrismaClient = container.resolve('PostgresqlClient') as any
-
-			// Mock para findOAuthUser (usuário não existe)
-			mockPrismaClient.userOAuth.findFirst.mockResolvedValue(null)
-
-			// Mock para findByEmail (usuário não existe)
-			mockPrismaClient.user.findUnique.mockResolvedValue(null)
-
-			// Mock para create user
-			const userId = TestData.generateUUID()
-			mockPrismaClient.user.create.mockResolvedValue({
-				id: userId,
-				username: 'Test User',
-				email: 'test@example.com',
-				password: 'hashed-password',
-				verified: true,
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-
-			// Mock para linkOAuthProvider
-			mockPrismaClient.userOAuth.create.mockResolvedValue({
-				id: TestData.generateUUID(),
-				userId: userId,
-				provider: 'google',
-				email: 'test@example.com',
-				created_at: new Date(),
-				updated_at: new Date(),
-				user: {
-					id: userId,
-					username: 'Test User',
-					email: 'test@example.com',
-					password: 'hashed-password',
-					verified: true,
-					userProfileId: TestData.generateUUID(),
-					created_at: new Date(),
-					updated_at: new Date()
-				}
-			})
-
-			// Mock para update user
-			mockPrismaClient.user.update.mockResolvedValue({
-				id: userId,
-				username: 'Test User',
-				email: 'test@example.com',
-				password: 'hashed-password',
-				verified: true,
-				token: 'refresh-token',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-
-			// Act
-			expect(await httpClient.post('/v1/auth/social-login/google', socialLoginData))
-				// Assert
+			// Act & Assert
+			await expect(httpClient.post('/v1/auth/social-login/google', socialLoginData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -616,25 +615,14 @@ describe('Social Login Integration Tests', () => {
 				token: 'google-access-token'
 			}
 
-			// Mock do AuthGateway
-			const { AuthGateway } = await import('@shared/gateways/auth.gateway')
-			const authGatewayInstance = container.resolve(AuthGateway)
-			jest.spyOn(authGatewayInstance, 'validateSocialLogin').mockResolvedValue({
-				valid: true,
-				userData: {
-					name: 'Test User',
-					email: 'test@example.com'
-				}
-			})
-
-			// Mock do Prisma
+			// Mock direto do Prisma para garantir que seja aplicado
 			const mockPrismaClient = container.resolve('PostgresqlClient') as any
-
-			// Mock para findOAuthUser (usuário não existe)
-			mockPrismaClient.userOAuth.findFirst.mockResolvedValue(null)
-
-			// Mock para findByEmail (usuário existe)
 			const userId = TestData.generateUUID()
+			
+			// Mock para findOAuthUser (usuário OAuth não existe)
+			mockPrismaClient.userOAuth.findUnique.mockResolvedValue(null)
+			
+			// Mock para findByEmail (usuário existe)
 			mockPrismaClient.user.findUnique.mockResolvedValue({
 				id: userId,
 				username: 'Test User',
@@ -646,39 +634,23 @@ describe('Social Login Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.post('/v1/auth/social-login/google', socialLoginData)
-
-			// Assert
-			expect(response.status).toBe(200)
-			expect(response.data).toBe('PROVIDER_NOT_LINKED')
+			await expect(httpClient.post('/v1/auth/social-login/google', socialLoginData))
+				.rejects.toMatchObject({
+					response: {
+						status: 400,
+						data: {
+							message: 'PROVIDER_NOT_LINKED',
+							code: 400
+						}
+					}
+				})
 		})
 
 		it('should login successfully when OAuth user already exists', async () => {
 			// Arrange
-			jest.clearAllMocks()
 			const socialLoginData = {
 				token: 'google-access-token'
 			}
-
-			// Mock do Axios (conforme guidelines)
-			const axios = require('axios')
-			jest.spyOn(axios, 'get').mockImplementation((url: any) => {
-				if (url.includes('userinfo')) {
-					return Promise.resolve({
-						data: {
-							name: 'Test User',
-							email: 'test@example.com'
-						}
-					})
-				}
-				return Promise.resolve({ data: {}, status: 200 })
-			})
-			jest.spyOn(axios, 'post').mockImplementation((url: any) => {
-				if (url.includes('revoke')) {
-					return Promise.resolve({ data: {} })
-				}
-				return Promise.resolve({ data: { access_token: 'mock-token' } })
-			})
 
 			// Mock do Prisma usando IntegrationTestSetup
 			const userId = TestData.generateUUID()
@@ -686,7 +658,7 @@ describe('Social Login Integration Tests', () => {
 			IntegrationTestSetup.setupMocks({
 				prisma: {
 					userOAuth: {
-						findFirst: jest.fn().mockResolvedValue({
+						findUnique: jest.fn().mockResolvedValue({
 							id: TestData.generateUUID(),
 							userId: userId,
 							provider: 'google',
@@ -739,17 +711,6 @@ describe('Social Login Integration Tests', () => {
 			}
 			const validToken = TestTokens.generateValidToken()
 
-			// Mock do AuthGateway
-			const { AuthGateway } = await import('@shared/gateways/auth.gateway')
-			const authGatewayInstance = container.resolve(AuthGateway)
-			jest.spyOn(authGatewayInstance, 'validateSocialLogin').mockResolvedValue({
-				valid: true,
-				userData: {
-					name: 'Test User',
-					email: 'test@example.com'
-				}
-			})
-
 			// Mock do Prisma
 			const mockPrismaClient = container.resolve('PostgresqlClient') as any
 
@@ -794,16 +755,6 @@ describe('Social Login Integration Tests', () => {
 			}
 			const validToken = TestTokens.generateValidToken()
 
-			// Mock do AuthGateway
-			const { AuthGateway } = await import('@shared/gateways/auth.gateway')
-			const authGatewayInstance = container.resolve(AuthGateway)
-			jest.spyOn(authGatewayInstance, 'validateSocialLogin').mockResolvedValue({
-				valid: true,
-				userData: {
-					name: 'Test User',
-					email: 'test@example.com'
-				}
-			})
 
 			// Mock do Prisma
 			const mockPrismaClient = container.resolve('PostgresqlClient') as any
@@ -823,23 +774,10 @@ describe('Social Login Integration Tests', () => {
 
 		it('should return PROVIDER_ALREADY_LINKED when provider is already linked', async () => {
 			// Arrange
-			jest.clearAllMocks()
 			const socialLoginData = {
 				token: 'google-access-token'
 			}
 			const validToken = TestTokens.generateValidToken()
-
-			// Mock do Axios (conforme guidelines)
-			const axios = require('axios')
-			axios.get.mockResolvedValue({
-				data: {
-					name: 'Test User',
-					email: 'test@example.com'
-				}
-			})
-			axios.post.mockResolvedValue({
-				data: { access_token: 'mock-token' }
-			})
 
 			// Mock do Prisma client diretamente
 			const mockPrismaClient = container.resolve('PostgresqlClient') as any
@@ -855,13 +793,20 @@ describe('Social Login Integration Tests', () => {
 				updated_at: new Date()
 			})
 
-			mockPrismaClient.userOAuth.findFirst.mockResolvedValue({
-				id: TestData.generateUUID(),
-				userId: userId,
-				provider: 'google',
-				email: 'test@example.com',
-				created_at: new Date(),
-				updated_at: new Date()
+			// Mock usando IntegrationTestSetup para garantir que seja aplicado corretamente
+			IntegrationTestSetup.setupMocks({
+				prisma: {
+					userOAuth: {
+						findUnique: jest.fn().mockResolvedValue({
+							id: TestData.generateUUID(),
+							userId: userId,
+							provider: 'google',
+							email: 'test@example.com',
+							created_at: new Date(),
+							updated_at: new Date()
+						})
+					}
+				}
 			})
 
 			// Act
@@ -880,13 +825,6 @@ describe('Social Login Integration Tests', () => {
 				token: 'invalid-token'
 			}
 			const validToken = TestTokens.generateValidToken()
-
-			// Mock do Axios (conforme guidelines)
-			const axios = require('axios')
-			axios.get.mockRejectedValue(new Error('Invalid token'))
-			axios.post.mockResolvedValue({
-				data: { access_token: 'mock-token' }
-			})
 
 			// Mock do Prisma para garantir que o usuário existe (para não falhar no middleware)
 			const mockPrismaClient = container.resolve('PostgresqlClient') as any

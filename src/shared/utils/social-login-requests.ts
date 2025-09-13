@@ -85,10 +85,8 @@ export const socialLoginRequests = {
 					'Authorization': `Bearer ${token}`
 				}
 			})
-
-			const emails = emailRes.data
-
-			return emails.find((email: any) => email.primary && email.verified)?.email
+			console.log(emailRes.data)
+			return emailRes.data.find((email: any) => email.primary && email.verified)?.email
 		}
 	},
 	linkedin: {
