@@ -1,83 +1,107 @@
-# Feature: Get User by ID
+# Funcionalidade: Buscar Usuário por ID
 
-## Overview
-This feature allows retrieving detailed information about a specific user by their ID.
+## Visão Geral
+Permite que usuários autenticados busquem informações detalhadas de um usuário específico pelo seu ID único, incluindo dados do perfil e métricas de engajamento.
 
-## User Story
-As a user, I want to view detailed information about a specific user so that I can learn more about them before deciding to follow or interact.
+## Regras de Negócio
+- Usuário deve estar autenticado
+- ID deve ser um UUID válido
+- Retorna informações completas do usuário e perfil
+- Inclui contadores de seguidores/seguindo em tempo real
+- Email é incluído na resposta para requisições autenticadas
+- Suporta visualização de qualquer usuário do sistema
 
-## Acceptance Criteria
+## Cenários
 
-### Scenario: Get existing user by ID
+### Cenário: Buscar usuário existente por ID
 ```gherkin
-Given the API is running
-And there is a user with ID "valid-uuid"
-When I make a GET request to "/v1/user/valid-uuid"
-Then I should receive a 200 status code
-And the response should contain the user's information
-And the response should include the user's profile data
-And the response should include follower/following counts
+Dado que estou autenticado como usuário
+E existe um usuário com ID "user-uuid-123"
+Quando envio uma requisição GET para "/v1/user/user-uuid-123"
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | user | object |
+E user deve conter id, username, email, verified, created_at, updated_at, userProfile
+E userProfile deve conter id, icon, displayName, autobiography, backgroundImage, isFollowing, links, followersCount, followingCount
 ```
 
-### Scenario: Get non-existent user by ID
+### Cenário: Buscar usuário inexistente por ID
 ```gherkin
-Given the API is running
-When I make a GET request to "/v1/user/non-existent-uuid"
-Then I should receive a 404 status code
-And the response should contain an error message "USER_NOT_FOUND"
+Dado que estou autenticado como usuário
+E não existe um usuário com ID "user-inexistente"
+Quando envio uma requisição GET para "/v1/user/user-inexistente"
+Então devo receber uma resposta 404 com erro "USER_NOT_FOUND"
 ```
 
-### Scenario: Get user with invalid ID format
+### Cenário: Buscar usuário com formato de ID inválido
 ```gherkin
-Given the API is running
-When I make a GET request to "/v1/user/invalid-id"
-Then I should receive a 400 status code
-And the response should indicate invalid ID format
+Dado que estou autenticado como usuário
+Quando envio uma requisição GET para "/v1/user/id-invalido"
+Então devo receber uma resposta 400 com erro de validação
 ```
 
-## API Endpoint
-- **Method**: GET
-- **Path**: `/v1/user/{userId}`
-- **Path Parameters**:
-  - `userId`: UUID of the user to retrieve
+### Cenário: Buscar usuário sem autenticação
+```gherkin
+Dado que não estou autenticado
+Quando envio uma requisição GET para "/v1/user/user-uuid-123"
+Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
+```
 
-## Response Format
+### Cenário: Buscar usuário com ID vazio
+```gherkin
+Dado que estou autenticado como usuário
+Quando envio uma requisição GET para "/v1/user/"
+Então devo receber uma resposta 404 (rota não encontrada)
+```
 
-### Success Response (200)
+### Cenário: Buscar usuário com UUID malformado
+```gherkin
+Dado que estou autenticado como usuário
+Quando envio uma requisição GET para "/v1/user/123-invalid-uuid"
+Então devo receber uma resposta 400 com erro de validação
+```
+
+### Cenário: Erro interno do servidor
+```gherkin
+Dado que estou autenticado como usuário
+E existe um usuário com ID "user-uuid-123"
+E o banco de dados está indisponível
+Quando envio uma requisição GET para "/v1/user/user-uuid-123"
+Então devo receber uma resposta 500 com erro "DATABASE_ERROR"
+```
+
+## Formato de Resposta
+
+### Resposta de Sucesso (200)
 ```json
 {
   "user": {
-    "id": "uuid",
-    "username": "string",
-    "email": "string",
-    "verified": "boolean",
-    "created_at": "ISO string",
-    "updated_at": "ISO string",
+    "id": "user-uuid-123",
+    "username": "joao_silva",
+    "email": "joao@example.com",
+    "verified": true,
+    "created_at": "2023-01-01T00:00:00.000Z",
+    "updated_at": "2023-01-01T00:00:00.000Z",
     "userProfile": {
-      "id": "uuid",
-      "icon": "string|null",
-      "displayName": "string|null",
-      "autobiography": "string|null",
-      "backgroundImage": "string|null",
-      "isFollowing": "boolean",
-      "links": ["string"],
-      "followersCount": "number",
-      "followingCount": "number"
+      "id": "profile-uuid-123",
+      "icon": "https://example.com/avatar.jpg",
+      "displayName": "João Silva",
+      "autobiography": "Desenvolvedor Full Stack apaixonado por tecnologia",
+      "backgroundImage": "https://example.com/bg.jpg",
+      "isFollowing": false,
+      "links": [
+        "https://github.com/joao",
+        "https://linkedin.com/in/joao"
+      ],
+      "followersCount": 25,
+      "followingCount": 15
     }
   }
 }
 ```
 
-### Error Response (404)
-```json
-{
-  "message": "USER_NOT_FOUND"
-}
-```
-
-## Business Rules
-1. Only existing users can be retrieved
-2. User ID must be a valid UUID format
-3. Response includes complete user profile information
-4. Follower/following counts are calculated in real-time
-5. Email is included in response for authenticated requests
+### Respostas de Erro
+- **400**: Erros de validação (ID inválido, formato incorreto)
+- **401**: `UNAUTHORIZED` (usuário não autenticado)
+- **404**: `USER_NOT_FOUND` (usuário não encontrado)
+- **500**: `DATABASE_ERROR` (erro interno do servidor)

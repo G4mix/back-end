@@ -1,156 +1,157 @@
-# Link OAuth Provider Feature
+# Funcionalidade: Vincular Provedor OAuth
 
 ## Visão Geral
+Permite que usuários autenticados vinculem provedores OAuth adicionais (Google, LinkedIn, GitHub) à sua conta existente, habilitando login com múltiplas contas sociais usando a mesma conta da aplicação.
 
-A funcionalidade **Link OAuth Provider** permite que usuários autenticados vinculem provedores OAuth adicionais (Google, LinkedIn, GitHub) à sua conta existente. Isso habilita os usuários a fazer login com múltiplas contas sociais usando a mesma conta da aplicação.
+## Regras de Negócio
+- Usuário deve estar autenticado
+- Token social deve ser válido
+- Provedor não pode estar vinculado a outra conta
+- Suporta múltiplos provedores OAuth simultaneamente
+- Validação rigorosa de tokens sociais
+- Verificação de vinculações existentes
 
-## Endpoint
+## Cenários
 
+### Cenário: Vincular provedor Google com sucesso
+```gherkin
+Dado que estou autenticado como usuário
+E tenho um token válido do Google
+E o provedor Google não está vinculado a outra conta
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/google" com:
+  | Campo | Valor |
+  | token | "google-access-token-123" |
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | success | boolean |
+E success deve ser true
+E o provedor Google deve ser vinculado à minha conta
 ```
-POST /v1/auth/link-new-oauth-provider/{provider}
+
+### Cenário: Vincular provedor LinkedIn com sucesso
+```gherkin
+Dado que estou autenticado como usuário
+E tenho um token válido do LinkedIn
+E o provedor LinkedIn não está vinculado a outra conta
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/linkedin" com:
+  | Campo | Valor |
+  | token | "linkedin-access-token-456" |
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | success | boolean |
+E success deve ser true
+E o provedor LinkedIn deve ser vinculado à minha conta
 ```
 
-### Parâmetros de Rota
-
-- `provider` (string, obrigatório): Nome do provedor social
-  - Valores aceitos: `google`, `linkedin`, `github`
-
-### Corpo da Requisição
-
-```json
-{
-  "token": "string"
-}
+### Cenário: Vincular provedor GitHub com sucesso
+```gherkin
+Dado que estou autenticado como usuário
+E tenho um token válido do GitHub
+E o provedor GitHub não está vinculado a outra conta
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/github" com:
+  | Campo | Valor |
+  | token | "github-access-token-789" |
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | success | boolean |
+E success deve ser true
+E o provedor GitHub deve ser vinculado à minha conta
 ```
 
-- `token` (string, obrigatório): Token de acesso do provedor social
+### Cenário: Tentar vincular provedor já vinculado
+```gherkin
+Dado que estou autenticado como usuário
+E tenho um token válido do Google
+E o provedor Google já está vinculado a outra conta
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/google" com:
+  | Campo | Valor |
+  | token | "google-access-token-123" |
+Então devo receber uma resposta 400 com erro "PROVIDER_ALREADY_LINKED"
+```
 
-### Headers
+### Cenário: Vincular provedor sem autenticação
+```gherkin
+Dado que não estou autenticado
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/google" com:
+  | Campo | Valor |
+  | token | "google-access-token-123" |
+Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
+```
 
-- `Authorization: Bearer <jwt_token>` (obrigatório): Token JWT válido do usuário autenticado
+### Cenário: Vincular provedor com token inválido
+```gherkin
+Dado que estou autenticado como usuário
+E tenho um token inválido do Google
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/google" com:
+  | Campo | Valor |
+  | token | "token-invalido" |
+Então devo receber uma resposta 404 com erro "USER_NOT_FOUND"
+```
 
-## Respostas
+### Cenário: Vincular provedor sem token
+```gherkin
+Dado que estou autenticado como usuário
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/google" com:
+  | Campo | Valor |
+  | {} | {} |
+Então devo receber uma resposta 400 com erro de validação
+```
 
-### Sucesso (200)
+### Cenário: Vincular provedor não suportado
+```gherkin
+Dado que estou autenticado como usuário
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/facebook" com:
+  | Campo | Valor |
+  | token | "facebook-access-token" |
+Então devo receber uma resposta 400 com erro de validação
+```
 
+### Cenário: Erro interno do servidor
+```gherkin
+Dado que estou autenticado como usuário
+E tenho um token válido do Google
+E o banco de dados está indisponível
+Quando envio uma requisição POST para "/v1/auth/link-new-oauth-provider/google" com:
+  | Campo | Valor |
+  | token | "google-access-token-123" |
+Então devo receber uma resposta 500 com erro "DATABASE_ERROR"
+```
+
+## Formato de Resposta
+
+### Resposta de Sucesso (200)
 ```json
 {
   "success": true
 }
 ```
 
-### Erros
+### Respostas de Erro
+- **400**: `PROVIDER_ALREADY_LINKED`, erros de validação (provedor não suportado, token ausente)
+- **401**: `UNAUTHORIZED` (usuário não autenticado)
+- **404**: `USER_NOT_FOUND` (token social inválido)
+- **500**: `DATABASE_ERROR` (erro interno do servidor)
 
-#### 400 - PROVIDER_ALREADY_LINKED
-```json
-{
-  "message": "PROVIDER_ALREADY_LINKED"
-}
-```
-O provedor já está vinculado a outra conta.
+## Parâmetros de Rota
 
-#### 401 - UNAUTHORIZED
-```json
-{
-  "message": "UNAUTHORIZED"
-}
-```
-Token JWT inválido ou ausente.
+### Parâmetros Obrigatórios
+- **provider**: Nome do provedor social (`google`, `linkedin`, `github`)
 
-#### 404 - USER_NOT_FOUND
-```json
-{
-  "message": "USER_NOT_FOUND"
-}
-```
-Usuário não encontrado ou token social inválido.
+## Campos de Entrada
 
-## Fluxo de Processamento
+### Campos Obrigatórios
+- **token**: Token de acesso do provedor social
 
-1. **Validação de Autenticação**: Verifica se o token JWT é válido
-2. **Validação do Token Social**: Valida o token do provedor social via AuthGateway
-3. **Recuperação do Perfil**: Obtém dados do usuário do provedor social
-4. **Verificação de Usuário**: Confirma se o usuário autenticado existe no sistema
-5. **Verificação de Vinculação**: Verifica se o provedor já está vinculado a outra conta
-6. **Vinculação**: Vincula o provedor à conta do usuário atual
+## Provedores Suportados
 
-## Casos de Uso
+### Google
+- **Endpoint**: `/v1/auth/link-new-oauth-provider/google`
+- **Validação**: Token de acesso do Google OAuth 2.0
 
-### Cenário 1: Vinculação Bem-sucedida
-- Usuário autenticado com JWT válido
-- Token social válido
-- Provedor não vinculado a outra conta
-- Usuário existe no sistema
+### LinkedIn
+- **Endpoint**: `/v1/auth/link-new-oauth-provider/linkedin`
+- **Validação**: Token de acesso do LinkedIn OAuth 2.0
 
-### Cenário 2: Provedor Já Vinculado
-- Usuário autenticado com JWT válido
-- Token social válido
-- Provedor já vinculado a outra conta
-- Retorna erro `PROVIDER_ALREADY_LINKED`
-
-### Cenário 3: Token Social Inválido
-- Usuário autenticado com JWT válido
-- Token social inválido ou expirado
-- Retorna erro `USER_NOT_FOUND`
-
-### Cenário 4: Usuário Não Autenticado
-- Token JWT ausente ou inválido
-- Retorna erro `UNAUTHORIZED`
-
-## Dependências
-
-- **AuthGateway**: Validação de tokens sociais
-- **UserRepository**: Operações de banco de dados
-- **JWT Middleware**: Validação de autenticação
-
-## Segurança
-
-- Requer autenticação JWT válida
-- Validação rigorosa de tokens sociais
-- Verificação de vinculações existentes
-- Logs de auditoria para operações sensíveis
-
-## Exemplos de Uso
-
-### JavaScript/TypeScript
-
-```typescript
-// Vincular conta Google
-const response = await fetch('/v1/auth/link-new-oauth-provider/google', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${jwtToken}`
-  },
-  body: JSON.stringify({
-    token: googleAccessToken
-  })
-});
-
-if (response.ok) {
-  const result = await response.json();
-  console.log('Provedor vinculado com sucesso:', result);
-} else {
-  const error = await response.json();
-  console.error('Erro ao vincular provedor:', error.message);
-}
-```
-
-### cURL
-
-```bash
-curl -X POST \
-  'https://api.example.com/v1/auth/link-new-oauth-provider/google' \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \
-  -d '{
-    "token": "GOOGLE_ACCESS_TOKEN"
-  }'
-```
-
-## Notas de Implementação
-
-- A funcionalidade utiliza o padrão Repository para acesso a dados
-- Implementa validação automática via middleware
-- Utiliza decorador `@LogResponseTime` para monitoramento de performance
-- Suporta múltiplos provedores OAuth simultaneamente
+### GitHub
+- **Endpoint**: `/v1/auth/link-new-oauth-provider/github`
+- **Validação**: Token de acesso do GitHub OAuth 2.0

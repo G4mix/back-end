@@ -1,95 +1,149 @@
-# Feature: Get Users List
+# Funcionalidade: Buscar Usuários
 
-## Overview
-This feature allows retrieving a paginated list of users with optional search functionality.
+## Visão Geral
+Permite que usuários autenticados busquem e visualizem uma lista paginada de usuários com funcionalidade de busca opcional por nome de usuário ou nome de exibição.
 
-## User Story
-As a user, I want to see a list of all users so that I can discover and connect with other users in the platform.
+## Regras de Negócio
+- Usuário deve estar autenticado
+- Suporta paginação com limite configurável
+- Busca case-insensitive por username e displayName
+- Retorna apenas usuários verificados
+- Ordenação por data de criação (mais recentes primeiro)
+- Limite máximo de 100 usuários por página
 
-## Acceptance Criteria
+## Cenários
 
-### Scenario: Get users with default pagination
+### Cenário: Buscar usuários com paginação padrão
 ```gherkin
-Given the API is running
-When I make a GET request to "/v1/user"
-Then I should receive a 200 status code
-And the response should contain a list of users
-And the response should include pagination information
-And the default page should be 1
-And the default limit should be 10
+Dado que estou autenticado como usuário
+Quando envio uma requisição GET para "/v1/user"
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | users | array |
+  | pagination | object |
+E pagination deve conter page, limit, total
+E page deve ser 0 (padrão)
+E limit deve ser 10 (padrão)
 ```
 
-### Scenario: Get users with custom pagination
+### Cenário: Buscar usuários com paginação customizada
 ```gherkin
-Given the API is running
-When I make a GET request to "/v1/user?page=2&limit=5"
-Then I should receive a 200 status code
-And the response should contain at most 5 users
-And the pagination should show page 2
+Dado que estou autenticado como usuário
+Quando envio uma requisição GET para "/v1/user?page=1&limit=5"
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | users | array |
+  | pagination | object |
+E pagination.page deve ser 1
+E pagination.limit deve ser 5
+E users deve conter no máximo 5 itens
 ```
 
-### Scenario: Search users by username or display name
+### Cenário: Buscar usuários por texto
 ```gherkin
-Given the API is running
-And there are users with usernames "john_doe" and "jane_smith"
-When I make a GET request to "/v1/user?search=john"
-Then I should receive a 200 status code
-And the response should contain users matching "john"
-And the search should be case-insensitive
+Dado que estou autenticado como usuário
+E existem usuários com usernames "joao_silva" e "maria_santos"
+Quando envio uma requisição GET para "/v1/user?search=joao"
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | users | array |
+  | pagination | object |
+E todos os usuários devem conter "joao" no username ou displayName
+E a busca deve ser case-insensitive
 ```
 
-### Scenario: Handle empty search results
+### Cenário: Buscar usuários com resultado vazio
 ```gherkin
-Given the API is running
-When I make a GET request to "/v1/user?search=nonexistent"
-Then I should receive a 200 status code
-And the response should contain an empty users array
-And the total count should be 0
+Dado que estou autenticado como usuário
+Quando envio uma requisição GET para "/v1/user?search=inexistente"
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | users | array |
+  | pagination | object |
+E users deve ser um array vazio
+E pagination.total deve ser 0
 ```
 
-## API Endpoint
-- **Method**: GET
-- **Path**: `/v1/user`
-- **Query Parameters**:
-  - `page` (optional): Page number (default: 0)
-  - `limit` (optional): Number of users per page (default: 10, max: 100)
-  - `search` (optional): Search term for username or display name
+### Cenário: Buscar usuários sem autenticação
+```gherkin
+Dado que não estou autenticado
+Quando envio uma requisição GET para "/v1/user"
+Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
+```
 
-## Response Format
+### Cenário: Buscar usuários com limite inválido
+```gherkin
+Dado que estou autenticado como usuário
+Quando envio uma requisição GET para "/v1/user?limit=200"
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | users | array |
+  | pagination | object |
+E pagination.limit deve ser limitado a 100 (máximo)
+```
+
+### Cenário: Buscar usuários com página negativa
+```gherkin
+Dado que estou autenticado como usuário
+Quando envio uma requisição GET para "/v1/user?page=-1"
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | users | array |
+  | pagination | object |
+E pagination.page deve ser 0 (valor padrão)
+```
+
+### Cenário: Erro interno do servidor
+```gherkin
+Dado que estou autenticado como usuário
+E o banco de dados está indisponível
+Quando envio uma requisição GET para "/v1/user"
+Então devo receber uma resposta 500 com erro "DATABASE_ERROR"
+```
+
+## Formato de Resposta
+
+### Resposta de Sucesso (200)
 ```json
 {
   "users": [
     {
-      "id": "uuid",
-      "username": "string",
-      "email": "string",
-      "verified": "boolean",
-      "created_at": "ISO string",
-      "updated_at": "ISO string",
+      "id": "user-uuid-123",
+      "username": "joao_silva",
+      "email": "joao@example.com",
+      "verified": true,
+      "created_at": "2023-01-01T00:00:00.000Z",
+      "updated_at": "2023-01-01T00:00:00.000Z",
       "userProfile": {
-        "id": "uuid",
-        "icon": "string|null",
-        "displayName": "string|null",
-        "autobiography": "string|null",
-        "backgroundImage": "string|null",
-        "isFollowing": "boolean",
-        "links": ["string"],
-        "followersCount": "number",
-        "followingCount": "number"
+        "id": "profile-uuid-123",
+        "icon": "https://example.com/avatar.jpg",
+        "displayName": "João Silva",
+        "autobiography": "Desenvolvedor Full Stack",
+        "backgroundImage": "https://example.com/bg.jpg",
+        "isFollowing": false,
+        "links": ["https://github.com/joao", "https://linkedin.com/in/joao"],
+        "followersCount": 25,
+        "followingCount": 15
       }
     }
   ],
   "pagination": {
-    "page": "number",
-    "limit": "number",
-    "total": "number"
+    "page": 0,
+    "limit": 10,
+    "total": 150
   }
 }
 ```
 
-## Business Rules
-1. Users are returned in creation order (newest first)
-2. Search is case-insensitive and matches both username and display name
-3. Maximum limit is 100 users per page
-4. Pagination starts from page 1
-5. Only verified users are included in the results
+### Respostas de Erro
+- **401**: `UNAUTHORIZED` (usuário não autenticado)
+- **500**: `DATABASE_ERROR` (erro interno do servidor)
+
+## Parâmetros de Query
+
+### Parâmetros de Paginação
+- **page** (opcional): Número da página (padrão: 0)
+- **limit** (opcional): Número de usuários por página (padrão: 10, máximo: 100)
+
+### Parâmetros de Busca
+- **search** (opcional): Termo de busca para username ou displayName (case-insensitive)

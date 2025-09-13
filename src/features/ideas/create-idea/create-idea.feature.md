@@ -1,53 +1,71 @@
-# Feature: Criar Ideia
+# Funcionalidade: Criar Ideia
 
-## Descrição
-Esta feature permite que usuários autenticados criem novas ideias no sistema. As ideias são associadas ao perfil do usuário autenticado e ficam visíveis para outros usuários conforme as regras de visibilidade da plataforma.
+## Visão Geral
+Esta funcionalidade permite que usuários autenticados criem novas ideias no sistema. As ideias são associadas ao perfil do usuário autenticado e ficam visíveis para outros usuários conforme as regras de visibilidade da plataforma.
+
+## Regras de Negócio
+- Apenas usuários autenticados podem criar ideias
+- O título deve ter entre 10 e 100 caracteres
+- A descrição deve ter entre 50 e 2000 caracteres
+- O resumo é opcional e deve ter no máximo 500 caracteres
+- As tags são opcionais e devem ter no máximo 1000 caracteres
+- A ideia é automaticamente associada ao perfil do usuário autenticado
+- O sistema deve gerar um ID único para cada ideia
+- Os timestamps de criação e atualização são definidos automaticamente
 
 ## Cenários
 
-### Cenário 1: Criar ideia com sucesso
-**Dado** que um usuário está autenticado
-**E** possui dados válidos para uma nova ideia
-**Quando** o usuário envia uma requisição POST para `/v1/idea/`
-**Então** a ideia deve ser criada com sucesso
-**E** deve retornar status 201
-**E** deve retornar os dados da ideia criada incluindo ID e timestamps
+### Cenário: Criar ideia com sucesso
+```gherkin
+Dado que estou autenticado como usuário
+E tenho dados válidos para uma nova ideia
+Quando envio uma requisição POST para "/v1/idea/" com:
+  | Campo | Valor |
+  | title | "Minha Nova Ideia" |
+  | description | "Esta é uma descrição detalhada da minha ideia..." |
+  | summary | "Resumo da ideia" |
+  | tags | "inovação,tecnologia" |
+Então devo receber uma resposta 201 com:
+  | Campo | Tipo |
+  | idea | object |
+E a ideia deve conter id, title, description, summary, tags, authorId e timestamps
+```
 
-### Cenário 2: Tentar criar ideia sem autenticação
-**Dado** que um usuário não está autenticado
-**Quando** o usuário tenta enviar uma requisição POST para `/v1/idea/`
-**Então** deve retornar status 401
-**E** deve retornar mensagem "UNAUTHORIZED"
+### Cenário: Tentar criar ideia sem autenticação
+```gherkin
+Dado que não estou autenticado
+Quando envio uma requisição POST para "/v1/idea/" com:
+  | Campo | Valor |
+  | title | "Minha Nova Ideia" |
+  | description | "Esta é uma descrição detalhada da minha ideia..." |
+Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
+```
 
-### Cenário 3: Criar ideia com dados inválidos
-**Dado** que um usuário está autenticado
-**E** envia dados inválidos (título muito curto, descrição muito longa, etc.)
-**Quando** o usuário envia uma requisição POST para `/v1/idea/`
-**Então** deve retornar status 400
-**E** deve retornar mensagem "VALIDATION_ERROR"
-**E** deve incluir detalhes dos erros de validação
+### Cenário: Criar ideia com dados inválidos
+```gherkin
+Dado que estou autenticado como usuário
+Quando envio uma requisição POST para "/v1/idea/" com:
+  | Campo | Valor |
+  | title | "Curto" |
+  | description | "Descrição muito curta" |
+Então devo receber uma resposta 400 com erro de validação
+```
 
-### Cenário 4: Erro interno do servidor
-**Dado** que um usuário está autenticado
-**E** envia dados válidos
-**E** ocorre um erro interno no servidor
-**Quando** o usuário envia uma requisição POST para `/v1/idea/`
-**Então** deve retornar status 500
-**E** deve retornar mensagem "DATABASE_ERROR"
+### Cenário: Erro interno do servidor
+```gherkin
+Dado que estou autenticado como usuário
+E tenho dados válidos para uma nova ideia
+E o banco de dados está indisponível
+Quando envio uma requisição POST para "/v1/idea/" com:
+  | Campo | Valor |
+  | title | "Minha Nova Ideia" |
+  | description | "Esta é uma descrição detalhada da minha ideia..." |
+Então devo receber uma resposta 500 com erro "DATABASE_ERROR"
+```
 
-## Dados de Entrada
+## Formato de Resposta
 
-### Campos Obrigatórios
-- **title**: Título da ideia (10-100 caracteres)
-- **description**: Descrição detalhada da ideia (50-2000 caracteres)
-
-### Campos Opcionais
-- **summary**: Resumo da ideia (máximo 500 caracteres)
-- **tags**: Tags relacionadas à ideia (máximo 1000 caracteres)
-
-## Dados de Saída
-
-### Sucesso (201)
+### Resposta de Sucesso (201)
 ```json
 {
   "idea": {
@@ -63,27 +81,7 @@ Esta feature permite que usuários autenticados criem novas ideias no sistema. A
 }
 ```
 
-### Erro (401)
-```json
-"UNAUTHORIZED"
-```
-
-### Erro (400)
-```json
-"VALIDATION_ERROR"
-```
-
-### Erro (500)
-```json
-"DATABASE_ERROR"
-```
-
-## Regras de Negócio
-1. Apenas usuários autenticados podem criar ideias
-2. O título deve ter entre 10 e 100 caracteres
-3. A descrição deve ter entre 50 e 2000 caracteres
-4. O resumo é opcional e deve ter no máximo 500 caracteres
-5. As tags são opcionais e devem ter no máximo 1000 caracteres
-6. A ideia é automaticamente associada ao perfil do usuário autenticado
-7. O sistema deve gerar um ID único para cada ideia
-8. Os timestamps de criação e atualização são definidos automaticamente
+### Respostas de Erro
+- **400**: Erros de validação (título muito curto, descrição muito longa, etc.)
+- **401**: `UNAUTHORIZED` (usuário não autenticado)
+- **500**: `DATABASE_ERROR` (erro interno do servidor)

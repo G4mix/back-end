@@ -41,11 +41,16 @@ src/
 │   │   │   ├── get-user-by-id.dto.ts
 │   │   │   ├── get-user-by-id.spec.ts
 │   │   │   └── get-user-by-id.feature.md
-│   │   └── delete-user/
-│   │       ├── delete-user.controller.ts
-│   │       ├── delete-user.dto.ts
-│   │       ├── delete-user.spec.ts
-│   │       └── delete-user.feature.md
+│   │   ├── delete-user/
+│   │   │   ├── delete-user.controller.ts
+│   │   │   ├── delete-user.dto.ts
+│   │   │   ├── delete-user.spec.ts
+│   │   │   └── delete-user.feature.md
+│   │   └── link-oauth-provider/
+│   │       ├── link-oauth-provider.controller.ts
+│   │       ├── link-oauth-provider.dto.ts
+│   │       ├── link-oauth-provider.spec.ts
+│   │       └── link-oauth-provider.feature.md
 │   ├── auth/
 │   │   ├── signin/
 │   │   │   ├── signin.controller.ts
@@ -62,11 +67,16 @@ src/
 │   │   │   ├── change-password.dto.ts
 │   │   │   ├── change-password.spec.ts
 │   │   │   └── change-password.feature.md
-│   │   ├── recover-email/
-│   │   │   ├── recover-email.controller.ts
-│   │   │   ├── recover-email.dto.ts
-│   │   │   ├── recover-email.spec.ts
-│   │   │   └── recover-email.feature.md
+│   │   ├── send-recover-email/
+│   │   │   ├── send-recover-email.controller.ts
+│   │   │   ├── send-recover-email.dto.ts
+│   │   │   ├── send-recover-email.spec.ts
+│   │   │   └── send-recover-email.feature.md
+│   │   ├── verify-email-code/
+│   │   │   ├── verify-email-code.controller.ts
+│   │   │   ├── verify-email-code.dto.ts
+│   │   │   ├── verify-email-code.spec.ts
+│   │   │   └── verify-email-code.feature.md
 │   │   ├── refresh-token/
 │   │   │   ├── refresh-token.controller.ts
 │   │   │   ├── refresh-token.dto.ts
@@ -77,23 +87,71 @@ src/
 │   │       ├── social-login.dto.ts
 │   │       ├── social-login.spec.ts
 │   │       └── social-login.feature.md
-│   │           ├── signup.controller.ts
-│   │           ├── signup.dto.ts
-│   │           ├── signup.spec.ts
-│   │           └── signup.feature.md
-│   └── post-management/
-│       ├── create-post/
-│       │   └── v1/
-│       │       ├── create-post.controller.ts
-│       │       ├── create-post.dto.ts
-│       │       ├── create-post.spec.ts
-│       │       └── create-post.feature.md
-│       └── get-posts/
-│           └── v1/
-│               ├── get-posts.controller.ts
-│               ├── get-posts.dto.ts
-│               ├── get-posts.spec.ts
-│               └── get-posts.feature.md
+│   ├── ideas/
+│   │   ├── create-idea/
+│   │   │   ├── create-idea.controller.ts
+│   │   │   ├── create-idea.dto.ts
+│   │   │   ├── create-idea.spec.ts
+│   │   │   └── create-idea.feature.md
+│   │   ├── get-ideas/
+│   │   │   ├── get-ideas.controller.ts
+│   │   │   ├── get-ideas.dto.ts
+│   │   │   ├── get-ideas.spec.ts
+│   │   │   └── get-ideas.feature.md
+│   │   ├── get-idea-by-id/
+│   │   │   ├── get-idea-by-id.controller.ts
+│   │   │   ├── get-idea-by-id.dto.ts
+│   │   │   ├── get-idea-by-id.spec.ts
+│   │   │   └── get-idea-by-id.feature.md
+│   │   ├── update-idea/
+│   │   │   ├── update-idea.controller.ts
+│   │   │   ├── update-idea.dto.ts
+│   │   │   ├── update-idea.spec.ts
+│   │   │   └── update-idea.feature.md
+│   │   └── delete-idea/
+│   │       ├── delete-idea.controller.ts
+│   │       ├── delete-idea.dto.ts
+│   │       ├── delete-idea.spec.ts
+│   │       └── delete-idea.feature.md
+│   ├── comments/
+│   │   ├── create-comment/
+│   │   │   ├── create-comment.controller.ts
+│   │   │   ├── create-comment.dto.ts
+│   │   │   ├── create-comment.spec.ts
+│   │   │   └── create-comment.feature.md
+│   │   └── get-comments/
+│   │       ├── get-comments.controller.ts
+│   │       ├── get-comments.dto.ts
+│   │       ├── get-comments.spec.ts
+│   │       └── get-comments.feature.md
+│   ├── likes/
+│   │   └── toggle-like/
+│   │       ├── toggle-like.controller.ts
+│   │       ├── toggle-like.dto.ts
+│   │       ├── toggle-like.spec.ts
+│   │       └── toggle-like.feature.md
+│   ├── follow/
+│   │   ├── toggle-follow/
+│   │   │   ├── toggle-follow.controller.ts
+│   │   │   ├── toggle-follow.dto.ts
+│   │   │   ├── toggle-follow.spec.ts
+│   │   │   └── toggle-follow.feature.md
+│   │   ├── get-followers/
+│   │   │   ├── get-followers.controller.ts
+│   │   │   ├── get-followers.dto.ts
+│   │   │   ├── get-followers.spec.ts
+│   │   │   └── get-followers.feature.md
+│   │   └── get-following/
+│   │       ├── get-following.controller.ts
+│   │       ├── get-following.dto.ts
+│   │       ├── get-following.spec.ts
+│   │       └── get-following.feature.md
+│   └── views/
+│       └── record-view/
+│           ├── record-view.controller.ts
+│           ├── record-view.dto.ts
+│           ├── record-view.spec.ts
+│           └── record-view.feature.md
 ├── shared/
 │   ├── gateways/                    # Gateway pattern para integrações externas
 │   │   ├── user.gateway.ts
@@ -131,12 +189,12 @@ src/
 
 ### Arquivos Essenciais
 
-Dentro de cada pasta de versão (`vX`), os seguintes tipos de arquivos são esperados:
+Dentro de cada pasta de subfeature, os seguintes tipos de arquivos são esperados:
 
-- `Controller.ts`: Contém a lógica do controlador TSOA que lida com as requisições HTTP.
-- `Dto.ts`: Define os Data Transfer Objects (DTOs) para validação e tipagem dos dados de entrada e saída.
-- `E2e-spec.ts`: Contém os testes end-to-end para a funcionalidade.
-- `Feature.md`: Documentação da feature em formato Markdown, descrevendo os cenários de uso.
+- `*.controller.ts`: Contém a lógica do controlador TSOA que lida com as requisições HTTP.
+- `*.dto.ts`: Define os Data Transfer Objects (DTOs) para validação e tipagem dos dados de entrada e saída.
+- `*.spec.ts`: Contém os testes end-to-end para a funcionalidade.
+- `*.feature.md`: Documentação da feature em formato Markdown, descrevendo os cenários de uso.
 
 ## 2. Componentes da Feature e Suas Responsabilidades
 
@@ -156,13 +214,15 @@ O controlador é o ponto de entrada para as requisições HTTP e orquestra a ló
 **Exemplo de `create-user.controller.ts`:**
 
 ```typescript
-import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares } from 'tsoa'
-import { injectable } from 'tsyringe'
+import { Route, Tags, Controller, Body, Post, SuccessResponse, Middlewares, Security } from 'tsoa'
+import { injectable, inject } from 'tsyringe'
 import { CreateUserInput, CreateUserOutput } from './create-user.dto'
 import { UserGateway } from '@shared/gateways/user.gateway'
 import { UserRepository } from '@shared/repositories/user.repository'
 import { schemaValidation } from '@shared/middlewares/validation.middleware'
 import { createUserSchema } from '@shared/schemas/user.schema'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
+import { Logger } from '@shared/utils/logger'
 import { RequestHandler } from 'express'
 
 @injectable()
@@ -171,27 +231,58 @@ import { RequestHandler } from 'express'
 export class CreateUserController extends Controller {
 	constructor(
 		private userGateway: UserGateway,
-		private userRepository: UserRepository
+		private userRepository: UserRepository,
+		@inject('Logger') private logger: Logger
 	) {
 		super()
+		void this.logger // Necessário para evitar warning do TypeScript
 	}
 
 	/**
 	 * Create a new user in the system
+	 * 
+	 * This endpoint allows new users to register in the platform by providing
+	 * their email, username and password. The system will validate the data,
+	 * check for existing users, verify email via AWS SES and create the account.
+	 * 
+	 * @param body - Object containing user registration data
+	 * @returns Promise resolving to CreateUserOutput with user data and tokens
+	 * 
+	 * @example
+	 * ```typescript
+	 * // Request body
+	 * {
+	 *   "email": "user@example.com",
+	 *   "username": "johndoe",
+	 *   "password": "SecurePass123!"
+	 * }
+	 * 
+	 * // Success response
+	 * {
+	 *   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+	 *   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+	 *   "user": { ... }
+	 * }
+	 * ```
 	 */
 	@SuccessResponse(201, 'User created successfully')
 	@Post('/')
 	@Middlewares<RequestHandler>(schemaValidation(createUserSchema))
+	@LogResponseTime()
 	public async createUser(@Body() body: CreateUserInput): Promise<CreateUserOutput> {
+		this.logger.info('Creating new user', { email: body.email, username: body.username })
+
 		// Validação de negócio
 		const existingUser = await this.userRepository.findByEmail({ email: body.email })
 		if (existingUser) {
+			this.logger.warn('User already exists', { email: body.email })
 			throw new Error('USER_ALREADY_EXISTS')
 		}
 
 		// Verificação externa via gateway
 		const emailVerification = await this.userGateway.verifyEmail({ email: body.email })
 		if (!emailVerification.valid) {
+			this.logger.warn('Email verification failed', { email: body.email, reason: emailVerification.reason })
 			throw new Error('INVALID_EMAIL')
 		}
 
@@ -207,6 +298,8 @@ export class CreateUserController extends Controller {
 			email: user.email, 
 			username: user.username 
 		})
+
+		this.logger.info('User created successfully', { userId: user.id, email: user.email })
 
 		return {
 			id: user.id,
@@ -568,43 +661,34 @@ Os testes verificam a funcionalidade completa da API, simulando requisições HT
 **Exemplo de `create-user.spec.ts`:**
 
 ```typescript
-import { INestApplication } from '@nestjs/common'
-import { Test, TestingModule } from '@nestjs/testing'
-import { AppModule } from 'src/app.module'
-import { User } from 'src/shared/types/user.d'
-import { setupApplication } from 'src/setup-application'
+import { Express } from 'express'
+import { container } from 'tsyringe'
+import { PrismaClient } from '@prisma/client'
 import * as request from 'supertest'
-import { App } from 'supertest/types'
-import { DataSource, Repository } from 'typeorm'
+import { setupApp } from '@shared/utils/setup-app'
+import { UserRepository } from '@shared/repositories/user.repository'
 
 describe('/v1/user (POST)', () => {
-	let app: INestApplication<App>
-	let userRepository: Repository<User>
+	let app: Express
+	let userRepository: UserRepository
+	let prisma: PrismaClient
 
 	beforeEach(async () => {
-		const moduleFixture: TestingModule = await Test.createTestingModule({
-			imports: [AppModule],
-		}).compile()
+		app = setupApp()
+		userRepository = container.resolve(UserRepository)
+		prisma = container.resolve('PostgresqlClient')
 
-		app = moduleFixture.createNestApplication()
-		userRepository = moduleFixture.get<Repository<User>>('UserRepository')
-
-		await userRepository.delete({})
-
-		setupApplication(app)
-		await app.init()
+		// Limpar dados de teste
+		await prisma.user.deleteMany({})
 	})
 
 	afterEach(async () => {
-		const dataSource = app.get(DataSource)
-		if (dataSource.isInitialized) {
-			await dataSource.destroy()
-		}
-		await app.close()
+		// Limpar dados após cada teste
+		await prisma.user.deleteMany({})
 	})
 
 	it('should return 400 when required fields are missing', async () => {
-		const response = await request(app.getHttpServer())
+		const response = await request(app)
 			.post('/v1/user')
 			.send({
 				username: 'testuser'
@@ -616,7 +700,7 @@ describe('/v1/user (POST)', () => {
 	})
 
 	it('should return 400 when password is too weak', async () => {
-		const response = await request(app.getHttpServer())
+		const response = await request(app)
 			.post('/v1/user')
 			.send({
 				username: 'testuser',
@@ -630,7 +714,7 @@ describe('/v1/user (POST)', () => {
 	})
 
 	it('should return 400 when passwords do not match', async () => {
-		const response = await request(app.getHttpServer())
+		const response = await request(app)
 			.post('/v1/user')
 			.send({
 				username: 'testuser',
@@ -651,19 +735,17 @@ describe('/v1/user (POST)', () => {
 			confirmPassword: 'StrongPass123!'
 		}
 
-		const response = await request(app.getHttpServer())
+		const response = await request(app)
 			.post('/v1/user')
 			.send(userData)
 
-		const body = response.body as User
-		const createdUser = await userRepository.findOneOrFail({
-			where: { email: body.email },
-		})
+		const body = response.body
+		const createdUser = await userRepository.findByEmail({ email: userData.email })
 
 		expect(response.status).toEqual(201)
 		expect(body.username).toEqual(userData.username)
 		expect(body.email).toEqual(userData.email.toLowerCase())
-		expect(createdUser.id).toBeDefined()
+		expect(createdUser?.id).toBeDefined()
 	})
 })
 ```
@@ -688,109 +770,102 @@ A documentação da feature descreve a funcionalidade em linguagem natural, util
 **Exemplo de `create-user.feature.md`:**
 
 ````markdown
-# Feature: Cadastro de Usuários
+# Funcionalidade: Cadastro de Usuário
 
-- Eu como usuário do sistema
-- Quero me cadastrar na plataforma
-- Para ter acesso às funcionalidades do sistema
+## Visão Geral
+Permite que novos usuários se registrem no sistema criando uma conta com email, senha e username.
+
+## Regras de Negócio
+- Email deve ser único no sistema
+- Email deve ser verificado via AWS SES
+- Senha deve ter pelo menos 8 caracteres com critérios de segurança
+- Username deve ter entre 3-20 caracteres (letras, números, underscore)
+- Usuário é criado automaticamente com perfil associado
+- Tokens são gerados automaticamente após criação
 
 ## Cenários
 
-**Campos obrigatórios ausentes**
+### Cenário: Cadastro de usuário bem-sucedido
+```gherkin
+Dado que não existe usuário com email "newuser@example.com"
+Quando envio uma requisição POST para "/v1/auth/signup" com:
+  | Campo | Valor |
+  | email | "newuser@example.com" |
+  | password | "SecurePass123!" |
+  | username | "newuser" |
+Então devo receber uma resposta 201 com:
+  | Campo | Tipo |
+  | accessToken | string |
+  | refreshToken | string |
+  | user | object |
+E um novo usuário deve ser criado no banco de dados
+E a verificação de email deve ser iniciada
+```
 
-- Dado que o usuário não informa campos obrigatórios
-- Quando tenta criar uma conta
-- Então deve retornar um erro com status code 400
+### Cenário: Cadastro com email existente
+```gherkin
+Dado que existe um usuário com email "existing@example.com"
+Quando envio uma requisição POST para "/v1/auth/signup" com:
+  | Campo | Valor |
+  | email | "existing@example.com" |
+  | password | "SecurePass123!" |
+  | username | "newuser" |
+Então devo receber uma resposta 409 com erro "USER_ALREADY_EXISTS"
+```
 
-```bash
-POST /v1/user
---header 'Content-Type: application/json'
---body
+### Cenário: Cadastro com senha fraca
+```gherkin
+Quando envio uma requisição POST para "/v1/auth/signup" com:
+  | Campo | Valor |
+  | email | "user@example.com" |
+  | password | "weak" |
+  | username | "newuser" |
+Então devo receber uma resposta 400 com erro de validação
+```
+
+### Cenário: Cadastro com formato de email inválido
+```gherkin
+Quando envio uma requisição POST para "/v1/auth/signup" com:
+  | Campo | Valor |
+  | email | "invalid-email" |
+  | password | "SecurePass123!" |
+  | username | "newuser" |
+Então devo receber uma resposta 400 com erro de validação
+```
+
+## Formato de Resposta
+
+### Resposta de Sucesso (201)
+```json
 {
-  "username": "testuser"
-  // Campos obrigatórios ausentes
-}
-
---status 400
---body
-{
-  "message": "INVALID_EMAIL_FORMAT"
+  "accessToken": "jwt_token",
+  "refreshToken": "jwt_token",
+  "user": {
+    "id": "uuid",
+    "username": "string",
+    "email": "string",
+    "verified": boolean,
+    "created_at": "datetime",
+    "updated_at": "datetime",
+    "userProfileId": "uuid",
+    "loginAttempts": number,
+    "blockedUntil": "datetime|null",
+    "userProfile": {
+      "id": "uuid",
+      "name": "string|null",
+      "bio": "string|null",
+      "icon": "string|null",
+      "created_at": "datetime",
+      "updated_at": "datetime"
+    }
+  }
 }
 ```
 
-**Senha fraca**
-
-- Dado que o usuário informa uma senha que não atende aos critérios de segurança
-- Quando tenta criar uma conta
-- Então deve retornar um erro com status code 400
-
-```bash
-POST /v1/user
---header 'Content-Type: application/json'
---body
-{
-  "username": "testuser",
-  "email": "test@example.com",
-  "password": "weak",
-  "confirmPassword": "weak"
-}
-
---status 400
---body
-{
-  "message": "INVALID_PASSWORD_FORMAT"
-}
-```
-
-**Senhas não coincidem**
-
-- Dado que o usuário informa senhas diferentes nos campos password e confirmPassword
-- Quando tenta criar uma conta
-- Então deve retornar um erro com status code 400
-
-```bash
-POST /v1/user
---header 'Content-Type: application/json'
---body
-{
-  "username": "testuser",
-  "email": "test@example.com",
-  "password": "StrongPass123!",
-  "confirmPassword": "DifferentPass123!"
-}
-
---status 400
---body
-{
-  "message": "PASSWORDS_DO_NOT_MATCH"
-}
-```
-
-**Cadastro bem-sucedido**
-
-- Dado que todos os dados são válidos
-- Quando a API for chamada para criar um usuário
-- Então deve retornar status 201 com os dados do usuário criado
-
-```bash
-POST /v1/user
---header 'Content-Type: application/json'
---body
-{
-  "username": "testuser",
-  "email": "test@example.com",
-  "password": "StrongPass123!",
-  "confirmPassword": "StrongPass123!"
-}
-
---status 201
---body
-{
-  "id": "uuid",
-  "username": "testuser",
-  "email": "test@example.com",
-  "createdAt": "2025-01-15T10:30:00Z"
-}
+### Respostas de Erro
+- **400**: Erros de validação para formato de email, senha ou username
+- **409**: `USER_ALREADY_EXISTS`
+- **500**: `EMAIL_VERIFICATION_FAILED`, `USER_CREATION_FAILED`
 ```
 ````
 
@@ -876,9 +951,16 @@ export class MyController extends Controller {
 **OBRIGATÓRIO**: Use o decorator `@LogResponseTime` em TODOS os métodos de controller:
 
 ```typescript
-import { LogResponseTime } from '@shared/decorators'
+import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 
 export class MyController extends Controller {
+	constructor(
+		@inject('Logger') private logger: Logger
+	) {
+		super()
+		void this.logger // Necessário para evitar warning do TypeScript
+	}
+
 	@SuccessResponse(200)
 	@Post('/my-endpoint')
 	@LogResponseTime() // ← Aplicar no método específico, NÃO na classe
@@ -891,6 +973,7 @@ export class MyController extends Controller {
 **⚠️ IMPORTANTE**: 
 - Aplicar `@LogResponseTime()` nos **métodos específicos**, não na classe
 - O decorator usa `this.logger` internamente, por isso o Logger deve estar injetado
+- O Logger deve ser injetado no constructor usando `@inject('Logger')`
 
 #### 3.5.3. Níveis de Log
 
@@ -943,9 +1026,12 @@ Então devo receber uma resposta 200 com:
 ```
 
 **⚠️ IMPORTANTE**: 
+- **Título**: Sempre usar "Funcionalidade:" em português
+- **Seções**: "Visão Geral", "Regras de Negócio", "Cenários", "Formato de Resposta"
 - **Texto em português**: Cenários, descrições, regras de negócio
 - **Variáveis em inglês**: `password`, `email`, `token`, `userId`
 - **Códigos de erro em inglês**: `UNAUTHORIZED`, `USER_NOT_FOUND`
+- **Formato Gherkin**: Usar tabelas para dados de entrada e saída
 
 #### 3.6.2. Comentários JSDoc dos Controllers
 

@@ -1,63 +1,141 @@
-# Atualizar Ideia
+# Funcionalidade: Atualizar Ideia
 
-## Funcionalidade
-Permite atualizar uma ideia existente. Apenas o autor da ideia pode atualizá-la.
+## Visão Geral
+Permite que usuários autenticados atualizem suas próprias ideias. Apenas o autor da ideia pode modificá-la, permitindo atualizações parciais ou completas dos campos disponíveis.
+
+## Regras de Negócio
+- Usuário deve estar autenticado
+- Apenas o autor da ideia pode atualizá-la
+- Suporta atualizações parciais (apenas campos fornecidos)
+- Atualiza automaticamente o timestamp de modificação
+- Valida dados de entrada conforme regras de negócio
+- Mantém integridade dos dados existentes
 
 ## Cenários
 
-### Cenário 1: Atualizar ideia própria com sucesso
-**Dado** que um usuário autenticado está logado
-**E** existe uma ideia com ID "idea-123" criada pelo usuário
-**Quando** o usuário faz uma requisição PUT para "/v1/idea/idea-123"
-**E** envia dados válidos no corpo da requisição:
+### Cenário: Atualizar ideia própria com sucesso
+```gherkin
+Dado que estou autenticado como usuário
+E existe uma ideia com ID "idea-123" criada por mim
+Quando envio uma requisição PUT para "/v1/idea/idea-123" com:
+  | Campo | Valor |
+  | title | "Título Atualizado" |
+  | description | "Descrição atualizada da ideia" |
+  | summary | "Resumo atualizado" |
+  | tags | "nova,tag,atualizada" |
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | idea | object |
+E a ideia deve conter os dados atualizados
+E updated_at deve ser diferente de created_at
+```
+
+### Cenário: Tentar atualizar ideia de outro usuário
+```gherkin
+Dado que estou autenticado como usuário
+E existe uma ideia com ID "idea-123" criada por outro usuário
+Quando envio uma requisição PUT para "/v1/idea/idea-123" com:
+  | Campo | Valor |
+  | title | "Título Tentativa" |
+Então devo receber uma resposta 403 com erro "FORBIDDEN"
+E a ideia não deve ser atualizada
+```
+
+### Cenário: Atualizar ideia inexistente
+```gherkin
+Dado que estou autenticado como usuário
+E não existe uma ideia com ID "idea-inexistente" no sistema
+Quando envio uma requisição PUT para "/v1/idea/idea-inexistente" com:
+  | Campo | Valor |
+  | title | "Título Tentativa" |
+Então devo receber uma resposta 404 com erro "IDEA_NOT_FOUND"
+```
+
+### Cenário: Atualizar ideia sem autenticação
+```gherkin
+Dado que não estou autenticado
+Quando envio uma requisição PUT para "/v1/idea/idea-123" com:
+  | Campo | Valor |
+  | title | "Título Tentativa" |
+Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
+```
+
+### Cenário: Atualizar apenas título
+```gherkin
+Dado que estou autenticado como usuário
+E existe uma ideia com ID "idea-123" criada por mim
+Quando envio uma requisição PUT para "/v1/idea/idea-123" com:
+  | Campo | Valor |
+  | title | "Novo Título" |
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | idea | object |
+E apenas o título deve ser atualizado
+E description deve manter o valor original
+```
+
+### Cenário: Atualizar com dados inválidos
+```gherkin
+Dado que estou autenticado como usuário
+E existe uma ideia com ID "idea-123" criada por mim
+Quando envio uma requisição PUT para "/v1/idea/idea-123" com:
+  | Campo | Valor |
+  | title | "Curto" |
+  | description | "Muito curta" |
+Então devo receber uma resposta 400 com erro de validação
+```
+
+### Cenário: Atualizar com ID inválido
+```gherkin
+Dado que estou autenticado como usuário
+Quando envio uma requisição PUT para "/v1/idea/id-invalido" com:
+  | Campo | Valor |
+  | title | "Título Tentativa" |
+Então devo receber uma resposta 400 com erro de validação
+```
+
+### Cenário: Erro interno do servidor
+```gherkin
+Dado que estou autenticado como usuário
+E existe uma ideia com ID "idea-123" criada por mim
+E o banco de dados está indisponível
+Quando envio uma requisição PUT para "/v1/idea/idea-123" com:
+  | Campo | Valor |
+  | title | "Título Tentativa" |
+Então devo receber uma resposta 500 com erro "DATABASE_ERROR"
+```
+
+## Formato de Resposta
+
+### Resposta de Sucesso (200)
 ```json
 {
-  "title": "Título Atualizado",
-  "description": "Descrição atualizada da ideia"
+  "idea": {
+    "id": "idea-uuid-123",
+    "title": "Título Atualizado",
+    "description": "Descrição atualizada da ideia...",
+    "summary": "Resumo atualizado",
+    "tags": "nova,tag,atualizada",
+    "authorId": "user-profile-uuid",
+    "author": {
+      "id": "user-profile-uuid",
+      "displayName": "João Silva",
+      "icon": "https://example.com/avatar.jpg"
+    },
+    "created_at": "2023-01-01T00:00:00.000Z",
+    "updated_at": "2023-01-01T12:00:00.000Z",
+    "_count": {
+      "likes": 15,
+      "views": 120,
+      "comments": 8
+    }
+  }
 }
 ```
-**Então** o sistema deve retornar status 200
-**E** deve retornar os dados atualizados da ideia
-**E** deve atualizar a data de modificação
 
-### Cenário 2: Tentar atualizar ideia de outro usuário
-**Dado** que um usuário autenticado está logado
-**E** existe uma ideia com ID "idea-123" criada por outro usuário
-**Quando** o usuário faz uma requisição PUT para "/v1/idea/idea-123"
-**Então** o sistema deve retornar status 403
-**E** deve retornar a mensagem "FORBIDDEN"
-
-### Cenário 3: Atualizar ideia inexistente
-**Dado** que um usuário autenticado está logado
-**E** não existe uma ideia com ID "idea-inexistente" no sistema
-**Quando** o usuário faz uma requisição PUT para "/v1/idea/idea-inexistente"
-**Então** o sistema deve retornar status 404
-**E** deve retornar a mensagem "IDEA_NOT_FOUND"
-
-### Cenário 4: Atualizar ideia sem autenticação
-**Dado** que um usuário não está autenticado
-**Quando** o usuário faz uma requisição PUT para "/v1/idea/idea-123"
-**Então** o sistema deve retornar status 401
-**E** deve retornar a mensagem "UNAUTHORIZED"
-
-### Cenário 5: Atualizar apenas título
-**Dado** que um usuário autenticado está logado
-**E** existe uma ideia com ID "idea-123" criada pelo usuário
-**Quando** o usuário faz uma requisição PUT para "/v1/idea/idea-123"
-**E** envia apenas o título atualizado:
-```json
-{
-  "title": "Novo Título"
-}
-```
-**Então** o sistema deve retornar status 200
-**E** deve atualizar apenas o título
-**E** deve manter a descrição original
-
-### Cenário 6: Erro interno do servidor
-**Dado** que um usuário autenticado está logado
-**E** existe uma ideia com ID "idea-123" criada pelo usuário
-**E** ocorre um erro interno no sistema
-**Quando** o usuário faz uma requisição PUT para "/v1/idea/idea-123"
-**Então** o sistema deve retornar status 500
-**E** deve retornar a mensagem "Failed to update idea"
+### Respostas de Erro
+- **400**: Erros de validação (dados inválidos, ID inválido)
+- **401**: `UNAUTHORIZED` (usuário não autenticado)
+- **403**: `FORBIDDEN` (usuário não é o autor da ideia)
+- **404**: `IDEA_NOT_FOUND` (ideia não encontrada)
+- **500**: `DATABASE_ERROR` (erro interno do servidor)

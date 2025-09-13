@@ -1,99 +1,94 @@
-# Feature: Delete User Account
+# Funcionalidade: Deletar Conta de Usuário
 
-## Overview
-This feature allows users to permanently delete their own account and all associated data.
+## Visão Geral
+Permite que usuários autenticados deletem permanentemente suas próprias contas e todos os dados associados, incluindo perfil, imagens, posts, comentários e relacionamentos.
 
-## User Story
-As a user, I want to delete my account so that I can remove all my personal data from the platform when I no longer wish to use it.
+## Regras de Negócio
+- Usuário deve estar autenticado
+- Apenas o próprio usuário pode deletar sua conta
+- Ação é permanente e irreversível
+- Remove todos os dados associados (perfil, imagens, posts, comentários, likes, relacionamentos)
+- Remove arquivos do armazenamento em nuvem
+- Token de autenticação se torna inválido após deleção
+- ID deve ser um UUID válido
 
-## Acceptance Criteria
+## Cenários
 
-### Scenario: Delete own account successfully
+### Cenário: Deletar própria conta com sucesso
 ```gherkin
-Given the API is running
-And I am authenticated as user "valid-uuid"
-When I make a DELETE request to "/v1/user/valid-uuid"
-Then I should receive a 200 status code
-And the response should contain success message "USER_DELETED_SUCCESSFULLY"
-And my user account should be permanently deleted
-And my profile images should be removed from storage
-And all my associated data should be removed
+Dado que estou autenticado como usuário com ID "user-uuid-123"
+Quando envio uma requisição DELETE para "/v1/user/user-uuid-123"
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | message | string |
+E message deve ser "USER_DELETED_SUCCESSFULLY"
+E minha conta deve ser permanentemente deletada
+E minhas imagens de perfil devem ser removidas do armazenamento
+E todos os meus dados associados devem ser removidos
 ```
 
-### Scenario: Try to delete another user's account
+### Cenário: Tentar deletar conta de outro usuário
 ```gherkin
-Given the API is running
-And I am authenticated as user "user-a-uuid"
-When I make a DELETE request to "/v1/user/user-b-uuid"
-Then I should receive a 403 status code
-And the response should contain error message "FORBIDDEN"
-And the other user's account should remain unchanged
+Dado que estou autenticado como usuário com ID "user-a-uuid"
+Quando envio uma requisição DELETE para "/v1/user/user-b-uuid"
+Então devo receber uma resposta 403 com erro "FORBIDDEN"
+E a conta do outro usuário deve permanecer inalterada
 ```
 
-### Scenario: Delete non-existent user account
+### Cenário: Deletar conta de usuário inexistente
 ```gherkin
-Given the API is running
-And I am authenticated as user "valid-uuid"
-When I make a DELETE request to "/v1/user/non-existent-uuid"
-Then I should receive a 404 status code
-And the response should contain error message "USER_NOT_FOUND"
+Dado que estou autenticado como usuário com ID "user-uuid-123"
+Quando envio uma requisição DELETE para "/v1/user/user-inexistente"
+Então devo receber uma resposta 404 com erro "USER_NOT_FOUND"
 ```
 
-### Scenario: Delete account without authentication
+### Cenário: Deletar conta sem autenticação
 ```gherkin
-Given the API is running
-When I make a DELETE request to "/v1/user/any-uuid" without authentication
-Then I should receive a 401 status code
-And the request should be rejected
+Dado que não estou autenticado
+Quando envio uma requisição DELETE para "/v1/user/user-uuid-123"
+Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
 ```
 
-## API Endpoint
-- **Method**: DELETE
-- **Path**: `/v1/user/{userId}`
-- **Authentication**: Required (JWT)
-- **Path Parameters**:
-  - `userId`: UUID of the user account to delete
+### Cenário: Deletar conta com ID inválido
+```gherkin
+Dado que estou autenticado como usuário
+Quando envio uma requisição DELETE para "/v1/user/id-invalido"
+Então devo receber uma resposta 400 com erro de validação
+```
 
-## Response Format
+### Cenário: Deletar conta com dados associados
+```gherkin
+Dado que estou autenticado como usuário com ID "user-uuid-123"
+E minha conta possui posts, comentários, likes e relacionamentos
+Quando envio uma requisição DELETE para "/v1/user/user-uuid-123"
+Então devo receber uma resposta 200 com:
+  | Campo | Tipo |
+  | message | string |
+E message deve ser "USER_DELETED_SUCCESSFULLY"
+E todos os dados associados devem ser removidos (cascade delete)
+E arquivos de imagem devem ser removidos do armazenamento
+```
 
-### Success Response (200)
+### Cenário: Erro interno do servidor
+```gherkin
+Dado que estou autenticado como usuário com ID "user-uuid-123"
+E o banco de dados está indisponível
+Quando envio uma requisição DELETE para "/v1/user/user-uuid-123"
+Então devo receber uma resposta 500 com erro "DATABASE_ERROR"
+```
+
+## Formato de Resposta
+
+### Resposta de Sucesso (200)
 ```json
 {
   "message": "USER_DELETED_SUCCESSFULLY"
 }
 ```
 
-### Error Responses
-
-#### Forbidden (403)
-```json
-{
-  "message": "FORBIDDEN"
-}
-```
-
-#### Not Found (404)
-```json
-{
-  "message": "USER_NOT_FOUND"
-}
-```
-
-#### Unauthorized (401)
-```json
-{
-  "message": "UNAUTHORIZED"
-}
-```
-
-## Business Rules
-1. Users can only delete their own accounts
-2. Account deletion is permanent and irreversible
-3. All user data is removed including:
-   - User profile information
-   - Profile images (icon and background)
-   - Associated posts, comments, likes
-   - Follow relationships
-4. Files are removed from cloud storage
-5. Authentication token becomes invalid after deletion
-6. User ID must be a valid UUID format
+### Respostas de Erro
+- **400**: Erros de validação (ID inválido)
+- **401**: `UNAUTHORIZED` (usuário não autenticado)
+- **403**: `FORBIDDEN` (usuário não pode deletar conta de outro usuário)
+- **404**: `USER_NOT_FOUND` (usuário não encontrado)
+- **500**: `DATABASE_ERROR` (erro interno do servidor)
