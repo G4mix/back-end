@@ -4,7 +4,7 @@ import { UserRepository } from '@shared/repositories/user.repository'
 import { Logger } from '@shared/utils/logger'
 
 @injectable()
-@Route('/v1/users')
+@Route('/v1/user')
 @Tags('User Management')
 export class GetUsersController extends Controller {
 	constructor(
@@ -36,7 +36,7 @@ export class GetUsersController extends Controller {
 	 * 
 	 * @example
 	 * ```typescript
-	 * // URL: /v1/users?page=1&limit=20&search=john
+	 * // URL: /v1/user?page=1&limit=20&search=john
 	 * 
 	 * // Success response (200)
 	 * {

@@ -16,8 +16,6 @@ export class GetCommentsController extends Controller {
 		@inject('CommentRepository') private commentRepository: CommentRepository
 	) {
 		super()
-		void this.logger
-		void this.commentRepository
 	}
 
 	/**

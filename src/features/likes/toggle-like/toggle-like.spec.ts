@@ -125,7 +125,7 @@ describe('Toggle Like Integration Tests', () => {
 			}
 		})
 		
-		await httpClient.post('/v1/ideas', ideaData)
+		await httpClient.post('/v1/idea', ideaData)
 	})
 
 	afterAll(async () => {

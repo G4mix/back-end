@@ -1232,7 +1232,7 @@
 				}
 			}
 		},
-		"/v1/users": {
+		"/v1/user": {
 			"patch": {
 				"operationId": "UpdateUser",
 				"responses": {
@@ -1403,7 +1403,84 @@
 				"parameters": []
 			}
 		},
-		"/v1/users/{userId}": {
+		"/v1/user/link-new-oauth-provider/{provider}": {
+			"post": {
+				"operationId": "LinkNewOAuthProvider",
+				"responses": {
+					"200": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"success": {
+													"type": "boolean"
+												}
+											},
+											"required": [
+												"success"
+											],
+											"type": "object"
+										},
+										{
+											"$ref": "#/components/schemas/ErrorResponse"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Link additional OAuth provider to existing account\n\nThis endpoint allows authenticated users to link additional social providers\n(Google, LinkedIn, GitHub) to their existing account. This enables users to\nsign in with multiple social accounts using the same application account.\n\nProvider Linking Process:\n- Validates user authentication via JWT token\n- Validates social provider token via AuthGateway\n- Retrieves user profile from social provider\n- Checks if provider is already linked to another account\n- Links provider to current user account",
+				"tags": [
+					"User Management"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"description": "- Social provider name (google, linkedin, github)",
+						"in": "path",
+						"name": "provider",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"google",
+								"linkedin",
+								"github"
+							]
+						}
+					}
+				],
+				"requestBody": {
+					"description": "- Object containing the social provider token",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"token": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"token"
+								],
+								"type": "object",
+								"description": "- Object containing the social provider token"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/v1/user/{userId}": {
 			"get": {
 				"operationId": "GetUserById",
 				"responses": {
@@ -1487,7 +1564,7 @@
 				}
 			}
 		},
-		"/v1/ideas/{id}": {
+		"/v1/idea/{id}": {
 			"patch": {
 				"operationId": "UpdateIdea",
 				"responses": {
@@ -1627,7 +1704,7 @@
 				]
 			}
 		},
-		"/v1/ideas": {
+		"/v1/idea": {
 			"get": {
 				"operationId": "GetIdeas",
 				"responses": {
@@ -2027,7 +2104,14 @@
 						"description": "Comment created successfully",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"anyOf": [
+										{},
+										{
+											"$ref": "#/components/schemas/ErrorResponse"
+										}
+									]
+								}
 							}
 						}
 					}
@@ -2118,55 +2202,6 @@
 				}
 			}
 		},
-		"/v1/auth/callback/{provider}": {
-			"get": {
-				"operationId": "CallbackSocialLoginGet",
-				"responses": {
-					"200": {
-						"description": ""
-					}
-				},
-				"description": "Handle OAuth callback from social providers\n\nThis endpoint processes the OAuth callback from social login providers (Google,\nLinkedIn, GitHub) after the user has authenticated with the external service.\nIt exchanges the authorization code for access tokens and completes the login process.\n\nOAuth Callback Process:\n- Receives authorization code from provider\n- Exchanges code for access tokens via AuthGateway\n- Retrieves user profile information\n- Creates or updates user account\n- Generates application authentication tokens",
-				"tags": [
-					"Authentication"
-				],
-				"security": [],
-				"parameters": [
-					{
-						"description": "- Social provider name (google, linkedin, github)",
-						"in": "path",
-						"name": "provider",
-						"required": true,
-						"schema": {
-							"type": "string",
-							"enum": [
-								"google",
-								"linkedin",
-								"github"
-							]
-						}
-					},
-					{
-						"description": "- Authorization code from OAuth provider",
-						"in": "query",
-						"name": "code",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"description": "- State parameter for OAuth security",
-						"in": "query",
-						"name": "state",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
 		"/v1/auth/social-login/{provider}": {
 			"post": {
 				"operationId": "SocialLogin",
@@ -2232,45 +2267,19 @@
 				}
 			}
 		},
-		"/v1/auth/link-new-oauth-provider/{provider}": {
-			"post": {
-				"operationId": "LinkNewOAuthProvider",
+		"/v1/auth/callback/{provider}": {
+			"get": {
+				"operationId": "CallbackSocialLoginGet",
 				"responses": {
 					"200": {
-						"description": "",
-						"content": {
-							"application/json": {
-								"schema": {
-									"anyOf": [
-										{
-											"properties": {
-												"success": {
-													"type": "boolean"
-												}
-											},
-											"required": [
-												"success"
-											],
-											"type": "object"
-										},
-										{
-											"type": "string"
-										}
-									]
-								}
-							}
-						}
+						"description": ""
 					}
 				},
-				"description": "Link additional OAuth provider to existing account\n\nThis endpoint allows authenticated users to link additional social providers\n(Google, LinkedIn, GitHub) to their existing account. This enables users to\nsign in with multiple social accounts using the same application account.\n\nProvider Linking Process:\n- Validates user authentication via JWT token\n- Validates social provider token via AuthGateway\n- Retrieves user profile from social provider\n- Checks if provider is already linked to another account\n- Links provider to current user account",
+				"description": "Handle OAuth callback from social providers\n\nThis endpoint processes the OAuth callback from social login providers (Google,\nLinkedIn, GitHub) after the user has authenticated with the external service.\nIt exchanges the authorization code for access tokens and completes the login process.\n\nOAuth Callback Process:\n- Receives authorization code from provider\n- Exchanges code for access tokens via AuthGateway\n- Retrieves user profile information\n- Creates or updates user account\n- Generates application authentication tokens",
 				"tags": [
 					"Authentication"
 				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
+				"security": [],
 				"parameters": [
 					{
 						"description": "- Social provider name (google, linkedin, github)",
@@ -2285,28 +2294,26 @@
 								"github"
 							]
 						}
-					}
-				],
-				"requestBody": {
-					"description": "- Object containing the social provider token",
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"token": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"token"
-								],
-								"type": "object",
-								"description": "- Object containing the social provider token"
-							}
+					},
+					{
+						"description": "- Authorization code from OAuth provider",
+						"in": "query",
+						"name": "code",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "- State parameter for OAuth security",
+						"in": "query",
+						"name": "state",
+						"required": false,
+						"schema": {
+							"type": "string"
 						}
 					}
-				}
+				]
 			}
 		},
 		"/v1/auth/signup": {
@@ -2527,7 +2534,7 @@
 											"$ref": "#/components/schemas/SigninOutput"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}

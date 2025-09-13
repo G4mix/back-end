@@ -24,7 +24,7 @@ describe('Get Idea By ID Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('GET /v1/ideas/:id', () => {
+	describe('GET /v1/idea/:id', () => {
 		it('should get idea by id successfully', async () => {
 			// Arrange
 			const ideaId = TestData.generateUUID()
@@ -76,7 +76,7 @@ describe('Get Idea By ID Integration Tests', () => {
 			mockPrismaClient.idea.findUnique.mockResolvedValue(mockIdea)
 
 			// Act
-			const response = await httpClient.get(`/v1/ideas/${ideaId}`)
+			const response = await httpClient.get(`/v1/idea/${ideaId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -106,7 +106,7 @@ describe('Get Idea By ID Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.get('/v1/ideas/invalid-uuid'))
+			await expect(httpClient.get('/v1/idea/invalid-uuid'))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -150,7 +150,7 @@ describe('Get Idea By ID Integration Tests', () => {
 			mockPrismaClient.idea.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
-			await expect(httpClient.get(`/v1/ideas/${ideaId}`))
+			await expect(httpClient.get(`/v1/idea/${ideaId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -237,7 +237,7 @@ describe('Get Idea By ID Integration Tests', () => {
 			httpClient.setAuthToken(authToken)
 
 			// Act
-			const response = await httpClient.get(`/v1/ideas/${ideaId}`)
+			const response = await httpClient.get(`/v1/idea/${ideaId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -262,7 +262,7 @@ describe('Get Idea By ID Integration Tests', () => {
 			mockPrismaClient.idea.findUnique.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
-			await expect(httpClient.get(`/v1/ideas/${ideaId}`))
+			await expect(httpClient.get(`/v1/idea/${ideaId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

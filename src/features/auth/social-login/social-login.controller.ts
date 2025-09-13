@@ -1,4 +1,4 @@
-import { Route, Tags, Controller, Body, Post, SuccessResponse, Path, Get, Query, Request, Security } from 'tsoa'
+import { Route, Tags, Controller, Body, Post, SuccessResponse, Path, Get, Query, Request } from 'tsoa'
 import { inject } from 'tsyringe'
 import { injectable } from 'tsyringe'
 import { SigninOutput } from '@shared/types/tsoa'
@@ -26,58 +26,6 @@ export class SocialLoginController extends Controller {
 	) {
 		super()
 		void this.logger
-	}
-
-	/**
-	 * Handle OAuth callback from social providers
-	 * 
-	 * This endpoint processes the OAuth callback from social login providers (Google,
-	 * LinkedIn, GitHub) after the user has authenticated with the external service.
-	 * It exchanges the authorization code for access tokens and completes the login process.
-	 * 
-	 * OAuth Callback Process:
-	 * - Receives authorization code from provider
-	 * - Exchanges code for access tokens via AuthGateway
-	 * - Retrieves user profile information
-	 * - Creates or updates user account
-	 * - Generates application authentication tokens
-	 * 
-	 * @param provider - Social provider name (google, linkedin, github)
-	 * @param req - Express request object
-	 * @param code - Authorization code from OAuth provider
-	 * @param state - State parameter for OAuth security
-	 * @returns Promise resolving to authentication result or error
-	 * 
-	 * @example
-	 * ```typescript
-	 * // URL: /v1/auth/callback/google?code=abc123&state=xyz789
-	 * 
-	 * // Success response (200)
-	 * {
-	 *   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-	 *   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-	 *   "user": { ... }
-	 * }
-	 * 
-	 * // Error responses
-	 * "INVALID_PROVIDER" // Unsupported provider
-	 * "OAUTH_ERROR" // OAuth exchange failed
-	 * "USER_CREATION_FAILED" // Account creation failed
-	 * ```
-	 */
-	@SuccessResponse(200)
-	@Get('/callback/{provider}')
-	@LogResponseTime()
-	public async callbackSocialLoginGet(
-		@Path() provider: 'google' | 'linkedin' | 'github',
-		@Request() req: TsoaRequest,
-		@Query() code?: string,
-		@Query() state?: string
-	) {
-		const token = await this.handleCallbackUrl({ provider, code, codeVerifier: state })
-		const res = req.res
-		if (!token) return res?.redirect(`com.gamix://auth/loading?provider=${provider}&error=LOGIN_WITH_${provider.toUpperCase()}_FAILED`)
-		return res?.redirect(`com.gamix://auth/loading?provider=${provider}&token=${token}`)
 	}
 
 	/**
@@ -181,69 +129,55 @@ export class SocialLoginController extends Controller {
 	}
 
 	/**
-	 * Link additional OAuth provider to existing account
+	 * Handle OAuth callback from social providers
 	 * 
-	 * This endpoint allows authenticated users to link additional social providers
-	 * (Google, LinkedIn, GitHub) to their existing account. This enables users to
-	 * sign in with multiple social accounts using the same application account.
+	 * This endpoint processes the OAuth callback from social login providers (Google,
+	 * LinkedIn, GitHub) after the user has authenticated with the external service.
+	 * It exchanges the authorization code for access tokens and completes the login process.
 	 * 
-	 * Provider Linking Process:
-	 * - Validates user authentication via JWT token
-	 * - Validates social provider token via AuthGateway
-	 * - Retrieves user profile from social provider
-	 * - Checks if provider is already linked to another account
-	 * - Links provider to current user account
+	 * OAuth Callback Process:
+	 * - Receives authorization code from provider
+	 * - Exchanges code for access tokens via AuthGateway
+	 * - Retrieves user profile information
+	 * - Creates or updates user account
+	 * - Generates application authentication tokens
 	 * 
 	 * @param provider - Social provider name (google, linkedin, github)
-	 * @param body - Object containing the social provider token
-	 * @param req - Express request object with JWT token
-	 * @returns Promise resolving to success confirmation or error string
+	 * @param req - Express request object
+	 * @param code - Authorization code from OAuth provider
+	 * @param state - State parameter for OAuth security
+	 * @returns Promise resolving to authentication result or error
 	 * 
 	 * @example
 	 * ```typescript
-	 * // Request body
-	 * {
-	 *   "token": "social_provider_access_token"
-	 * }
+	 * // URL: /v1/auth/callback/google?code=abc123&state=xyz789
 	 * 
 	 * // Success response (200)
 	 * {
-	 *   "success": true
+	 *   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+	 *   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+	 *   "user": { ... }
 	 * }
 	 * 
 	 * // Error responses
 	 * "INVALID_PROVIDER" // Unsupported provider
-	 * "INVALID_TOKEN" // Social token validation failed
-	 * "PROVIDER_ALREADY_LINKED" // Provider linked to another account
-	 * "UNAUTHORIZED" // Invalid or missing JWT token
+	 * "OAUTH_ERROR" // OAuth exchange failed
+	 * "USER_CREATION_FAILED" // Account creation failed
 	 * ```
 	 */
 	@SuccessResponse(200)
-	@Post('/link-new-oauth-provider/{provider}')
-	@Security('jwt', [])
+	@Get('/callback/{provider}')
 	@LogResponseTime()
-	public async linkNewOAuthProvider(
-		@Path() provider: 'google' | 'linkedin' | 'github',
-		@Body() body: { token: string },
-		@Request() req: TsoaRequest
-	): Promise<{ success: boolean } | string> {
-		const { token } = body
-		const userId = req.user.sub
-
-		const validation = await this.authGateway.validateSocialLogin({ provider, token })
-		if (!validation.valid || !validation.userData) return 'USER_NOT_FOUND'
-
-		const userData = validation.userData
-
-		const user = await this.userRepository.findById({ id: userId })
-		if (!user) return 'USER_NOT_FOUND'
-
-		const existingLink = await this.userRepository.findOAuthUser({ provider, email: userData.email })
-		if (existingLink) return 'PROVIDER_ALREADY_LINKED'
-
-		await this.userRepository.linkOAuthProvider({ userId, provider, email: userData.email })
-
-		return { success: true }
+	public async callbackSocialLoginGet(
+			@Path() provider: 'google' | 'linkedin' | 'github',
+			@Request() req: TsoaRequest,
+			@Query() code?: string,
+			@Query() state?: string
+	) {
+		const token = await this.handleCallbackUrl({ provider, code, codeVerifier: state })
+		const res = req.res!
+		if (!token) return res.redirect(`com.gamix://auth/loading?provider=${provider}&error=LOGIN_WITH_${provider.toUpperCase()}_FAILED`)
+		return res.redirect(`com.gamix://auth/loading?provider=${provider}&token=${token}`)
 	}
 
 	private async handleCallbackUrl({ provider, code, codeVerifier }: { provider: 'google' | 'github' | 'linkedin'; code?: string; codeVerifier?: string; }) {

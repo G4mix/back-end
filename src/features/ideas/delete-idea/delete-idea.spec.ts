@@ -22,7 +22,7 @@ describe('Delete Idea Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('DELETE /v1/ideas/:id', () => {
+	describe('DELETE /v1/idea/:id', () => {
 		it('should delete idea successfully', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
@@ -62,7 +62,7 @@ describe('Delete Idea Integration Tests', () => {
 			// Mock do Prisma já configurado acima
 
 			// Act
-			const response = await httpClient.delete(`/v1/ideas/${ideaId}`)
+			const response = await httpClient.delete(`/v1/idea/${ideaId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -74,7 +74,7 @@ describe('Delete Idea Integration Tests', () => {
 			const invalidId = 'invalid-uuid'
 
 			// Act & Assert
-			await expect(httpClient.delete(`/v1/ideas/${invalidId}`))
+			await expect(httpClient.delete(`/v1/idea/${invalidId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -91,7 +91,7 @@ describe('Delete Idea Integration Tests', () => {
 
 			// Act & Assert
 			httpClient.setAuthToken('') // Remove token
-			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
+			await expect(httpClient.delete(`/v1/idea/${ideaId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -134,7 +134,7 @@ describe('Delete Idea Integration Tests', () => {
 			// Mock do Prisma já configurado acima
 
 			// Act & Assert
-			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
+			await expect(httpClient.delete(`/v1/idea/${ideaId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -184,7 +184,7 @@ describe('Delete Idea Integration Tests', () => {
 			// Mock do Prisma já configurado acima
 
 			// Act & Assert
-			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
+			await expect(httpClient.delete(`/v1/idea/${ideaId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 403,
@@ -232,7 +232,7 @@ describe('Delete Idea Integration Tests', () => {
 			// Mock do Prisma já configurado acima
 
 			// Act
-			const response = await httpClient.delete(`/v1/ideas/${ideaId}`)
+			const response = await httpClient.delete(`/v1/idea/${ideaId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -269,7 +269,7 @@ describe('Delete Idea Integration Tests', () => {
 			mockPrismaClient.idea.findUnique.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
-			await expect(httpClient.delete(`/v1/ideas/${ideaId}`))
+			await expect(httpClient.delete(`/v1/idea/${ideaId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

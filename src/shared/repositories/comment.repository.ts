@@ -12,7 +12,7 @@ export class CommentRepository {
 		const comment = await this.pg.comment.create({
 			data: { ideaId, parentCommentId: commentId, authorId: userProfileId, content },
 			include: {
-				author: { include: { user: true, links: true } },
+				author: { include: { user: { include: { userProfile: true } } } },
 				_count: {
 					select: {
 						likes: true,

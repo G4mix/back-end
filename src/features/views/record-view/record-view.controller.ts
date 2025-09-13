@@ -19,9 +19,6 @@ export class RecordViewController extends Controller {
 		@inject('IdeaRepository') private ideaRepository: IdeaRepository
 	) {
 		super()
-		void this.logger
-		void this.viewRepository
-		void this.ideaRepository
 	}
 
 	/**

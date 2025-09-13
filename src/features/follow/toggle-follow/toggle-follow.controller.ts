@@ -19,9 +19,6 @@ export class ToggleFollowController extends Controller {
 		@inject('UserRepository') private userRepository: UserRepository
 	) {
 		super()
-		void this.logger
-		void this.followRepository
-		void this.userRepository
 	}
 
 	/**

@@ -15,11 +15,11 @@ export class RoutesInfoModule implements StartupModule {
 		
 		const routes: RouteInfo[] = [
 			// User Management Routes
-			{ method: 'POST', path: '/v1/users', controller: 'CreateUserController', action: 'createUser', tags: ['User Management'] },
-			{ method: 'GET', path: '/v1/users', controller: 'GetUsersController', action: 'getUsers', tags: ['User Management'] },
-			{ method: 'GET', path: '/v1/users/{userId}', controller: 'GetUserByIdController', action: 'getUserById', tags: ['User Management'] },
-			{ method: 'PUT', path: '/v1/users/{userId}', controller: 'UpdateUserController', action: 'updateUser', tags: ['User Management'], security: ['jwt'] },
-			{ method: 'DELETE', path: '/v1/users/{userId}', controller: 'DeleteUserController', action: 'deleteUser', tags: ['User Management'], security: ['jwt'] },
+			{ method: 'POST', path: '/v1/user', controller: 'CreateUserController', action: 'createUser', tags: ['User Management'] },
+			{ method: 'GET', path: '/v1/user', controller: 'GetUsersController', action: 'getUsers', tags: ['User Management'] },
+			{ method: 'GET', path: '/v1/user/{userId}', controller: 'GetUserByIdController', action: 'getUserById', tags: ['User Management'] },
+			{ method: 'PUT', path: '/v1/user/{userId}', controller: 'UpdateUserController', action: 'updateUser', tags: ['User Management'], security: ['jwt'] },
+			{ method: 'DELETE', path: '/v1/user/{userId}', controller: 'DeleteUserController', action: 'deleteUser', tags: ['User Management'], security: ['jwt'] },
 
 			// Authentication Routes
 			{ method: 'POST', path: '/v1/auth/signin', controller: 'SigninController', action: 'signin', tags: ['Authentication'] },

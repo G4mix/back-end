@@ -5,7 +5,7 @@ import { Logger } from '@shared/utils/logger'
 import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
-@Route('/v1/users')
+@Route('/v1/user')
 @Tags('User Management')
 export class GetUserByIdController extends Controller {
 	constructor(
@@ -36,7 +36,7 @@ export class GetUserByIdController extends Controller {
 	 * 
 	 * @example
 	 * ```typescript
-	 * // URL: /v1/users/uuid-123
+	 * // URL: /v1/user/uuid-123
 	 * 
 	 * // Success response (200)
 	 * {

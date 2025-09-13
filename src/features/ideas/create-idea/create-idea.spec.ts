@@ -17,7 +17,7 @@ describe('Create Idea Integration Tests', () => {
 		authToken = TestTokens.generateValidToken()
 	})
 
-	describe('POST /v1/ideas', () => {
+	describe('POST /v1/idea', () => {
 		it('should create idea successfully with valid data', async () => {
 			// Arrange
 			const ideaData = {
@@ -73,7 +73,7 @@ describe('Create Idea Integration Tests', () => {
 
 			// Act
 			httpClient.setAuthToken(authToken)
-			const response = await httpClient.post('/v1/ideas', ideaData)
+			const response = await httpClient.post('/v1/idea', ideaData)
 
 			// Debug
 			console.log('Response status:', response.status)
@@ -101,7 +101,7 @@ describe('Create Idea Integration Tests', () => {
 
 			// Act & Assert
 			httpClient.setAuthToken(authToken)
-			await expect(httpClient.post('/v1/ideas', ideaData))
+			await expect(httpClient.post('/v1/idea', ideaData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -124,7 +124,7 @@ describe('Create Idea Integration Tests', () => {
 
 			// Act & Assert
 			httpClient.setAuthToken(authToken)
-			await expect(httpClient.post('/v1/ideas', ideaData))
+			await expect(httpClient.post('/v1/idea', ideaData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -147,7 +147,7 @@ describe('Create Idea Integration Tests', () => {
 
 			// Act & Assert
 			httpClient.setAuthToken('') // Remove token
-			await expect(httpClient.post('/v1/ideas', ideaData))
+			await expect(httpClient.post('/v1/idea', ideaData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -176,7 +176,7 @@ describe('Create Idea Integration Tests', () => {
 
 			// Act & Assert
 			httpClient.setAuthToken(authToken)
-			await expect(httpClient.post('/v1/ideas', ideaData))
+			await expect(httpClient.post('/v1/idea', ideaData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500,

@@ -50,22 +50,3 @@ export const SocialLoginDTO = {
 	InputSchema: SocialLoginInputSchema,
 	OutputSchema: SocialLoginOutputSchema
 }
-
-export type SocialLoginInput = z.infer<typeof SocialLoginInputSchema>
-export type LinkOAuthProviderInput = z.infer<typeof LinkOAuthProviderInputSchema>
-export type SocialLoginOutput = z.infer<typeof SocialLoginOutputSchema>
-export type LinkOAuthProviderOutput = z.infer<typeof LinkOAuthProviderOutputSchema>
-
-export const SupportedProviders = ['google', 'linkedin', 'github'] as const
-export type SupportedProvider = typeof SupportedProviders[number]
-
-export const SocialLoginErrorMessages = {
-	USER_NOT_FOUND: 'User not found',
-	PROVIDER_NOT_LINKED: 'Provider not linked to account',
-	PROVIDER_ALREADY_LINKED: 'Provider already linked to account',
-	INVALID_TOKEN: 'Invalid social token',
-	SOCIAL_LOGIN_FAILED: 'Social login failed',
-	PROVIDER_LINK_FAILED: 'Failed to link provider'
-} as const
-
-export type SocialLoginError = keyof typeof SocialLoginErrorMessages

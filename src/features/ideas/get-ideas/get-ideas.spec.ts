@@ -22,7 +22,7 @@ describe('Get Ideas Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('GET /v1/ideas', () => {
+	describe('GET /v1/idea', () => {
 		it('should get ideas with pagination successfully', async () => {
 			// Arrange - Mock do Prisma (seguindo diretriz 2 - modificar mocks globais)
 			const mockPrismaClient = IntegrationTestSetup.getMockPrismaClient()
@@ -68,7 +68,7 @@ describe('Get Ideas Integration Tests', () => {
 			mockPrismaClient.idea.count.mockResolvedValue(2)
 
 			// Act
-			const response = await httpClient.get('/v1/ideas?page=0&limit=10')
+			const response = await httpClient.get('/v1/idea?page=0&limit=10')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -117,7 +117,7 @@ describe('Get Ideas Integration Tests', () => {
 			mockPrismaClient.idea.count.mockResolvedValue(1)
 
 			// Act
-			const response = await httpClient.get('/v1/ideas?page=0&limit=10&search=react')
+			const response = await httpClient.get('/v1/idea?page=0&limit=10&search=react')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -168,7 +168,7 @@ describe('Get Ideas Integration Tests', () => {
 			mockPrismaClient.idea.count.mockResolvedValue(1)
 
 			// Act
-			const response = await httpClient.get('/v1/ideas?page=0&limit=10&tags[]=react&tags[]=typescript')
+			const response = await httpClient.get('/v1/idea?page=0&limit=10&tags[]=react&tags[]=typescript')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -196,7 +196,7 @@ describe('Get Ideas Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.get('/v1/ideas?page=-1'))
+			await expect(httpClient.get('/v1/idea?page=-1'))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -227,7 +227,7 @@ describe('Get Ideas Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.get('/v1/ideas?limit=200'))
+			await expect(httpClient.get('/v1/idea?limit=200'))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -258,7 +258,7 @@ describe('Get Ideas Integration Tests', () => {
 			})
 
 			// Act & Assert
-			await expect(httpClient.get('/v1/ideas?limit=-1'))
+			await expect(httpClient.get('/v1/idea?limit=-1'))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -293,7 +293,7 @@ describe('Get Ideas Integration Tests', () => {
 			mockPrismaClient.idea.count.mockResolvedValue(0)
 
 			// Act
-			const response = await httpClient.get('/v1/ideas?page=0&limit=10&authorId=00000000-0000-0000-0000-000000000000')
+			const response = await httpClient.get('/v1/idea?page=0&limit=10&authorId=00000000-0000-0000-0000-000000000000')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -324,7 +324,7 @@ describe('Get Ideas Integration Tests', () => {
 			mockPrismaClient.idea.findMany.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
-			await expect(httpClient.get('/v1/ideas?page=0&limit=10'))
+			await expect(httpClient.get('/v1/idea?page=0&limit=10'))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

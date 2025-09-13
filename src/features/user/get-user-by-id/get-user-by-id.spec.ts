@@ -23,7 +23,7 @@ describe('Get User By ID Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('GET /v1/users/:id', () => {
+	describe('GET /v1/user/:id', () => {
 		it('should get user by id successfully', async () => {
 			// Arrange
 			const userId = TestData.generateUUID()
@@ -53,7 +53,7 @@ describe('Get User By ID Integration Tests', () => {
 			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 
 			// Act
-			const response = await httpClient.get(`/v1/users/${userId}`)
+			const response = await httpClient.get(`/v1/user/${userId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -66,7 +66,7 @@ describe('Get User By ID Integration Tests', () => {
 
 		it('should return validation error for invalid UUID', async () => {
 			// Act & Assert
-			await expect(httpClient.get('/v1/users/invalid-uuid'))
+			await expect(httpClient.get('/v1/user/invalid-uuid'))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -86,7 +86,7 @@ describe('Get User By ID Integration Tests', () => {
 			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
-			await expect(httpClient.get(`/v1/users/${userId}`))
+			await expect(httpClient.get(`/v1/user/${userId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -126,7 +126,7 @@ describe('Get User By ID Integration Tests', () => {
 			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 
 			// Act
-			const response = await httpClient.get(`/v1/users/${userId}`)
+			const response = await httpClient.get(`/v1/user/${userId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -167,7 +167,7 @@ describe('Get User By ID Integration Tests', () => {
 			mockPrismaClient.user.findUnique.mockResolvedValue(mockUser)
 
 			// Act
-			const response = await httpClient.get(`/v1/users/${userId}`)
+			const response = await httpClient.get(`/v1/user/${userId}`)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -190,7 +190,7 @@ describe('Get User By ID Integration Tests', () => {
 			mockPrismaClient.user.findUnique.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
-			await expect(httpClient.get(`/v1/users/${userId}`))
+			await expect(httpClient.get(`/v1/user/${userId}`))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

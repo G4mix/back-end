@@ -19,7 +19,7 @@ Permite que usuários autenticados busquem e filtrem ideias com recursos de pagi
 ### Cenário: Buscar todas as ideias (página inicial)
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/"
+Quando envio uma requisição GET para "/v1/idea/"
 Então devo receber uma resposta 200 com:
   | Campo | Tipo |
   | ideas | array |
@@ -31,7 +31,7 @@ E cada ideia deve conter id, title, description, authorId, author, created_at, u
 ### Cenário: Buscar ideias com paginação
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/?page=1&limit=5"
+Quando envio uma requisição GET para "/v1/idea/?page=1&limit=5"
 Então devo receber uma resposta 200 com:
   | Campo | Tipo |
   | ideas | array |
@@ -44,7 +44,7 @@ E ideas deve conter no máximo 5 itens
 ### Cenário: Buscar ideias por texto
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/?search=mobile app"
+Quando envio uma requisição GET para "/v1/idea/?search=mobile app"
 Então devo receber uma resposta 200 com:
   | Campo | Tipo |
   | ideas | array |
@@ -56,7 +56,7 @@ E todas as ideias devem conter "mobile app" no título ou descrição
 ```gherkin
 Dado que estou autenticado como usuário
 E existe um autor com id "author-123"
-Quando envio uma requisição GET para "/v1/ideas/?authorId=author-123"
+Quando envio uma requisição GET para "/v1/idea/?authorId=author-123"
 Então devo receber uma resposta 200 com:
   | Campo | Tipo |
   | ideas | array |
@@ -67,7 +67,7 @@ E todas as ideias devem ter authorId igual a "author-123"
 ### Cenário: Buscar ideias por tags
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/?tags=innovation,technology"
+Quando envio uma requisição GET para "/v1/idea/?tags=innovation,technology"
 Então devo receber uma resposta 200 com:
   | Campo | Tipo |
   | ideas | array |
@@ -78,7 +78,7 @@ E todas as ideias devem conter as tags "innovation" ou "technology"
 ### Cenário: Buscar ideias com ordenação por data
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/?sortBy=created_at&sortOrder=asc"
+Quando envio uma requisição GET para "/v1/idea/?sortBy=created_at&sortOrder=asc"
 Então devo receber uma resposta 200 com:
   | Campo | Tipo |
   | ideas | array |
@@ -89,7 +89,7 @@ E as ideias devem estar ordenadas por data de criação (mais antigas primeiro)
 ### Cenário: Buscar ideias com ordenação por título
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/?sortBy=title&sortOrder=desc"
+Quando envio uma requisição GET para "/v1/idea/?sortBy=title&sortOrder=desc"
 Então devo receber uma resposta 200 com:
   | Campo | Tipo |
   | ideas | array |
@@ -100,7 +100,7 @@ E as ideias devem estar ordenadas por título (Z-A)
 ### Cenário: Buscar ideias com múltiplos filtros
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/?search=app&authorId=author-123&tags=mobile&page=0&limit=10&sortBy=created_at&sortOrder=desc"
+Quando envio uma requisição GET para "/v1/idea/?search=app&authorId=author-123&tags=mobile&page=0&limit=10&sortBy=created_at&sortOrder=desc"
 Então devo receber uma resposta 200 com:
   | Campo | Tipo |
   | ideas | array |
@@ -113,28 +113,28 @@ E devem ter no máximo 10 itens
 ### Cenário: Buscar ideias sem autenticação
 ```gherkin
 Dado que não estou autenticado
-Quando envio uma requisição GET para "/v1/ideas/"
+Quando envio uma requisição GET para "/v1/idea/"
 Então devo receber uma resposta 401 com erro "UNAUTHORIZED"
 ```
 
 ### Cenário: Buscar ideias com parâmetros inválidos
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/?page=-1&limit=0"
+Quando envio uma requisição GET para "/v1/idea/?page=-1&limit=0"
 Então devo receber uma resposta 400 com erro de validação
 ```
 
 ### Cenário: Buscar ideias com sortBy inválido
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/?sortBy=invalid_field"
+Quando envio uma requisição GET para "/v1/idea/?sortBy=invalid_field"
 Então devo receber uma resposta 400 com erro de validação
 ```
 
 ### Cenário: Buscar ideias com sortOrder inválido
 ```gherkin
 Dado que estou autenticado como usuário
-Quando envio uma requisição GET para "/v1/ideas/?sortOrder=invalid_order"
+Quando envio uma requisição GET para "/v1/idea/?sortOrder=invalid_order"
 Então devo receber uma resposta 400 com erro de validação
 ```
 
@@ -142,7 +142,7 @@ Então devo receber uma resposta 400 com erro de validação
 ```gherkin
 Dado que estou autenticado como usuário
 E o banco de dados está indisponível
-Quando envio uma requisição GET para "/v1/ideas/"
+Quando envio uma requisição GET para "/v1/idea/"
 Então devo receber uma resposta 500 com erro "DATABASE_ERROR"
 ```
 

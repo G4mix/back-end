@@ -90,15 +90,15 @@ export class DTOInitializer {
 		try {
 			// Create Idea
 			const { CreateIdeaDTO } = await import('../../features/ideas/create-idea/create-idea.dto')
-			this.registry.registerDTO('POST /v1/ideas', CreateIdeaDTO)
+			this.registry.registerDTO('POST /v1/idea', CreateIdeaDTO)
 
 			// Update Idea
 			const { UpdateIdeaDTO } = await import('../../features/ideas/update-idea/update-idea.dto')
-			this.registry.registerDTO('PATCH /v1/ideas/:id', UpdateIdeaDTO)
+			this.registry.registerDTO('PATCH /v1/idea/:id', UpdateIdeaDTO)
 
 			// Get Ideas
 			const { GetIdeasDTO } = await import('../../features/ideas/get-ideas/get-ideas.dto')
-			this.registry.registerDTO('GET /v1/ideas', GetIdeasDTO)
+			this.registry.registerDTO('GET /v1/idea', GetIdeasDTO)
 
 			this.logger.debug('DTOs de ideias inicializados')
 		} catch (error) {
@@ -186,27 +186,31 @@ export class DTOInitializer {
 		try {
 			// Get Ideas by ID
 			const { GetIdeaByIdDTO } = await import('../../features/ideas/get-idea-by-id/get-idea-by-id.dto')
-			this.registry.registerDTO('GET /v1/ideas/:id', GetIdeaByIdDTO)
+			this.registry.registerDTO('GET /v1/idea/:id', GetIdeaByIdDTO)
 
 			// Delete Idea
 			const { DeleteIdeaDTO } = await import('../../features/ideas/delete-idea/delete-idea.dto')
-			this.registry.registerDTO('DELETE /v1/ideas/:id', DeleteIdeaDTO)
+			this.registry.registerDTO('DELETE /v1/idea/:id', DeleteIdeaDTO)
 
 			// Update User
-			const { UpdateUserDTO } = await import('../../features/user-management/update-user/update-user.dto')
-			this.registry.registerDTO('PATCH /v1/users', UpdateUserDTO)
+			const { UpdateUserDTO } = await import('../../features/user/update-user/update-user.dto')
+			this.registry.registerDTO('PATCH /v1/user', UpdateUserDTO)
 
 			// Get Users
-			const { GetUsersDTO } = await import('../../features/user-management/get-users/get-users.dto')
-			this.registry.registerDTO('GET /v1/users', GetUsersDTO)
+			const { GetUsersDTO } = await import('../../features/user/get-users/get-users.dto')
+			this.registry.registerDTO('GET /v1/user', GetUsersDTO)
 
 			// Get User by ID
-			const { GetUserByIdDTO } = await import('../../features/user-management/get-user-by-id/get-user-by-id.dto')
-			this.registry.registerDTO('GET /v1/users/:id', GetUserByIdDTO)
+			const { GetUserByIdDTO } = await import('../../features/user/get-user-by-id/get-user-by-id.dto')
+			this.registry.registerDTO('GET /v1/user/:id', GetUserByIdDTO)
 
 			// Delete User
-			const { DeleteUserDTO } = await import('../../features/user-management/delete-user/delete-user.dto')
-			this.registry.registerDTO('DELETE /v1/users/:id', DeleteUserDTO)
+			const { DeleteUserDTO } = await import('../../features/user/delete-user/delete-user.dto')
+			this.registry.registerDTO('DELETE /v1/user/:id', DeleteUserDTO)
+
+			// Link OAuth Provider
+			const { LinkOAuthProviderDTO } = await import('../../features/user/link-oauth-provider/link-oauth-provider.dto')
+			this.registry.registerDTO('POST /v1/user/link-new-oauth-provider/:provider', LinkOAuthProviderDTO)
 
 			this.logger.debug('DTOs de gerenciamento de usuários inicializados')
 		} catch (error) {

@@ -17,8 +17,6 @@ export class GetFollowingController extends Controller {
 		@inject('FollowRepository') private followRepository: FollowRepository
 	) {
 		super()
-		void this.logger
-		void this.followRepository
 	}
 
 	/**

@@ -12,7 +12,7 @@ As a user, I want to view detailed information about a specific user so that I c
 ```gherkin
 Given the API is running
 And there is a user with ID "valid-uuid"
-When I make a GET request to "/v1/users/valid-uuid"
+When I make a GET request to "/v1/user/valid-uuid"
 Then I should receive a 200 status code
 And the response should contain the user's information
 And the response should include the user's profile data
@@ -22,7 +22,7 @@ And the response should include follower/following counts
 ### Scenario: Get non-existent user by ID
 ```gherkin
 Given the API is running
-When I make a GET request to "/v1/users/non-existent-uuid"
+When I make a GET request to "/v1/user/non-existent-uuid"
 Then I should receive a 404 status code
 And the response should contain an error message "USER_NOT_FOUND"
 ```
@@ -30,14 +30,14 @@ And the response should contain an error message "USER_NOT_FOUND"
 ### Scenario: Get user with invalid ID format
 ```gherkin
 Given the API is running
-When I make a GET request to "/v1/users/invalid-id"
+When I make a GET request to "/v1/user/invalid-id"
 Then I should receive a 400 status code
 And the response should indicate invalid ID format
 ```
 
 ## API Endpoint
 - **Method**: GET
-- **Path**: `/v1/users/{userId}`
+- **Path**: `/v1/user/{userId}`
 - **Path Parameters**:
   - `userId`: UUID of the user to retrieve
 

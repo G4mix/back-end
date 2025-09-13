@@ -24,7 +24,7 @@ describe('Delete User Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('DELETE /v1/users', () => {
+	describe('DELETE /v1/user', () => {
 		it('should delete user successfully', async () => {
 			// Arrange
 			// Mock do Prisma para autenticação
@@ -47,7 +47,7 @@ describe('Delete User Integration Tests', () => {
 			mockS3Client.send.mockResolvedValue({})
 
 			// Act
-			const response = await httpClient.delete('/v1/users')
+			const response = await httpClient.delete('/v1/user')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -79,7 +79,7 @@ describe('Delete User Integration Tests', () => {
 			mockS3Client.send.mockResolvedValue({})
 
 			// Act
-			const response = await httpClient.delete('/v1/users')
+			const response = await httpClient.delete('/v1/user')
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -91,7 +91,7 @@ describe('Delete User Integration Tests', () => {
 			httpClient.clearAuthToken()
 
 			// Act & Assert
-			await expect(httpClient.delete('/v1/users'))
+			await expect(httpClient.delete('/v1/user'))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -111,7 +111,7 @@ describe('Delete User Integration Tests', () => {
 			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
-			await expect(httpClient.delete('/v1/users'))
+			await expect(httpClient.delete('/v1/user'))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -150,7 +150,7 @@ describe('Delete User Integration Tests', () => {
 			mockS3Client.send.mockRejectedValue(new Error('S3 Error'))
 
 			// Act & Assert
-			await expect(httpClient.delete('/v1/users'))
+			await expect(httpClient.delete('/v1/user'))
 				.rejects.toMatchObject({
 					response: {
 						status: 500
@@ -182,7 +182,7 @@ describe('Delete User Integration Tests', () => {
 			mockPrismaClient.user.delete.mockRejectedValue(new Error('Database error'))
 
 			// Act & Assert
-			await expect(httpClient.delete('/v1/users'))
+			await expect(httpClient.delete('/v1/user'))
 				.rejects.toMatchObject({
 					response: {
 						status: 500
@@ -218,7 +218,7 @@ describe('Delete User Integration Tests', () => {
 			mockS3Client.send.mockResolvedValue({})
 
 			// Act
-			const response = await httpClient.delete('/v1/users')
+			const response = await httpClient.delete('/v1/user')
 
 			// Assert
 			expect(response.status).toBe(200)

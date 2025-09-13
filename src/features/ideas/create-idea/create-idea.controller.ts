@@ -9,7 +9,7 @@ import { IdeaGateway } from '@shared/gateways/idea.gateway'
 import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
-@Route('/v1/ideas')
+@Route('/v1/idea')
 @Tags('Ideas')
 @Security('jwt')
 export class CreateIdeaController extends Controller {
@@ -19,9 +19,6 @@ export class CreateIdeaController extends Controller {
 		@inject('IdeaGateway') private ideaGateway: IdeaGateway
 	) {
 		super()
-		void this.logger
-		void this.ideaRepository
-		void this.ideaGateway
 	}
 
 	/**

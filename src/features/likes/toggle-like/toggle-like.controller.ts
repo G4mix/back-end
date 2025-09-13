@@ -21,10 +21,6 @@ export class ToggleLikeController extends Controller {
 		@inject('CommentRepository') private commentRepository: CommentRepository
 	) {
 		super()
-		void this.logger
-		void this.likeRepository
-		void this.ideaRepository
-		void this.commentRepository
 	}
 
 	/**

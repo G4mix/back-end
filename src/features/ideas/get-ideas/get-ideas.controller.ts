@@ -7,7 +7,7 @@ import { IdeaRepository } from '@shared/repositories/idea.repository'
 import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
-@Route('/v1/ideas')
+@Route('/v1/idea')
 @Tags('Ideas')
 @Security('jwt')
 export class GetIdeasController extends Controller {
@@ -16,8 +16,6 @@ export class GetIdeasController extends Controller {
 		@inject('IdeaRepository') private ideaRepository: IdeaRepository
 	) {
 		super()
-		void this.logger
-		void this.ideaRepository
 	}
 
 	/**

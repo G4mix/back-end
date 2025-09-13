@@ -1,7 +1,6 @@
 import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
-import { TestTokens } from '@test/helpers/test-tokens'
 import { container } from 'tsyringe'
 
 
@@ -64,7 +63,7 @@ describe('Social Login Integration Tests', () => {
 				})
 			}
 			// LinkedIn
-			if (url === 'https://api.linkedin.com/v2/people/~') {
+			if (url === 'https://api.linkedin.com/v2/userinfo') {
 				return Promise.resolve({
 					data: {
 						firstName: { localized: { en_US: 'Test' } },
@@ -345,7 +344,7 @@ describe('Social Login Integration Tests', () => {
 		const mockPrismaClient = container.resolve('PostgresqlClient') as any
 
 		// Mock para findOAuthUser (usuário não existe)
-		mockPrismaClient.userOAuth.findFirst.mockResolvedValue(null)
+		mockPrismaClient.userOAuth.findUnique.mockResolvedValue(null)
 
 		// Mock para findByEmail (usuário não existe)
 		mockPrismaClient.user.findUnique.mockResolvedValue(null)
@@ -703,181 +702,4 @@ describe('Social Login Integration Tests', () => {
 		})
 	})
 
-	describe('POST /v1/auth/link-new-oauth-provider/{provider}', () => {
-		it('should link new OAuth provider successfully', async () => {
-			// Arrange
-			const socialLoginData = {
-				token: 'google-access-token'
-			}
-			const validToken = TestTokens.generateValidToken()
-
-			// Mock do Prisma
-			const mockPrismaClient = container.resolve('PostgresqlClient') as any
-
-			// Mock para findById (usuário existe)
-			const userId = TestData.generateUUID()
-			mockPrismaClient.user.findUnique.mockResolvedValue({
-				id: userId,
-				username: 'Test User',
-				email: 'test@example.com',
-				password: 'hashed-password',
-				verified: true,
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-
-			// Mock para findOAuthUser (provider não está linkado)
-			mockPrismaClient.userOAuth.findFirst.mockResolvedValue(null)
-
-			// Mock para linkOAuthProvider
-			mockPrismaClient.userOAuth.create.mockResolvedValue({
-				id: TestData.generateUUID(),
-				userId: userId,
-				provider: 'google',
-				email: 'test@example.com',
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-
-			// Act
-			httpClient.setAuthToken(validToken)
-			const response = await httpClient.post('/v1/auth/link-new-oauth-provider/google', socialLoginData)
-
-			// Assert
-			expect(response.status).toBe(200)
-			expect(response.data).toEqual({ success: true })
-		})
-
-		it('should return USER_NOT_FOUND when user does not exist', async () => {
-			// Arrange
-			const socialLoginData = {
-				token: 'google-access-token'
-			}
-			const validToken = TestTokens.generateValidToken()
-
-
-			// Mock do Prisma
-			const mockPrismaClient = container.resolve('PostgresqlClient') as any
-
-			// Mock para findById (usuário não existe)
-			mockPrismaClient.user.findUnique.mockResolvedValue(null)
-
-			// Act & Assert
-			httpClient.setAuthToken(validToken)
-			await expect(httpClient.post('/v1/auth/link-new-oauth-provider/google', socialLoginData))
-				.rejects.toMatchObject({
-					response: {
-						status: 404
-					}
-				})
-		})
-
-		it('should return PROVIDER_ALREADY_LINKED when provider is already linked', async () => {
-			// Arrange
-			const socialLoginData = {
-				token: 'google-access-token'
-			}
-			const validToken = TestTokens.generateValidToken()
-
-			// Mock do Prisma client diretamente
-			const mockPrismaClient = container.resolve('PostgresqlClient') as any
-			const userId = TestData.generateUUID()
-
-			mockPrismaClient.user.findUnique.mockResolvedValue({
-				id: userId,
-				username: 'Test User',
-				email: 'test@example.com',
-				password: 'hashed-password',
-				verified: true,
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-
-			// Mock usando IntegrationTestSetup para garantir que seja aplicado corretamente
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					userOAuth: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							userId: userId,
-							provider: 'google',
-							email: 'test@example.com',
-							created_at: new Date(),
-							updated_at: new Date()
-						})
-					}
-				}
-			})
-
-			// Act
-			httpClient.setAuthToken(validToken)
-			const response = await httpClient.post('/v1/auth/link-new-oauth-provider/google', socialLoginData)
-
-			// Assert
-			expect(response.status).toBe(200)
-			expect(response.data).toBe('PROVIDER_ALREADY_LINKED')
-		})
-
-		it('should return USER_NOT_FOUND when social token validation fails', async () => {
-			// Arrange
-			jest.clearAllMocks()
-			const socialLoginData = {
-				token: 'invalid-token'
-			}
-			const validToken = TestTokens.generateValidToken()
-
-			// Mock do Prisma para garantir que o usuário existe (para não falhar no middleware)
-			const mockPrismaClient = container.resolve('PostgresqlClient') as any
-			const userId = TestData.generateUUID()
-			mockPrismaClient.user.findUnique.mockResolvedValue({
-				id: userId,
-				username: 'Test User',
-				email: 'test@example.com',
-				password: 'hashed-password',
-				verified: true,
-				created_at: new Date(),
-				updated_at: new Date()
-			})
-
-			// Act
-			httpClient.setAuthToken(validToken)
-			const response = await httpClient.post('/v1/auth/link-new-oauth-provider/google', socialLoginData)
-
-			// Assert
-			expect(response.status).toBe(200)
-			expect(response.data).toBe('USER_NOT_FOUND')
-		})
-
-		it('should return UNAUTHORIZED when token is invalid', async () => {
-			// Arrange
-			const socialLoginData = {
-				token: 'google-access-token'
-			}
-			const invalidToken = TestTokens.generateInvalidToken()
-
-			// Act & Assert
-			httpClient.setAuthToken(invalidToken)
-			await expect(httpClient.post('/v1/auth/link-new-oauth-provider/google', socialLoginData))
-				.rejects.toMatchObject({
-					response: {
-						status: 401
-					}
-				})
-		})
-
-		it('should return UNAUTHORIZED when no token is provided', async () => {
-			// Arrange
-			const socialLoginData = {
-				token: 'google-access-token'
-			}
-
-			// Act & Assert
-			await expect(httpClient.post('/v1/auth/link-new-oauth-provider/google', socialLoginData))
-				.rejects.toMatchObject({
-					response: {
-						status: 401
-					}
-				})
-		})
-	})
 })

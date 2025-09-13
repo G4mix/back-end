@@ -10,6 +10,7 @@ import { UserDTO } from '@shared/dto/simple.dto'
 import { TsoaRequest } from '@shared/types/tsoa'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
+import { ErrorResponse } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/auth')
@@ -62,7 +63,7 @@ export class ChangePasswordController extends Controller {
 	public async changePassword(
 		@Body() body: { newPassword: string }, 
 		@Request() req: TsoaRequest
-	): Promise<SigninOutput | string> {
+	): Promise<SigninOutput | ErrorResponse> {
 		const { newPassword } = body
 		const userId = req.user.sub
 

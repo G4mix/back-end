@@ -12,6 +12,7 @@ export class AuthGateway {
 			github: () => this.validateGithubToken(token),
 			linkedin: () => this.validateLinkedinToken(token)
 		}
+
 		const executeSocialLogin = providers[provider as keyof typeof providers]
 		if (!executeSocialLogin) return { valid: false }
 

@@ -22,7 +22,7 @@ describe('Get Users Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('GET /v1/users', () => {
+	describe('GET /v1/user', () => {
 		it('should get users with pagination successfully', async () => {
 			// Arrange
 			const mockUsers = [
@@ -77,7 +77,7 @@ describe('Get Users Integration Tests', () => {
 			mockPrismaClient.$transaction.mockResolvedValue([2, mockUsers])
 
 			// Act
-			const response = await httpClient.get('/v1/users', {
+			const response = await httpClient.get('/v1/user', {
 				page: 0,
 				limit: 10
 			})
@@ -122,7 +122,7 @@ describe('Get Users Integration Tests', () => {
 			mockPrismaClient.$transaction.mockResolvedValue([1, mockUsers])
 
 			// Act
-			const response = await httpClient.get('/v1/users', {
+			const response = await httpClient.get('/v1/user', {
 				page: 0,
 				limit: 10,
 				search: 'testuser'
@@ -136,7 +136,7 @@ describe('Get Users Integration Tests', () => {
 
 		it('should return validation error for invalid page number', async () => {
 			// Act & Assert
-			await expect(httpClient.get('/v1/users', { page: -1 }))
+			await expect(httpClient.get('/v1/user', { page: -1 }))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -149,7 +149,7 @@ describe('Get Users Integration Tests', () => {
 
 		it('should return validation error for invalid limit', async () => {
 			// Act & Assert
-			await expect(httpClient.get('/v1/users', { limit: 200 }))
+			await expect(httpClient.get('/v1/user', { limit: 200 }))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -162,7 +162,7 @@ describe('Get Users Integration Tests', () => {
 
 		it('should return validation error for negative limit', async () => {
 			// Act & Assert
-			await expect(httpClient.get('/v1/users', { limit: -1 }))
+			await expect(httpClient.get('/v1/user', { limit: -1 }))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -182,7 +182,7 @@ describe('Get Users Integration Tests', () => {
 			mockPrismaClient.$transaction.mockResolvedValue([0, []])
 
 			// Act
-			const response = await httpClient.get('/v1/users', {
+			const response = await httpClient.get('/v1/user', {
 				page: 0,
 				limit: 10
 			})
@@ -245,7 +245,7 @@ describe('Get Users Integration Tests', () => {
 			mockPrismaClient.$transaction.mockResolvedValue([2, mockUsers])
 
 			// Act
-			const response = await httpClient.get('/v1/users', {
+			const response = await httpClient.get('/v1/user', {
 				page: 0,
 				limit: 10
 			})
@@ -264,7 +264,7 @@ describe('Get Users Integration Tests', () => {
 			mockPrismaClient.$transaction.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
-			await expect(httpClient.get('/v1/users', { page: 0, limit: 10 }))
+			await expect(httpClient.get('/v1/user', { page: 0, limit: 10 }))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

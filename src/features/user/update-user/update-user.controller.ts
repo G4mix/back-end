@@ -12,7 +12,7 @@ import { Logger } from '@shared/utils/logger'
 import { ErrorResponse, CommonErrors } from '@shared/utils/error-response'
 
 @injectable()
-@Route('/v1/users')
+@Route('/v1/user')
 @Tags('User Management')
 export class UpdateUserController extends Controller {
 	constructor(

@@ -53,6 +53,7 @@ export class AutoValidationMiddleware {
 				const routeKey = `${req.method} ${req.route?.path || req.path}`
 				const schema = this.getSchemaForRoute(routeKey)
 
+
 				if (!schema) {
 					return next()
 				}
@@ -156,6 +157,7 @@ export class AutoValidationMiddleware {
 				params = this.extractParamsFromUrl(req.path)
 			}
 
+
 			const paramsResult = schema.params.safeParse(params)
 			if (!paramsResult.success) {
 				const errorCode = this.extractErrorCode(paramsResult.error.issues, 'INVALID_PARAMS')
@@ -172,50 +174,46 @@ export class AutoValidationMiddleware {
 	private extractParamsFromUrl(path: string): any {
 		const params: any = {}
 
-		// Para PATCH /v1/ideas/:id, extrai o ID da URL
-		if (path.includes('/v1/ideas/') && path !== '/v1/ideas') {
+		// Para PATCH /v1/idea/:id, extrai o ID da URL
+		if (path.includes('/v1/idea/') && path !== '/v1/idea') {
 			const pathParts = path.split('/')
-			const idIndex = pathParts.findIndex(part => part === 'ideas') + 1
+			const idIndex = pathParts.findIndex(part => part === 'idea') + 1
 			if (idIndex < pathParts.length) {
 				params.id = pathParts[idIndex]
 			}
 		}
 
-		// Para outras rotas com parâmetros dinâmicos, adicione lógica similar
-		// GET /v1/users/:id
-		if (path.includes('/v1/users/') && path !== '/v1/users') {
-			const pathParts = path.split('/')
-			const idIndex = pathParts.findIndex(part => part === 'users') + 1
-			if (idIndex < pathParts.length) {
-				params.id = pathParts[idIndex]
-			}
+
+		// POST /v1/user/link-new-oauth-provider/:provider
+		const linkOAuthProviderMatch = path.match(/^\/v1\/user\/link-new-oauth-provider\/([^/]+)$/)
+		if (linkOAuthProviderMatch) {
+			params.provider = linkOAuthProviderMatch[1]
+			// Remove o parâmetro id se existir para esta rota específica
+			delete params.id
+		}
+
+		// GET /v1/user/:id (mas não para link-new-oauth-provider)
+		const userByIdMatch = path.match(/^\/v1\/user\/([^/]+)$/)
+		if (userByIdMatch && !path.includes('link-new-oauth-provider')) {
+			params.id = userByIdMatch[1]
 		}
 
 		// GET /v1/follow/followers/:userId
-		if (path.includes('/v1/follow/followers/')) {
-			const pathParts = path.split('/')
-			const userIdIndex = pathParts.findIndex(part => part === 'followers') + 1
-			if (userIdIndex < pathParts.length) {
-				params.userId = pathParts[userIdIndex]
-			}
+		const followersMatch = path.match(/^\/v1\/follow\/followers\/([^/]+)$/)
+		if (followersMatch) {
+			params.userId = followersMatch[1]
 		}
 
 		// GET /v1/follow/following/:userId
-		if (path.includes('/v1/follow/following/')) {
-			const pathParts = path.split('/')
-			const userIdIndex = pathParts.findIndex(part => part === 'following') + 1
-			if (userIdIndex < pathParts.length) {
-				params.userId = pathParts[userIdIndex]
-			}
+		const followingMatch = path.match(/^\/v1\/follow\/following\/([^/]+)$/)
+		if (followingMatch) {
+			params.userId = followingMatch[1]
 		}
 
-		// DELETE /v1/users/links/:linkId
-		if (path.includes('/v1/users/links/')) {
-			const pathParts = path.split('/')
-			const linkIdIndex = pathParts.findIndex(part => part === 'links') + 1
-			if (linkIdIndex < pathParts.length) {
-				params.linkId = pathParts[linkIdIndex]
-			}
+		// Para PATCH /v1/idea/:id, extrai o ID da URL
+		const ideaByIdMatch = path.match(/^\/v1\/idea\/([^/]+)$/)
+		if (ideaByIdMatch) {
+			params.id = ideaByIdMatch[1]
 		}
 
 		return params

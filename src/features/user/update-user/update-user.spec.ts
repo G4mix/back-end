@@ -22,7 +22,7 @@ describe('Update User Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('PATCH /v1/users', () => {
+	describe('PATCH /v1/user', () => {
 		it('should update user successfully with valid data', async () => {
 			// Arrange
 			const updateData = {
@@ -58,7 +58,7 @@ describe('Update User Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.patch('/v1/users', updateData)
+			const response = await httpClient.patch('/v1/user', updateData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -75,7 +75,7 @@ describe('Update User Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/users', updateData))
+			await expect(httpClient.patch('/v1/user', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -94,7 +94,7 @@ describe('Update User Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/users', updateData))
+			await expect(httpClient.patch('/v1/user', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -114,7 +114,7 @@ describe('Update User Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/users', updateData))
+			await expect(httpClient.patch('/v1/user', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -134,7 +134,7 @@ describe('Update User Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/users', updateData))
+			await expect(httpClient.patch('/v1/user', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -155,7 +155,7 @@ describe('Update User Integration Tests', () => {
 			}
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/users', updateData))
+			await expect(httpClient.patch('/v1/user', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -181,7 +181,7 @@ describe('Update User Integration Tests', () => {
 			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/users', updateData))
+			await expect(httpClient.patch('/v1/user', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -229,7 +229,7 @@ describe('Update User Integration Tests', () => {
 			})
 
 			// Act
-			const response = await httpClient.patch('/v1/users', updateData)
+			const response = await httpClient.patch('/v1/user', updateData)
 
 			// Assert
 			expect(response.status).toBe(200)
@@ -265,7 +265,7 @@ describe('Update User Integration Tests', () => {
 			mockPrismaClient.user.update.mockRejectedValue(new Error('Database error'))
 
 			// Act & Assert
-			await expect(httpClient.patch('/v1/users', updateData))
+			await expect(httpClient.patch('/v1/user', updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

@@ -23,7 +23,7 @@ describe('Update Idea Integration Tests', () => {
 		IntegrationTestSetup.clearMocks()
 	})
 
-	describe('PATCH /v1/ideas/:id', () => {
+	describe('PATCH /v1/idea/:id', () => {
 		it('should update idea successfully with valid data', async () => {
 			// Arrange
 			const ideaId = '123e4567-e89b-12d3-a456-426614174000'
@@ -83,7 +83,7 @@ describe('Update Idea Integration Tests', () => {
 
 			// Act & Assert
 			try {
-				const response = await httpClient.patch(`/v1/ideas/${ideaId}`, updateData)
+				const response = await httpClient.patch(`/v1/idea/${ideaId}`, updateData)
 				expect(response.status).toBe(200)
 				expect(response.data).toHaveProperty('idea')
 				expect(response.data.idea.title).toBe(updateData.title)
@@ -140,7 +140,7 @@ describe('Update Idea Integration Tests', () => {
 			// Mock do Prisma já configurado acima
 
 			// Act & Assert
-			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+			await expect(httpClient.patch(`/v1/idea/${ideaId}`, updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -195,7 +195,7 @@ describe('Update Idea Integration Tests', () => {
 			// Mock do Prisma já configurado acima
 
 			// Act & Assert
-			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+			await expect(httpClient.patch(`/v1/idea/${ideaId}`, updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 400,
@@ -219,7 +219,7 @@ describe('Update Idea Integration Tests', () => {
 
 			// Act & Assert
 			httpClient.setAuthToken('') // Remove token
-			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+			await expect(httpClient.patch(`/v1/idea/${ideaId}`, updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 401,
@@ -269,7 +269,7 @@ describe('Update Idea Integration Tests', () => {
 			// Mock do Prisma já configurado acima
 
 			// Act & Assert
-			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+			await expect(httpClient.patch(`/v1/idea/${ideaId}`, updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 404,
@@ -326,7 +326,7 @@ describe('Update Idea Integration Tests', () => {
 			// Mock do Prisma já configurado acima
 
 			// Act & Assert
-			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+			await expect(httpClient.patch(`/v1/idea/${ideaId}`, updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 403,
@@ -372,7 +372,7 @@ describe('Update Idea Integration Tests', () => {
 			mockPrismaClient.idea.findUnique.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
-			await expect(httpClient.patch(`/v1/ideas/${ideaId}`, updateData))
+			await expect(httpClient.patch(`/v1/idea/${ideaId}`, updateData))
 				.rejects.toMatchObject({
 					response: {
 						status: 500

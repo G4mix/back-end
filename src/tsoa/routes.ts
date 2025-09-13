@@ -5,13 +5,15 @@ import { TsoaRoute, fetchMiddlewares, ExpressTemplateService } from '@tsoa/runti
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { RecordViewController } from './../features/views/record-view/record-view.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { UpdateUserController } from './../features/user-management/update-user/update-user.controller';
+import { UpdateUserController } from './../features/user/update-user/update-user.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { GetUsersController } from './../features/user-management/get-users/get-users.controller';
+import { LinkOAuthProviderController } from './../features/user/link-oauth-provider/link-oauth-provider.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { GetUserByIdController } from './../features/user-management/get-user-by-id/get-user-by-id.controller';
+import { GetUsersController } from './../features/user/get-users/get-users.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { DeleteUserController } from './../features/user-management/delete-user/delete-user.controller';
+import { GetUserByIdController } from './../features/user/get-user-by-id/get-user-by-id.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { DeleteUserController } from './../features/user/delete-user/delete-user.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ToggleLikeController } from './../features/likes/toggle-like/toggle-like.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -367,7 +369,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.patch('/v1/users',
+        app.patch('/v1/user',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(UpdateUserController)),
             ...(fetchMiddlewares<RequestHandler>(UpdateUserController.prototype.updateUser)),
@@ -404,7 +406,45 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/v1/users',
+        app.post('/v1/user/link-new-oauth-provider/:provider',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(LinkOAuthProviderController)),
+            ...(fetchMiddlewares<RequestHandler>(LinkOAuthProviderController.prototype.linkNewOAuthProvider)),
+
+            async function LinkOAuthProviderController_linkNewOAuthProvider(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    provider: {"in":"path","name":"provider","required":true,"dataType":"union","subSchemas":[{"dataType":"enum","enums":["google"]},{"dataType":"enum","enums":["linkedin"]},{"dataType":"enum","enums":["github"]}]},
+                    body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"token":{"dataType":"string","required":true}}},
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<LinkOAuthProviderController>(LinkOAuthProviderController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+              await templateService.apiHandler({
+                methodName: 'linkNewOAuthProvider',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: 200,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/v1/user',
             ...(fetchMiddlewares<RequestHandler>(GetUsersController)),
             ...(fetchMiddlewares<RequestHandler>(GetUsersController.prototype.getUsers)),
 
@@ -441,7 +481,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/v1/users/:userId',
+        app.get('/v1/user/:userId',
             ...(fetchMiddlewares<RequestHandler>(GetUserByIdController)),
             ...(fetchMiddlewares<RequestHandler>(GetUserByIdController.prototype.getUserById)),
 
@@ -476,7 +516,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.delete('/v1/users',
+        app.delete('/v1/user',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(DeleteUserController)),
             ...(fetchMiddlewares<RequestHandler>(DeleteUserController.prototype.deleteUser)),
@@ -549,7 +589,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.patch('/v1/ideas/:id',
+        app.patch('/v1/idea/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(UpdateIdeaController)),
             ...(fetchMiddlewares<RequestHandler>(UpdateIdeaController.prototype.updateIdea)),
@@ -587,7 +627,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/v1/ideas',
+        app.get('/v1/idea',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(GetIdeasController)),
             ...(fetchMiddlewares<RequestHandler>(GetIdeasController.prototype.getIdeas)),
@@ -630,7 +670,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/v1/ideas/:id',
+        app.get('/v1/idea/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(GetIdeaByIdController)),
             ...(fetchMiddlewares<RequestHandler>(GetIdeaByIdController.prototype.getIdeaById)),
@@ -667,7 +707,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.delete('/v1/ideas/:id',
+        app.delete('/v1/idea/:id',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(DeleteIdeaController)),
             ...(fetchMiddlewares<RequestHandler>(DeleteIdeaController.prototype.deleteIdea)),
@@ -704,7 +744,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/v1/ideas',
+        app.post('/v1/idea',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(CreateIdeaController)),
             ...(fetchMiddlewares<RequestHandler>(CreateIdeaController.prototype.createIdea)),
@@ -968,44 +1008,6 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/v1/auth/callback/:provider',
-            ...(fetchMiddlewares<RequestHandler>(SocialLoginController)),
-            ...(fetchMiddlewares<RequestHandler>(SocialLoginController.prototype.callbackSocialLoginGet)),
-
-            async function SocialLoginController_callbackSocialLoginGet(request: ExRequest, response: ExResponse, next: any) {
-            const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    provider: {"in":"path","name":"provider","required":true,"dataType":"union","subSchemas":[{"dataType":"enum","enums":["google"]},{"dataType":"enum","enums":["linkedin"]},{"dataType":"enum","enums":["github"]}]},
-                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
-                    code: {"in":"query","name":"code","dataType":"string"},
-                    state: {"in":"query","name":"state","dataType":"string"},
-            };
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args, request, response });
-
-                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
-
-                const controller: any = await container.get<SocialLoginController>(SocialLoginController);
-                if (typeof controller['setStatus'] === 'function') {
-                controller.setStatus(undefined);
-                }
-
-              await templateService.apiHandler({
-                methodName: 'callbackSocialLoginGet',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: 200,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/v1/auth/social-login/:provider',
             ...(fetchMiddlewares<RequestHandler>(SocialLoginController)),
             ...(fetchMiddlewares<RequestHandler>(SocialLoginController.prototype.socialLogin)),
@@ -1042,16 +1044,16 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/v1/auth/link-new-oauth-provider/:provider',
-            authenticateMiddleware([{"jwt":[]}]),
+        app.get('/v1/auth/callback/:provider',
             ...(fetchMiddlewares<RequestHandler>(SocialLoginController)),
-            ...(fetchMiddlewares<RequestHandler>(SocialLoginController.prototype.linkNewOAuthProvider)),
+            ...(fetchMiddlewares<RequestHandler>(SocialLoginController.prototype.callbackSocialLoginGet)),
 
-            async function SocialLoginController_linkNewOAuthProvider(request: ExRequest, response: ExResponse, next: any) {
+            async function SocialLoginController_callbackSocialLoginGet(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     provider: {"in":"path","name":"provider","required":true,"dataType":"union","subSchemas":[{"dataType":"enum","enums":["google"]},{"dataType":"enum","enums":["linkedin"]},{"dataType":"enum","enums":["github"]}]},
-                    body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"token":{"dataType":"string","required":true}}},
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                    code: {"in":"query","name":"code","dataType":"string"},
+                    state: {"in":"query","name":"state","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1068,7 +1070,7 @@ export function RegisterRoutes(app: Router) {
                 }
 
               await templateService.apiHandler({
-                methodName: 'linkNewOAuthProvider',
+                methodName: 'callbackSocialLoginGet',
                 controller,
                 response,
                 next,

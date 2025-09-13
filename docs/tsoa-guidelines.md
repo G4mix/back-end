@@ -11,7 +11,7 @@ As features são organizadas de forma modular, seguindo um padrão consistente p
 Cada feature deve residir em uma estrutura de diretórios que segue o padrão:
 `src/features/nome-da-feature/nome-da-subfeature/`
 
-- `nome-da-feature`: Representa uma funcionalidade principal (ex: `user-management`, `auth`).
+- `nome-da-feature`: Representa uma funcionalidade principal (ex: `user`, `auth`).
 - `nome-da-subfeature`: Representa uma operação específica dentro da funcionalidade principal (ex: `create-user`, `update-user`, `signin`).
 - **Nota**: Pastas `vX` são opcionais e devem ser criadas apenas quando necessário para versionamento futuro.
 
@@ -20,7 +20,7 @@ Cada feature deve residir em uma estrutura de diretórios que segue o padrão:
 ```
 src/
 ├── features/
-│   ├── user-management/
+│   ├── user/
 │   │   ├── create-user/
 │   │   │   ├── create-user.controller.ts
 │   │   │   ├── create-user.dto.ts
@@ -166,7 +166,7 @@ import { createUserSchema } from '@shared/schemas/user.schema'
 import { RequestHandler } from 'express'
 
 @injectable()
-@Route('/v1/users')
+@Route('/v1/user')
 @Tags('User Management')
 export class CreateUserController extends Controller {
 	constructor(
@@ -577,7 +577,7 @@ import * as request from 'supertest'
 import { App } from 'supertest/types'
 import { DataSource, Repository } from 'typeorm'
 
-describe('/v1/users (POST)', () => {
+describe('/v1/user (POST)', () => {
 	let app: INestApplication<App>
 	let userRepository: Repository<User>
 
@@ -605,7 +605,7 @@ describe('/v1/users (POST)', () => {
 
 	it('should return 400 when required fields are missing', async () => {
 		const response = await request(app.getHttpServer())
-			.post('/v1/users')
+			.post('/v1/user')
 			.send({
 				username: 'testuser'
 				// Missing required fields
@@ -617,7 +617,7 @@ describe('/v1/users (POST)', () => {
 
 	it('should return 400 when password is too weak', async () => {
 		const response = await request(app.getHttpServer())
-			.post('/v1/users')
+			.post('/v1/user')
 			.send({
 				username: 'testuser',
 				email: 'test@example.com',
@@ -631,7 +631,7 @@ describe('/v1/users (POST)', () => {
 
 	it('should return 400 when passwords do not match', async () => {
 		const response = await request(app.getHttpServer())
-			.post('/v1/users')
+			.post('/v1/user')
 			.send({
 				username: 'testuser',
 				email: 'test@example.com',
@@ -652,7 +652,7 @@ describe('/v1/users (POST)', () => {
 		}
 
 		const response = await request(app.getHttpServer())
-			.post('/v1/users')
+			.post('/v1/user')
 			.send(userData)
 
 		const body = response.body as User
@@ -703,7 +703,7 @@ A documentação da feature descreve a funcionalidade em linguagem natural, util
 - Então deve retornar um erro com status code 400
 
 ```bash
-POST /v1/users
+POST /v1/user
 --header 'Content-Type: application/json'
 --body
 {
@@ -725,7 +725,7 @@ POST /v1/users
 - Então deve retornar um erro com status code 400
 
 ```bash
-POST /v1/users
+POST /v1/user
 --header 'Content-Type: application/json'
 --body
 {
@@ -749,7 +749,7 @@ POST /v1/users
 - Então deve retornar um erro com status code 400
 
 ```bash
-POST /v1/users
+POST /v1/user
 --header 'Content-Type: application/json'
 --body
 {
@@ -773,7 +773,7 @@ POST /v1/users
 - Então deve retornar status 201 com os dados do usuário criado
 
 ```bash
-POST /v1/users
+POST /v1/user
 --header 'Content-Type: application/json'
 --body
 {
@@ -1008,8 +1008,8 @@ import { RouteLister } from '@shared/utils/route-lister'
 // No startup da aplicação
 const routeLister = container.resolve(RouteLister)
 const routes = [
-	{ method: 'POST', path: '/v1/users', controller: 'CreateUserController', action: 'createUser', tags: ['User Management'] },
-	{ method: 'GET', path: '/v1/users', controller: 'GetUsersController', action: 'getUsers', tags: ['User Management'] },
+	{ method: 'POST', path: '/v1/user', controller: 'CreateUserController', action: 'createUser', tags: ['User Management'] },
+	{ method: 'GET', path: '/v1/user', controller: 'GetUsersController', action: 'getUsers', tags: ['User Management'] },
 	// ... outras rotas
 ]
 
