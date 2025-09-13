@@ -10,6 +10,8 @@ import { SESClient } from '@aws-sdk/client-ses'
 import { S3ClientOptions, SESClientOptions } from '@shared/constants/aws'
 import { RouteLister } from '@shared/utils/route-lister'
 
+// Mock do axios será feito apenas nos testes específicos de social login
+
 // Import repositories (não precisam ser mockados - usam Prisma mockado)
 import { UserRepository } from '@shared/repositories/user.repository'
 import { IdeaRepository } from '@shared/repositories/idea.repository'
@@ -23,6 +25,7 @@ import { AuthGateway } from '@shared/gateways/auth.gateway'
 import { UserGateway } from '@shared/gateways/user.gateway'
 import { SESGateway } from '@shared/gateways/ses.gateway'
 import { S3Gateway } from '@shared/gateways/s3.gateway'
+import { IdeaGateway } from '@shared/gateways/idea.gateway'
 
 // Helper para criar mocks padrão do Prisma
 const createPrismaTableMock = () => ({
@@ -140,7 +143,7 @@ export class IntegrationTestSetup {
 		// Registra as dependências necessárias
 		// Apenas os 3 serviços externos devem ser mockados conforme guidelines
 		container
-			.register<PrismaClient>('PostgresqlClient', { useValue: mockPrismaClient })
+			.register('PostgresqlClient', { useValue: mockPrismaClient })
 			.register('S3Client', { useValue: mockS3Client })
 			.register('SESClient', { useValue: mockSESClient })
 			.register('RouteLister', { useClass: RouteLister })
@@ -159,6 +162,7 @@ export class IntegrationTestSetup {
 			.register('UserGateway', { useClass: UserGateway })
 			.register('SESGateway', { useClass: SESGateway })
 			.register('S3Gateway', { useClass: S3Gateway })
+			.register('IdeaGateway', { useClass: IdeaGateway })
 
 		// Cria instância do App
 		this.app = new App(
@@ -327,10 +331,6 @@ export class IntegrationTestSetup {
 let globalBaseUrl: string
 
 beforeAll(async () => {
-	// Configura mocks do axios
-	AxiosMockHelper.setupAxiosMock()
-	AxiosMockHelper.mockSocialLoginCalls()
-
 	// Inicia o servidor uma única vez para todos os testes
 	globalBaseUrl = await IntegrationTestSetup.startServer()
 })
@@ -346,8 +346,12 @@ beforeEach(() => {
 	jest.spyOn(console, 'warn').mockImplementation(() => {})
 	jest.spyOn(console, 'error').mockImplementation(() => {})
 
-	// Limpa mocks antes de cada teste
-	IntegrationTestSetup.clearMocks()
+	// Reset completo de todos os mocks antes de cada teste
+	jest.clearAllMocks()
+	jest.restoreAllMocks()
+	
+	// Aplica mocks padrão após o reset
+	IntegrationTestSetup.setupDefaultMocks()
 })
 
 // Utilitário para mock do axios

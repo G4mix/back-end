@@ -2,6 +2,7 @@ import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestTokens } from '@test/helpers/test-tokens'
 import { container } from 'tsyringe'
+import { TestData } from '@test/helpers/test-data'
 
 describe('Create Idea Integration Tests', () => {
 	let httpClient: HttpClient
@@ -167,8 +168,10 @@ describe('Create Idea Integration Tests', () => {
 				links: []
 			}
 
-			// Mock do Prisma para simular erro
+			// Mock do Prisma - aplica após o reset do beforeEach
 			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			const userData = TestData.createUser()
+			mockPrismaClient.user.findUnique.mockResolvedValue(userData)
 			mockPrismaClient.idea.findFirst.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert

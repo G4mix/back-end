@@ -30,9 +30,7 @@ describe('Signup Integration Tests', () => {
 
 			// Mock do Prisma
 			const mockPrismaClient = container.resolve('PostgresqlClient') as any
-			mockPrismaClient.user.findUnique
-				.mockResolvedValueOnce(null) // Email não existe
-				.mockResolvedValueOnce(null) // Username não existe
+			mockPrismaClient.user.findUnique.mockResolvedValue(null) // Email não existe
 			mockPrismaClient.user.create.mockResolvedValue({
 				id: 'user-123',
 				username: userData.username,
@@ -138,27 +136,35 @@ describe('Signup Integration Tests', () => {
 				password: 'TestPassword123!'
 			}
 
-			// Mock do UserRepository para retornar usuário existente
-			const mockUserRepository = container.resolve('UserRepository') as any
-			mockUserRepository.findByEmail.mockResolvedValue({
-				id: 'existing-user-123',
-				username: 'existinguser',
-				email: 'existing@example.com',
-				verified: false,
-				created_at: new Date(),
-				updated_at: new Date(),
-				userProfile: {
-					id: 'profile-existing-123',
-					displayName: null,
-					autobiography: null,
-					icon: null,
-					backgroundImage: null,
-					links: [],
-					_count: {
-						followers: 0,
-						following: 0
-					}
+			// Mock do Prisma para retornar usuário existente
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			mockPrismaClient.user.findUnique.mockImplementation((args: any) => {
+				// Se for uma busca por email, retorna usuário existente
+				if (args.where && args.where.email === 'existing@example.com') {
+					return Promise.resolve({
+						id: 'existing-user-123',
+						username: 'existinguser',
+						email: 'existing@example.com',
+						verified: false,
+						created_at: new Date(),
+						updated_at: new Date(),
+						userProfile: {
+							id: 'profile-existing-123',
+							displayName: null,
+							autobiography: null,
+							icon: null,
+							backgroundImage: null,
+							links: [],
+							_count: {
+								followers: 0,
+								following: 0
+							}
+						},
+						userCode: null
+					})
 				}
+				// Para outras buscas, retorna null
+				return Promise.resolve(null)
 			})
 
 			// Act & Assert

@@ -69,7 +69,6 @@ export class VerifyEmailCodeController extends Controller {
 		}
 
 		const isCodeExpired = () => {
-			if (!user.userCode) return false
 			const TEN_MINUTES = 10 * 60 * 1000
 			const updatedDate = new Date(user.userCode.updated_at).getTime()
 			const now = Date.now()

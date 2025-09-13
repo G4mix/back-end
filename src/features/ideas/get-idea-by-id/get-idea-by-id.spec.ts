@@ -2,6 +2,7 @@ import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestTokens } from '@test/helpers/test-tokens'
 import { TestData } from '@test/helpers/test-data'
+import { container } from 'tsyringe'
 
 describe('Get Idea By ID Integration Tests', () => {
 	let httpClient: HttpClient
@@ -200,14 +201,40 @@ describe('Get Idea By ID Integration Tests', () => {
 				}
 			}
 
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue(mockIdea)
-					}
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = require('tsyringe').container.resolve('PostgresqlClient')
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			const userData = {
+				id: userId,
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfileId: userProfileId,
+				loginAttempts: 0,
+				blockedUntil: null,
+				userProfile: {
+					id: userProfileId,
+					name: 'Test User',
+					bio: 'Test Bio',
+					icon: 'https://example.com/icon.jpg',
+					created_at: new Date(),
+					updated_at: new Date()
 				}
+			}
+			
+			mockPrismaClient.user.findUnique.mockResolvedValue(userData)
+			mockPrismaClient.idea.findUnique.mockResolvedValue(mockIdea)
+			
+			// Gera um JWT válido
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const authToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId
 			})
+			httpClient.setAuthToken(authToken)
 
 			// Act
 			const response = await httpClient.get(`/v1/ideas/${ideaId}`)
@@ -228,14 +255,11 @@ describe('Get Idea By ID Integration Tests', () => {
 			// Arrange
 			const ideaId = TestData.generateUUID()
 
-			// Mock do Prisma para retornar erro
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-					}
-				}
-			})
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			const userData = TestData.createUser()
+			mockPrismaClient.user.findUnique.mockResolvedValue(userData)
+			mockPrismaClient.idea.findUnique.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
 			await expect(httpClient.get(`/v1/ideas/${ideaId}`))

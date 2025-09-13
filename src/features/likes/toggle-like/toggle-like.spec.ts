@@ -1,6 +1,7 @@
 import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
+import { container } from 'tsyringe'
 
 describe('Toggle Like Integration Tests', () => {
 	let httpClient: HttpClient
@@ -142,20 +143,47 @@ describe('Toggle Like Integration Tests', () => {
 			// Arrange
 			const likeData = { ideaId }
 			
-			// Mock do Prisma para retornar sucesso
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					like: {
-						findFirst: jest.fn().mockResolvedValue(null), // Não tem like ainda
-						create: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							ideaId: likeData.ideaId,
-							userId: TestData.generateUUID(),
-							created_at: new Date()
-						})
-					}
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = require('tsyringe').container.resolve('PostgresqlClient')
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			const userData = {
+				id: userId,
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfileId: userProfileId,
+				loginAttempts: 0,
+				blockedUntil: null,
+				userProfile: {
+					id: userProfileId,
+					name: null,
+					bio: null,
+					icon: null,
+					created_at: new Date(),
+					updated_at: new Date()
 				}
+			}
+			
+			mockPrismaClient.user.findUnique.mockResolvedValue(userData)
+			mockPrismaClient.idea.findUnique.mockResolvedValue({
+				id: ideaId,
+				title: 'Test Idea',
+				description: 'Test Description',
+				authorId: userId,
+				created_at: new Date(),
+				updated_at: new Date()
 			})
+			mockPrismaClient.like.findFirst.mockResolvedValue(null) // Não tem like ainda
+			mockPrismaClient.like.create.mockResolvedValue({
+				id: TestData.generateUUID(),
+				ideaId: likeData.ideaId,
+				userId: userId,
+				created_at: new Date()
+			})
+			mockPrismaClient.like.count.mockResolvedValue(1)
 
 			// Act
 			const response = await httpClient.post('/v1/likes/toggle', likeData)
@@ -177,15 +205,49 @@ describe('Toggle Like Integration Tests', () => {
 				created_at: new Date()
 			}
 			
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					like: {
-						findFirst: jest.fn().mockResolvedValue(existingLike),
-						deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
-						count: jest.fn().mockResolvedValue(0)
-					}
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = require('tsyringe').container.resolve('PostgresqlClient')
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			const userData = {
+				id: userId,
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfileId: userProfileId,
+				loginAttempts: 0,
+				blockedUntil: null,
+				userProfile: {
+					id: userProfileId,
+					name: null,
+					bio: null,
+					icon: null,
+					created_at: new Date(),
+					updated_at: new Date()
 				}
+			}
+			
+			mockPrismaClient.user.findUnique.mockResolvedValue(userData)
+			mockPrismaClient.idea.findUnique.mockResolvedValue({
+				id: ideaId,
+				title: 'Test Idea',
+				description: 'Test Description',
+				created_at: new Date(),
+				updated_at: new Date()
 			})
+			mockPrismaClient.like.findFirst.mockResolvedValue(existingLike)
+			mockPrismaClient.like.deleteMany.mockResolvedValue({ count: 1 })
+			mockPrismaClient.like.count.mockResolvedValue(0)
+			
+			// Gera um JWT válido
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const authToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId
+			})
+			httpClient.setAuthToken(authToken)
 
 			// Act
 			const response = await httpClient.post('/v1/likes/toggle', likeData)
@@ -232,71 +294,39 @@ describe('Toggle Like Integration Tests', () => {
 			// Arrange
 			const likeData = { ideaId: TestData.generateUUID() }
 			
-			// Mock do Prisma para retornar ideia não encontrada
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockResolvedValue(null)
-					}
-				}
-			})
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			const userData = TestData.createUser()
+			mockPrismaClient.user.findUnique.mockResolvedValue(userData)
+			mockPrismaClient.idea.findUnique.mockResolvedValue(null) // Ideia não encontrada
 
 			// Act & Assert
-					await expect(httpClient.post('/v1/likes/toggle', likeData))
-						.rejects.toMatchObject({
-							response: {
-								status: 404,
-								data: { message: 'NOT_FOUNDED_DATA' }
-							}
-						})
+			await expect(httpClient.post('/v1/likes/toggle', likeData))
+				.rejects.toMatchObject({
+					response: {
+						status: 404,
+						data: { message: 'NOT_FOUNDED_DATA' }
+					}
+				})
 		})
 
 		it('should handle database errors gracefully', async () => {
 			// Arrange
 			const likeData = { ideaId }
 			
-			// Mock do Prisma para retornar erro
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockImplementation(({ where }) => {
-							if (where.id === ideaId) {
-								return Promise.resolve({
-									id: ideaId,
-									title: 'Test Idea',
-									description: 'Test Description',
-									authorId: TestData.generateUUID(),
-									created_at: new Date(),
-									updated_at: new Date(),
-									author: {
-										id: TestData.generateUUID(),
-										username: 'testuser',
-										email: 'test@example.com',
-										userProfile: {
-											id: TestData.generateUUID(),
-											name: 'Test User',
-											bio: null,
-											icon: null
-										}
-									},
-									images: [],
-									tags: [],
-									links: [],
-									_count: {
-										likes: 0,
-										comments: 0,
-										views: 0
-									}
-								})
-							}
-							return Promise.resolve(null)
-						})
-					},
-					like: {
-						findFirst: jest.fn().mockRejectedValue(new Error('Database connection failed'))
-					}
-				}
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			const userData = TestData.createUser()
+			mockPrismaClient.user.findUnique.mockResolvedValue(userData)
+			mockPrismaClient.idea.findUnique.mockResolvedValue({
+				id: ideaId,
+				title: 'Test Idea',
+				description: 'Test Description',
+				authorId: TestData.generateUUID(),
+				created_at: new Date(),
+				updated_at: new Date()
 			})
+			mockPrismaClient.like.findFirst.mockRejectedValue(new Error('Database connection failed'))
 
 			// Act & Assert
 			await expect(httpClient.post('/v1/likes/toggle', likeData))

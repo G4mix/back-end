@@ -2,6 +2,7 @@ import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
 import { TestTokens } from '@test/helpers/test-tokens'
+import { container } from 'tsyringe'
 
 describe('Toggle Follow Integration Tests', () => {
 	let httpClient: HttpClient
@@ -191,10 +192,9 @@ describe('Toggle Follow Integration Tests', () => {
 				}
 			})
 
-			// Mock do UserRepository para retornar null (usuário não encontrado)
-			const { container } = require('tsyringe')
-			const mockUserRepository = container.resolve('UserRepository') as any
-			mockUserRepository.findUserByProfileId.mockResolvedValue(null)
+			// Mock do Prisma para retornar null (usuário não encontrado)
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			mockPrismaClient.user.findUnique.mockResolvedValue(null)
 
 			// Act & Assert
 			await expect(httpClient.post('/v1/follow/toggle', followData))

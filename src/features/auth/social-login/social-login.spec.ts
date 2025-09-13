@@ -1,6 +1,10 @@
 import { IntegrationTestSetup } from '@test/jest.setup'
 import { HttpClient } from '@test/helpers/http-client'
 import { TestData } from '@test/helpers/test-data'
+import { container } from 'tsyringe'
+
+
+
 
 describe('Social Login Integration Tests', () => {
 	let httpClient: HttpClient
@@ -29,31 +33,68 @@ describe('Social Login Integration Tests', () => {
 				token: 'google-access-token'
 			}
 			
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					user: {
-						findUnique: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							username: 'testuser',
-							email: 'test@example.com',
-							verified: true,
-							created_at: new Date(),
-							updated_at: new Date(),
-							userProfileId: TestData.generateUUID(),
-							loginAttempts: 0,
-							blockedUntil: null,
-							userProfile: {
-								id: TestData.generateUUID(),
-								name: null,
-								bio: null,
-								icon: null,
-								created_at: new Date(),
-								updated_at: new Date()
-							}
-						})
-					}
+			// Mock do AuthGateway
+			const { AuthGateway } = await import('@shared/gateways/auth.gateway')
+			const authGatewayInstance = container.resolve(AuthGateway)
+			jest.spyOn(authGatewayInstance, 'validateSocialLogin').mockResolvedValue({
+				valid: true,
+				userData: {
+					name: 'Test User',
+					email: 'test@example.com'
 				}
+			})
+			
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			
+			// Mock para findOAuthUser (usuário não existe)
+			mockPrismaClient.userOAuth.findFirst.mockResolvedValue(null)
+			
+			// Mock para findByEmail (usuário não existe)
+			mockPrismaClient.user.findUnique.mockResolvedValue(null)
+			
+			// Mock para create user
+			const userId = TestData.generateUUID()
+			mockPrismaClient.user.create.mockResolvedValue({
+				id: userId,
+				username: 'Test User',
+				email: 'test@example.com',
+				password: 'hashed-password',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date()
+			})
+			
+			// Mock para linkOAuthProvider
+			mockPrismaClient.userOAuth.create.mockResolvedValue({
+				id: TestData.generateUUID(),
+				userId: userId,
+				provider: 'google',
+				email: 'test@example.com',
+				created_at: new Date(),
+				updated_at: new Date(),
+				user: {
+					id: userId,
+					username: 'Test User',
+					email: 'test@example.com',
+					password: 'hashed-password',
+					verified: true,
+					userProfileId: TestData.generateUUID(),
+					created_at: new Date(),
+					updated_at: new Date()
+				}
+			})
+			
+			// Mock para update user
+			mockPrismaClient.user.update.mockResolvedValue({
+				id: userId,
+				username: 'Test User',
+				email: 'test@example.com',
+				password: 'hashed-password',
+				verified: true,
+				token: 'refresh-token',
+				created_at: new Date(),
+				updated_at: new Date()
 			})
 
 			// Act
@@ -71,6 +112,70 @@ describe('Social Login Integration Tests', () => {
 			const socialLoginData = {
 				token: 'linkedin-access-token'
 			}
+			
+			// Mock do AuthGateway
+			const { AuthGateway } = await import('@shared/gateways/auth.gateway')
+			const authGatewayInstance = container.resolve(AuthGateway)
+			jest.spyOn(authGatewayInstance, 'validateSocialLogin').mockResolvedValue({
+				valid: true,
+				userData: {
+					name: 'Test User',
+					email: 'test@example.com'
+				}
+			})
+			
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			
+			// Mock para findOAuthUser (usuário não existe)
+			mockPrismaClient.userOAuth.findFirst.mockResolvedValue(null)
+			
+			// Mock para findByEmail (usuário não existe)
+			mockPrismaClient.user.findUnique.mockResolvedValue(null)
+			
+			// Mock para create user
+			const userId = TestData.generateUUID()
+			mockPrismaClient.user.create.mockResolvedValue({
+				id: userId,
+				username: 'Test User',
+				email: 'test@example.com',
+				password: 'hashed-password',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date()
+			})
+			
+			// Mock para linkOAuthProvider
+			mockPrismaClient.userOAuth.create.mockResolvedValue({
+				id: TestData.generateUUID(),
+				userId: userId,
+				provider: 'linkedin',
+				email: 'test@example.com',
+				created_at: new Date(),
+				updated_at: new Date(),
+				user: {
+					id: userId,
+					username: 'Test User',
+					email: 'test@example.com',
+					password: 'hashed-password',
+					verified: true,
+					userProfileId: TestData.generateUUID(),
+					created_at: new Date(),
+					updated_at: new Date()
+				}
+			})
+			
+			// Mock para update user
+			mockPrismaClient.user.update.mockResolvedValue({
+				id: userId,
+				username: 'Test User',
+				email: 'test@example.com',
+				password: 'hashed-password',
+				verified: true,
+				token: 'refresh-token',
+				created_at: new Date(),
+				updated_at: new Date()
+			})
 
 			// Act
 			const response = await httpClient.post('/v1/auth/social-login/linkedin', socialLoginData)
@@ -87,6 +192,70 @@ describe('Social Login Integration Tests', () => {
 			const socialLoginData = {
 				token: 'github-access-token'
 			}
+			
+			// Mock do AuthGateway
+			const { AuthGateway } = await import('@shared/gateways/auth.gateway')
+			const authGatewayInstance = container.resolve(AuthGateway)
+			jest.spyOn(authGatewayInstance, 'validateSocialLogin').mockResolvedValue({
+				valid: true,
+				userData: {
+					name: 'Test User',
+					email: 'test@example.com'
+				}
+			})
+			
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = container.resolve('PostgresqlClient') as any
+			
+			// Mock para findOAuthUser (usuário não existe)
+			mockPrismaClient.userOAuth.findFirst.mockResolvedValue(null)
+			
+			// Mock para findByEmail (usuário não existe)
+			mockPrismaClient.user.findUnique.mockResolvedValue(null)
+			
+			// Mock para create user
+			const userId = TestData.generateUUID()
+			mockPrismaClient.user.create.mockResolvedValue({
+				id: userId,
+				username: 'Test User',
+				email: 'test@example.com',
+				password: 'hashed-password',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date()
+			})
+			
+			// Mock para linkOAuthProvider
+			mockPrismaClient.userOAuth.create.mockResolvedValue({
+				id: TestData.generateUUID(),
+				userId: userId,
+				provider: 'github',
+				email: 'test@example.com',
+				created_at: new Date(),
+				updated_at: new Date(),
+				user: {
+					id: userId,
+					username: 'Test User',
+					email: 'test@example.com',
+					password: 'hashed-password',
+					verified: true,
+					userProfileId: TestData.generateUUID(),
+					created_at: new Date(),
+					updated_at: new Date()
+				}
+			})
+			
+			// Mock para update user
+			mockPrismaClient.user.update.mockResolvedValue({
+				id: userId,
+				username: 'Test User',
+				email: 'test@example.com',
+				password: 'hashed-password',
+				verified: true,
+				token: 'refresh-token',
+				created_at: new Date(),
+				updated_at: new Date()
+			})
 
 			// Act
 			const response = await httpClient.post('/v1/auth/social-login/github', socialLoginData)

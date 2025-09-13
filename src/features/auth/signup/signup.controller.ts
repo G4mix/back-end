@@ -80,6 +80,7 @@ export class SignupController extends Controller {
 		const normalizedEmail = email.toLowerCase()
 
 		const existingUser = await this.userRepository.findByEmail({ email: normalizedEmail })
+		console.log({ email, existingUser })
 		if (existingUser) {
 			this.setStatus(CommonErrors.USER_ALREADY_EXISTS.code)
 			return CommonErrors.USER_ALREADY_EXISTS

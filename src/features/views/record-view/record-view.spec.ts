@@ -119,35 +119,54 @@ describe('Record View Integration Tests', () => {
 				ideas: [ideaId]
 			}
 			
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockImplementation(({ where }) => {
-							if (where.id === ideaId) {
-								return Promise.resolve({
-									id: ideaId,
-									title: 'Test Idea',
-									description: 'Test Description',
-									created_at: new Date(),
-									updated_at: new Date()
-								})
-							}
-							return Promise.resolve(null)
-						})
-					},
-					view: {
-						findFirst: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							ideaId: ideaId,
-							userId: TestData.generateUUID(),
-							created_at: new Date()
-						}), // View já existe
-						createMany: jest.fn().mockResolvedValue({ count: 0 }),
-						count: jest.fn().mockResolvedValue(5)
-					}
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = require('tsyringe').container.resolve('PostgresqlClient')
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			const userData = {
+				id: userId,
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfileId: userProfileId,
+				loginAttempts: 0,
+				blockedUntil: null,
+				userProfile: {
+					id: userProfileId,
+					name: null,
+					bio: null,
+					icon: null,
+					created_at: new Date(),
+					updated_at: new Date()
 				}
+			}
+			
+			mockPrismaClient.user.findUnique.mockResolvedValue(userData)
+			mockPrismaClient.idea.findUnique.mockResolvedValue({
+				id: ideaId,
+				title: 'Test Idea',
+				description: 'Test Description',
+				created_at: new Date(),
+				updated_at: new Date()
 			})
+			mockPrismaClient.view.findFirst.mockResolvedValue({
+				id: TestData.generateUUID(),
+				ideaId: ideaId,
+				userId: userId,
+				created_at: new Date()
+			}) // View já existe
+			mockPrismaClient.view.createMany.mockResolvedValue({ count: 0 })
+			mockPrismaClient.view.count.mockResolvedValue(5)
+			
+			// Gera um JWT válido
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const authToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId
+			})
+			httpClient.setAuthToken(authToken)
 
 			// Act
 			const response = await httpClient.post('/v1/views/record', viewData)
@@ -164,36 +183,55 @@ describe('Record View Integration Tests', () => {
 				ideas: [ideaId]
 			}
 			
-			// Mock do Prisma
-			IntegrationTestSetup.setupMocks({
-				prisma: {
-					idea: {
-						findUnique: jest.fn().mockImplementation(({ where }) => {
-							if (where.id === ideaId) {
-								return Promise.resolve({
-									id: ideaId,
-									title: 'Test Idea',
-									description: 'Test Description',
-									created_at: new Date(),
-									updated_at: new Date()
-								})
-							}
-							return Promise.resolve(null)
-						})
-					},
-					view: {
-						findFirst: jest.fn().mockResolvedValue(null), // View não existe
-						create: jest.fn().mockResolvedValue({
-							id: TestData.generateUUID(),
-							ideaId: ideaId,
-							userId: TestData.generateUUID(),
-							created_at: new Date()
-						}),
-						createMany: jest.fn().mockResolvedValue({ count: 1 }),
-						count: jest.fn().mockResolvedValue(5)
-					}
+			// Mock do Prisma - aplica após o reset do beforeEach
+			const mockPrismaClient = require('tsyringe').container.resolve('PostgresqlClient')
+			const userId = TestData.generateUUID()
+			const userProfileId = TestData.generateUUID()
+			const userData = {
+				id: userId,
+				username: 'testuser',
+				email: 'test@example.com',
+				verified: true,
+				created_at: new Date(),
+				updated_at: new Date(),
+				userProfileId: userProfileId,
+				loginAttempts: 0,
+				blockedUntil: null,
+				userProfile: {
+					id: userProfileId,
+					name: null,
+					bio: null,
+					icon: null,
+					created_at: new Date(),
+					updated_at: new Date()
 				}
+			}
+			
+			mockPrismaClient.user.findUnique.mockResolvedValue(userData)
+			mockPrismaClient.idea.findUnique.mockResolvedValue({
+				id: ideaId,
+				title: 'Test Idea',
+				description: 'Test Description',
+				created_at: new Date(),
+				updated_at: new Date()
 			})
+			mockPrismaClient.view.findFirst.mockResolvedValue(null) // View não existe
+			mockPrismaClient.view.create.mockResolvedValue({
+				id: TestData.generateUUID(),
+				ideaId: ideaId,
+				userId: userId,
+				created_at: new Date()
+			})
+			mockPrismaClient.view.createMany.mockResolvedValue({ count: 1 })
+			mockPrismaClient.view.count.mockResolvedValue(5)
+			
+			// Gera um JWT válido
+			const { JwtManager } = await import('@shared/utils/jwt-manager')
+			const authToken = JwtManager.generateToken({
+				sub: userId,
+				userProfileId: userProfileId
+			})
+			httpClient.setAuthToken(authToken)
 
 			// Act
 			const response = await httpClient.post('/v1/views/record', viewData)
