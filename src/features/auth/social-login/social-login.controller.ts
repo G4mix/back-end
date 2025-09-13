@@ -13,6 +13,7 @@ import { TsoaRequest } from '@shared/types/tsoa'
 import { Logger } from '@shared/utils/logger'
 import { LogResponseTime } from '@shared/decorators/log-response-time.decorator'
 import { socialLoginRequests } from '@shared/utils/social-login-requests'
+import { CommonErrors, ErrorResponse } from '@shared/utils/error-response'
 
 @injectable()
 @Route('/v1/auth')
@@ -130,11 +131,14 @@ export class SocialLoginController extends Controller {
 	public async socialLogin(
 		@Path() provider: 'google' | 'linkedin' | 'github',
 		@Body() body: { token: string }
-	): Promise<SigninOutput | string> {
+	): Promise<SigninOutput | ErrorResponse> {
 		const { token } = body
 
 		const validation = await this.authGateway.validateSocialLogin({ provider, token })
-		if (!validation.valid || !validation.userData) return 'USER_NOT_FOUND'
+		if (!validation.valid || !validation.userData){
+			this.setStatus(CommonErrors.USER_NOT_FOUND.code)
+			return CommonErrors.USER_NOT_FOUND
+		}
 
 		const userData = validation.userData
 
@@ -142,7 +146,10 @@ export class SocialLoginController extends Controller {
 
 		if (!oauthUser) {
 			let user = await this.userRepository.findByEmail({ email: userData.email })
-			if (user) return 'PROVIDER_NOT_LINKED'
+			if (user) {
+				this.setStatus(CommonErrors.PROVIDER_NOT_LINKED.code)
+				return CommonErrors.PROVIDER_NOT_LINKED
+			}
 
 			user = await this.userRepository.create({
 				username: userData.name,

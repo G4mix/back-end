@@ -2181,7 +2181,7 @@
 											"$ref": "#/components/schemas/SigninOutput"
 										},
 										{
-											"type": "string"
+											"$ref": "#/components/schemas/ErrorResponse"
 										}
 									]
 								}

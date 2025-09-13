@@ -10,31 +10,7 @@ import { SESClient } from '@aws-sdk/client-ses'
 import { S3ClientOptions, SESClientOptions } from '@shared/constants/aws'
 import { RouteLister } from '@shared/utils/route-lister'
 
-// Mock do axios para social login
-jest.mock('axios', () => ({
-	get: jest.fn(),
-	post: jest.fn(),
-	create: jest.fn(() => ({
-		get: jest.fn().mockResolvedValue({ data: {}, status: 200 }),
-		post: jest.fn().mockResolvedValue({ data: {}, status: 200 }),
-		interceptors: {
-			request: { use: jest.fn() },
-			response: { use: jest.fn() }
-		}
-	})),
-	default: {
-		get: jest.fn(),
-		post: jest.fn(),
-		create: jest.fn(() => ({
-			get: jest.fn().mockResolvedValue({ data: {}, status: 200 }),
-			post: jest.fn().mockResolvedValue({ data: {}, status: 200 }),
-			interceptors: {
-				request: { use: jest.fn() },
-				response: { use: jest.fn() }
-			}
-		}))
-	}
-}))
+// Mock do axios será feito apenas nos testes específicos de social login
 
 // Import repositories (não precisam ser mockados - usam Prisma mockado)
 import { UserRepository } from '@shared/repositories/user.repository'
