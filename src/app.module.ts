@@ -1,0 +1,59 @@
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
+import { GetHealthStatusController } from './features/get-health-status/v1/get-health-status.controller';
+import { join } from 'path';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { User } from './entities/user.entity';
+import { UserCode } from './entities/user-code.entity';
+import { UserOAuth } from './entities/user-oauth.entity';
+import { UserProfile } from './entities/user-profile.entity';
+import { SignInController } from './features/auth/signin/v1/signin.controller';
+import { SignupController } from './features/auth/signup/v1/signup.controller';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './shared/auth.guard';
+import { Follow } from './entities/follow.entity';
+import { Link } from './entities/link.entity';
+import { JwtModule } from '@nestjs/jwt';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres' as const,
+        url: configService.get<string>('PG_DB_URL'),
+        autoLoadEntities: true,
+        entities: [join(__dirname, '/entities/*.entity.{ts,js}')],
+        logging: false,
+        synchronize: true,
+        namingStrategy: new SnakeNamingStrategy(),
+        migrationsRun: false,
+      }),
+      inject: [ConfigService],
+    }),
+    TypeOrmModule.forFeature([
+      User,
+      UserCode,
+      UserOAuth,
+      UserProfile,
+      Follow,
+      Link,
+    ]),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1h' },
+    }),
+  ],
+  controllers: [SignInController, SignupController, GetHealthStatusController],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
+})
+export class AppModule {}
