@@ -22,5 +22,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
   },
-  "exclude": ["old-gamix"]
+  "include": ["src"],
+  "exclude": ["old-gamix", "dist"]
 }

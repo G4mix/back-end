@@ -99,7 +99,7 @@ export class SignInController {
 
     user.loginAttempts = 0;
     user.blockedUntil = null;
-    user.refreshTokenId = refreshToken;
+    user.refreshToken = refreshToken;
     await this.userRepository.save(user);
 
     return {

@@ -18,6 +18,7 @@ import { Link } from './entities/link.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
 import { SESv2Client } from '@aws-sdk/client-sesv2';
+import { RefreshTokenController } from './features/auth/refresh-token/v1/refresh-token.controller';
 
 @Module({
   imports: [
@@ -51,7 +52,12 @@ import { SESv2Client } from '@aws-sdk/client-sesv2';
       signOptions: { expiresIn: '1h' },
     }),
   ],
-  controllers: [SignInController, SignupController, GetHealthStatusController],
+  controllers: [
+    GetHealthStatusController,
+    SignInController,
+    SignupController,
+    RefreshTokenController
+  ],
   providers: [
     JwtStrategy,
     {
