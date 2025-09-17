@@ -22,7 +22,6 @@ export class SESGateway {
     } catch (error: unknown) {
       const message = getErrorMessage(error);
       this.logger.error(`verifyIdentity returns error: ${message}`);
-      return { message: 'Error while checking email' };
     }
   }
 }

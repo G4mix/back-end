@@ -16,6 +16,7 @@ import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
 import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
+import { TooManyLoginAttempts, UserNotFound } from 'src/shared/errors';
 
 @Controller('/auth')
 export class SignInController {
@@ -45,7 +46,7 @@ export class SignInController {
       ],
     });
 
-    if (!user) throw new BadRequestException('USER_NOT_FOUND');
+    if (!user) throw new UserNotFound();
 
     // Verificação de e-mail (se tiver SES)
     // if (!user.verified) {
@@ -61,7 +62,7 @@ export class SignInController {
 
     if (user.loginAttempts >= this.MAX_ATTEMPTS) {
       if (user.blockedUntil && user.blockedUntil > now) {
-        throw new BadRequestException('EXCESSIVE_LOGIN_ATTEMPTS');
+        throw new TooManyLoginAttempts();
       }
       user.loginAttempts = 0;
       user.blockedUntil = null;

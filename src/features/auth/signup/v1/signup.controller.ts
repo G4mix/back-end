@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -9,7 +8,7 @@ import {
   Response,
   Version,
 } from '@nestjs/common';
-import { Repository, DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
 import { SignupInput, SignupOutput } from './signup.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
@@ -19,6 +18,8 @@ import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorat
 import { UserProfile } from 'src/entities/user-profile.entity';
 import { UserCode } from 'src/entities/user-code.entity';
 import { hashSync } from 'bcrypt';
+import { SESGateway } from 'src/shared/gateways/ses.gateway';
+import { UserAlreadyExists } from 'src/shared/errors';
 
 @Controller('/auth')
 export class SignupController {
@@ -30,7 +31,7 @@ export class SignupController {
     private readonly userProfileRepository: Repository<UserProfile>,
     @InjectRepository(UserCode)
     private readonly userCodeRepository: Repository<UserCode>,
-    private readonly dataSource: DataSource,
+    private readonly sesGateway: SESGateway,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -49,7 +50,7 @@ export class SignupController {
         'userCode',
       ],
     });
-    if (existingUser) throw new BadRequestException('USER_ALREADY_EXISTS');
+    if (existingUser) throw new UserAlreadyExists();
 
     const userProfile = await this.userProfileRepository.save({});
     const userCode = await this.userCodeRepository.save({});
@@ -84,6 +85,8 @@ export class SignupController {
     await this.userRepository.update(newUser.id, {
       refreshTokenId: refreshToken,
     });
+
+    this.sesGateway.verifyIdentity(body.email);
 
     return {
       accessToken,

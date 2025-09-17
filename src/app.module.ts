@@ -12,10 +12,11 @@ import { SignInController } from './features/auth/signin/v1/signin.controller';
 import { SignupController } from './features/auth/signup/v1/signup.controller';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './jwt/auth.guard';
+import { JwtStrategy } from './jwt/jwt.strategy';
 import { Follow } from './entities/follow.entity';
 import { Link } from './entities/link.entity';
 import { JwtModule } from '@nestjs/jwt';
-import { SES_CLIENT } from './shared/gateways/ses.gateway';
+import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
 import { SESv2Client } from '@aws-sdk/client-sesv2';
 
 @Module({
@@ -52,6 +53,7 @@ import { SESv2Client } from '@aws-sdk/client-sesv2';
   ],
   controllers: [SignInController, SignupController, GetHealthStatusController],
   providers: [
+    JwtStrategy,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
@@ -64,6 +66,7 @@ import { SESv2Client } from '@aws-sdk/client-sesv2';
         }),
       inject: [ConfigService],
     },
+    SESGateway,
   ],
 })
 export class AppModule {}
