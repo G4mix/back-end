@@ -82,9 +82,7 @@ export class SignupController {
       { expiresIn: REFRESH_TOKEN_EXPIRATION },
     );
 
-    await this.userRepository.update(newUser.id, {
-      refreshTokenId: refreshToken,
-    });
+    await this.userRepository.update(newUser.id, { refreshToken });
 
     this.sesGateway.verifyIdentity(body.email);
 

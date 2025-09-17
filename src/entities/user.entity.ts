@@ -56,7 +56,7 @@ export class User {
   userProfile: UserProfile;
 
   @Column({ type: 'varchar', unique: true, nullable: true })
-  refreshTokenId: string | null;
+  refreshToken: string | null;
 
   @OneToMany(() => UserOAuth, (oauth) => oauth.user)
   oauthAccounts: UserOAuth[];
