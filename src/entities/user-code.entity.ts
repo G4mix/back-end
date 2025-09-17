@@ -13,8 +13,8 @@ export class UserCode {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 6 })
-  code: string;
+  @Column({ type: 'varchar', length: 6, nullable: true })
+  code: string | null;
 
   @OneToOne(() => User, (user) => user.userCode)
   user: User;
@@ -28,7 +28,7 @@ export class UserCode {
   toDto(): UserCodeDto {
     const dto = new UserCodeDto();
     dto.id = this.id;
-    dto.code = this.code;
+    dto.code = this.code ?? null;
     dto.createdAt = this.created_at;
     return dto;
   }
@@ -36,6 +36,6 @@ export class UserCode {
 
 export class UserCodeDto {
   id: string;
-  code: string;
+  code: string | null;
   createdAt: Date;
 }

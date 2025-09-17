@@ -35,25 +35,24 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   blockedUntil: Date | null;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true, name: 'user_code_id' })
   userCodeId: string;
 
   @OneToOne(() => UserCode, (userCode) => userCode.user, {
     cascade: true,
     onDelete: 'CASCADE',
-    nullable: true,
   })
-  @JoinColumn({ name: 'userCodeId' })
-  userCode?: UserCode | null;
+  @JoinColumn({ name: 'user_code_id' })
+  userCode: UserCode;
 
-  @Column({ unique: true })
+  @Column({ unique: true, name: 'user_profile_id' })
   userProfileId: string;
 
   @OneToOne(() => UserProfile, (profile) => profile.user, {
     cascade: true,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'userProfileId' })
+  @JoinColumn({ name: 'user_profile_id' })
   userProfile: UserProfile;
 
   @Column({ type: 'varchar', unique: true, nullable: true })
@@ -73,8 +72,8 @@ export class User {
     dto.id = this.id;
     dto.email = this.email;
     dto.verified = this.verified;
-    dto.userProfile = this.userProfile.toDto(currentUserId);
-    dto.userCode = this.userCode?.toDto() ?? null;
+    dto.userProfile = this.userProfile?.toDto(currentUserId);
+    dto.userCode = this.userCode?.toDto() || null;
     return dto;
   }
 }

@@ -46,7 +46,7 @@ import { SESv2Client } from '@aws-sdk/client-sesv2';
       Link,
     ]),
     JwtModule.register({
-      secret: process.env.JWT_SECRET,
+      secret: process.env.JWT_SIGNING_KEY_SECRET,
       signOptions: { expiresIn: '1h' },
     }),
   ],
