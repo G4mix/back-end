@@ -1,7 +1,8 @@
 import { SESv2Client, CreateEmailIdentityCommand } from '@aws-sdk/client-sesv2';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { SES_CLIENT } from '../constants/aws';
 import { getErrorMessage } from '../utils/getErrorMessage';
+
+export const SES_CLIENT = Symbol('SES_CLIENT');
 
 @Injectable()
 export class SESGateway {

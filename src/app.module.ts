@@ -11,10 +11,12 @@ import { UserProfile } from './entities/user-profile.entity';
 import { SignInController } from './features/auth/signin/v1/signin.controller';
 import { SignupController } from './features/auth/signup/v1/signup.controller';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './shared/auth.guard';
+import { JwtAuthGuard } from './jwt/auth.guard';
 import { Follow } from './entities/follow.entity';
 import { Link } from './entities/link.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { SES_CLIENT } from './shared/gateways/ses.gateway';
+import { SESv2Client } from '@aws-sdk/client-sesv2';
 
 @Module({
   imports: [
@@ -53,6 +55,14 @@ import { JwtModule } from '@nestjs/jwt';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: SES_CLIENT,
+      useFactory: (configService: ConfigService) =>
+        new SESv2Client({
+          region: configService.get<string>('AWS_REGION'),
+        }),
+      inject: [ConfigService],
     },
   ],
 })

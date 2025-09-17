@@ -34,11 +34,9 @@ export class UserProfile {
   @OneToMany(() => Link, (link) => link.userProfile)
   links: Link[];
 
-  // Seguidores (quem me segue)
   @OneToMany(() => Follow, (follow) => follow.followingUser)
   followers: Follow[];
 
-  // Seguindo (quem eu sigo)
   @OneToMany(() => Follow, (follow) => follow.followerUser)
   following: Follow[];
 
@@ -47,4 +45,35 @@ export class UserProfile {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  toDto(currentUserId?: string): UserProfileDto {
+    const dto = new UserProfileDto();
+    dto.id = this.id;
+    dto.username = this.displayName ?? this.id;
+    dto.bio = this.autobiography ?? null;
+    dto.avatarUrl = this.icon ?? null;
+    dto.links =
+      this.links?.map((l) => ({
+        id: l.id,
+        url: l.url,
+        label: l.label ?? '',
+      })) || [];
+    dto.followers = this.followers?.length ?? 0;
+    dto.following = this.following?.length ?? 0;
+    dto.isFollowing = currentUserId
+      ? this.followers?.some((f) => f.followerUserId === currentUserId)
+      : undefined;
+    return dto;
+  }
+}
+
+export class UserProfileDto {
+  id: string;
+  username: string;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  links: { id: string; url: string; label: string }[] = [];
+  isFollowing?: boolean;
+  followers: number = 0;
+  following: number = 0;
 }

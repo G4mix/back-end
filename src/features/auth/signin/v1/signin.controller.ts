@@ -4,6 +4,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Logger,
   Post,
   Version,
 } from '@nestjs/common';
@@ -11,14 +12,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { SigninInput, SigninOutput } from './signin.dto';
-import * as bcrypt from 'bcrypt';
+import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { REFRESH_TOKEN_EXPIRATION } from 'src/shared/constants/jwt';
+import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
+import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
 
 @Controller('/auth')
 export class SignInController {
   private readonly MAX_ATTEMPTS = 5;
   private readonly BLOCK_TIME_MS = 30 * 60 * 1000;
+  readonly logger = new Logger(this.constructor.name);
 
   constructor(
     @InjectRepository(User)
@@ -29,6 +32,7 @@ export class SignInController {
   @Post('/signin')
   @Version('1')
   @HttpCode(HttpStatus.OK)
+  @LogResponseTime()
   async signin(@Body() body: SigninInput): Promise<SigninOutput> {
     const user = await this.userRepository.findOne({
       where: { email: body.email },
@@ -64,8 +68,7 @@ export class SignInController {
       await this.userRepository.save(user);
     }
 
-    const passwordValid = await bcrypt.compare(body.password, user.password);
-    if (!passwordValid) {
+    if (!(await compare(body.password, user.password))) {
       user.loginAttempts += 1;
       if (user.loginAttempts === this.MAX_ATTEMPTS) {
         user.blockedUntil = new Date(now.getTime() + this.BLOCK_TIME_MS);

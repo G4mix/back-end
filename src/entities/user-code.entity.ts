@@ -24,4 +24,18 @@ export class UserCode {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  toDto(): UserCodeDto {
+    const dto = new UserCodeDto();
+    dto.id = this.id;
+    dto.code = this.code;
+    dto.createdAt = this.created_at;
+    return dto;
+  }
+}
+
+export class UserCodeDto {
+  id: string;
+  code: string;
+  createdAt: Date;
 }

@@ -8,10 +8,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserCode } from './user-code.entity';
-import { UserProfile } from './user-profile.entity';
+import { UserCode, UserCodeDto } from './user-code.entity';
+import { UserProfile, UserProfileDto } from './user-profile.entity';
 import { UserOAuth } from './user-oauth.entity';
-import { UserDto } from 'src/shared/user.dto';
 
 @Entity('users')
 export class User {
@@ -36,18 +35,17 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   blockedUntil: Date | null;
 
-  // UserCode
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   userCodeId: string;
 
   @OneToOne(() => UserCode, (userCode) => userCode.user, {
     cascade: true,
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'userCodeId' })
-  userCode: UserCode;
+  userCode?: UserCode | null;
 
-  // UserProfile
   @Column({ unique: true })
   userProfileId: string;
 
@@ -71,6 +69,20 @@ export class User {
   updated_at: Date;
 
   toDto(currentUserId?: string): UserDto {
-    return UserDto.fromEntity(this, currentUserId);
+    const dto = new UserDto();
+    dto.id = this.id;
+    dto.email = this.email;
+    dto.verified = this.verified;
+    dto.userProfile = this.userProfile.toDto(currentUserId);
+    dto.userCode = this.userCode?.toDto() ?? null;
+    return dto;
   }
+}
+
+export class UserDto {
+  id: string;
+  email: string;
+  verified: boolean;
+  userProfile: UserProfileDto;
+  userCode: UserCodeDto | null;
 }
