@@ -70,6 +70,7 @@ export class User {
   toDto(currentUserId?: string): UserDto {
     const dto = new UserDto();
     dto.id = this.id;
+    dto.username = this.username;
     dto.email = this.email;
     dto.verified = this.verified;
     dto.userProfile = this.userProfile?.toDto(currentUserId);
@@ -80,6 +81,7 @@ export class User {
 
 export class UserDto {
   id: string;
+  username: string;
   email: string;
   verified: boolean;
   userProfile: UserProfileDto;

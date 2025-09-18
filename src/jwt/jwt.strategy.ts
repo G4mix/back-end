@@ -1,15 +1,20 @@
 /* eslint-disable */ 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Request, Param } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-export type Claims = {
+export interface Claims {
 	sub: string;
 	userProfileId: string;
 	verifiedEmail?: boolean;
 	validRoutes?: { route: string; method: string; }[]
 	exp?: number;
 }
+
+export interface RequestWithUserData extends Request {
+  user: Claims;
+}
+
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

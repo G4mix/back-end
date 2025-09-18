@@ -19,6 +19,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
 import { SESv2Client } from '@aws-sdk/client-sesv2';
 import { RefreshTokenController } from './features/auth/refresh-token/v1/refresh-token.controller';
+import { GetAllUsersController } from './features/user-management/get-all-users/v1/get-all-users.controller';
 
 @Module({
   imports: [
@@ -56,7 +57,8 @@ import { RefreshTokenController } from './features/auth/refresh-token/v1/refresh
     GetHealthStatusController,
     SignInController,
     SignupController,
-    RefreshTokenController
+    RefreshTokenController,
+    GetAllUsersController,
   ],
   providers: [
     JwtStrategy,

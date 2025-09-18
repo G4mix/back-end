@@ -27,8 +27,17 @@ export function LogResponseTime() {
     ) {
       const startTime = new Date().getTime();
 
-      const params = args.length > 0 ? args[0] : {};
-      this.logger.log(`Starting ${propertyKey}`, params);
+      const safeArgs = args.filter(
+        (arg) =>
+          !(
+            arg &&
+            typeof arg === 'object' &&
+            'headers' in arg &&
+            'method' in arg
+          ),
+      );
+
+      this.logger.log(`Starting ${propertyKey}`, safeArgs);
 
       try {
         const result = (await originalMethod.apply(this, args)) as unknown;

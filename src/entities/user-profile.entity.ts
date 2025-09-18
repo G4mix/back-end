@@ -49,7 +49,7 @@ export class UserProfile {
   toDto(currentUserId?: string): UserProfileDto {
     const dto = new UserProfileDto();
     dto.id = this.id;
-    dto.username = this.displayName ?? this.id;
+    dto.displayName = this.displayName ?? this.id;
     dto.bio = this.autobiography ?? null;
     dto.avatarUrl = this.icon ?? null;
     dto.links =
@@ -69,7 +69,7 @@ export class UserProfile {
 
 export class UserProfileDto {
   id: string;
-  username: string;
+  displayName: string;
   bio?: string | null;
   avatarUrl?: string | null;
   links: { id: string; url: string; label: string }[] = [];
