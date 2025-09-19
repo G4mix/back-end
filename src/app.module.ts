@@ -78,7 +78,7 @@ import { DeleteUserController } from './features/user-management/delete-user/v1/
     RefreshTokenController,
     GetAllUsersController,
     GetUserByIdController,
-    DeleteUserController
+    DeleteUserController,
   ],
 })
 export class AppModule {}
