@@ -39,7 +39,7 @@ export class RefreshTokenController {
     if (!user) throw new UserNotFound();
 
     const accessToken = this.jwtService.sign({
-      sub: user,
+      sub: user.id,
       userProfileId: user.userProfileId,
     });
     const refreshToken = this.jwtService.sign(
