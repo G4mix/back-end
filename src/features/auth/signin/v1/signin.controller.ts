@@ -42,7 +42,6 @@ export class SignInController {
         'userProfile.links',
         'userProfile.followers',
         'userProfile.following',
-        'userCode',
       ],
     });
 

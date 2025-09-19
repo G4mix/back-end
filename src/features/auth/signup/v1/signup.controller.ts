@@ -69,7 +69,6 @@ export class SignupController {
         'userProfile.links',
         'userProfile.followers',
         'userProfile.following',
-        'userCode',
       ],
     });
 

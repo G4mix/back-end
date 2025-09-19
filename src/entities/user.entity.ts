@@ -8,7 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserCode, UserCodeDto } from './user-code.entity';
+import { UserCode } from './user-code.entity';
 import { UserProfile, UserProfileDto } from './user-profile.entity';
 import { UserOAuth } from './user-oauth.entity';
 
@@ -74,7 +74,6 @@ export class User {
     dto.email = this.email;
     dto.verified = this.verified;
     dto.userProfile = this.userProfile?.toDto(currentUserId);
-    dto.userCode = this.userCode?.toDto() || null;
     return dto;
   }
 }
@@ -85,5 +84,4 @@ export class UserDto {
   email: string;
   verified: boolean;
   userProfile: UserProfileDto;
-  userCode: UserCodeDto | null;
 }

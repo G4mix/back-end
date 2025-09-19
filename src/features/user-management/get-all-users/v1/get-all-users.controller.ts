@@ -31,14 +31,13 @@ export class GetAllUsersController {
     @Query() query: GetAllUsersQueryInput,
   ): Promise<GetAllUsersOutput> {
     const { search, quantity, page } = query;
-
+    console.log(req.user.sub);
     const qb = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.userProfile', 'userProfile')
       .leftJoinAndSelect('userProfile.links', 'links')
       .leftJoinAndSelect('userProfile.followers', 'followers')
       .leftJoinAndSelect('userProfile.following', 'following')
-      .leftJoinAndSelect('user.userCode', 'userCode')
       .where('user.id != :currentUserId', { currentUserId: req.user.sub });
 
     if (search && search.trim() !== '') {

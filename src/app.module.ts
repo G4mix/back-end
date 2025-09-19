@@ -20,6 +20,8 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
 import { SESv2Client } from '@aws-sdk/client-sesv2';
 import { RefreshTokenController } from './features/auth/refresh-token/v1/refresh-token.controller';
 import { GetAllUsersController } from './features/user-management/get-all-users/v1/get-all-users.controller';
+import { GetUserByIdController } from './features/user-management/get-user-by-id/v1/get-user-by-id.controller';
+import { DeleteUserController } from './features/user-management/delete-user/v1/delete-user.controller';
 
 @Module({
   imports: [
@@ -53,13 +55,6 @@ import { GetAllUsersController } from './features/user-management/get-all-users/
       signOptions: { expiresIn: '1h' },
     }),
   ],
-  controllers: [
-    GetHealthStatusController,
-    SignInController,
-    SignupController,
-    RefreshTokenController,
-    GetAllUsersController,
-  ],
   providers: [
     JwtStrategy,
     {
@@ -75,6 +70,15 @@ import { GetAllUsersController } from './features/user-management/get-all-users/
       inject: [ConfigService],
     },
     SESGateway,
+  ],
+  controllers: [
+    GetHealthStatusController,
+    SignInController,
+    SignupController,
+    RefreshTokenController,
+    GetAllUsersController,
+    GetUserByIdController,
+    DeleteUserController
   ],
 })
 export class AppModule {}
