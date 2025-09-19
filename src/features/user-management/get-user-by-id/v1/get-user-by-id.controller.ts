@@ -15,7 +15,7 @@ import { UserNotFound } from 'src/shared/errors';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { GetUserByIdParamsInput } from './get-user-by-id.dto';
 
-@Controller('/user-management')
+@Controller('/user')
 export class GetUserByIdController {
   constructor(
     @InjectRepository(User)
@@ -23,7 +23,7 @@ export class GetUserByIdController {
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
-  @Get('/get-user-by-id/:userProfileId')
+  @Get('/:userProfileId')
   @Version('1')
   @Protected()
   @LogResponseTime()

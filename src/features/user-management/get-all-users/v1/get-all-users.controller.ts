@@ -14,7 +14,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 
-@Controller('/user-management')
+@Controller('/user')
 export class GetAllUsersController {
   constructor(
     @InjectRepository(User)
@@ -22,7 +22,7 @@ export class GetAllUsersController {
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
-  @Get('/get-all-users')
+  @Get()
   @Version('1')
   @Protected()
   @LogResponseTime()

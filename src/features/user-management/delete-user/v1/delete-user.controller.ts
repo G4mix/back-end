@@ -14,7 +14,7 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 
-@Controller('/user-management')
+@Controller('/user')
 export class DeleteUserController {
   constructor(
     @InjectRepository(User)
@@ -22,7 +22,7 @@ export class DeleteUserController {
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
-  @Delete('/delete-user')
+  @Delete()
   @Version('1')
   @Protected()
   @LogResponseTime()
