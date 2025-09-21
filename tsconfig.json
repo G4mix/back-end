@@ -23,5 +23,5 @@
     "noFallthroughCasesInSwitch": false
   },
   "include": ["src", "src/setup-application.ts"],
-  "exclude": ["dist"]
+  "exclude": ["dist", "node_modules"]
 }
