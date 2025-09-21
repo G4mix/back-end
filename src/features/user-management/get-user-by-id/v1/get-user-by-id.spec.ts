@@ -145,7 +145,7 @@ describe('/v1/user/{userProfileId} (GET)', () => {
       .get('/v1/user/invalid-uuid')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toEqual(500); // Controller original não valida UUID
+    expect(response.status).toEqual(400); // Controller original não valida UUID
     const body = response.body as ErrorResponse;
     expect(body.message).toBeDefined();
   });

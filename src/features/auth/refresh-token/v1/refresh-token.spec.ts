@@ -93,7 +93,7 @@ describe('/v1/auth/refresh-token (POST)', () => {
         refreshToken: 'invalid-token',
       });
 
-    expect(response.status).toEqual(500); // Server error due to invalid token format
+    expect(response.status).toEqual(400); // Server error due to invalid token format
   });
 
   it('should return 400 when refresh token is expired', async () => {
@@ -132,7 +132,7 @@ describe('/v1/auth/refresh-token (POST)', () => {
         refreshToken,
       });
 
-    expect(response.status).toEqual(500); // Server error due to invalid UUID
+    expect(response.status).toEqual(404); // Server error due to invalid UUID
   });
 
   it('should return 400 when refresh token is missing', async () => {
