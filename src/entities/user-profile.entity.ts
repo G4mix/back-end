@@ -50,13 +50,13 @@ export class UserProfile {
     const dto = new UserProfileDto();
     dto.id = this.id;
     dto.displayName = this.displayName ?? this.id;
-    dto.bio = this.autobiography ?? null;
-    dto.avatarUrl = this.icon ?? null;
+    dto.autobiography = this.autobiography ?? null;
+    dto.backgroundImage = this.backgroundImage ?? null;
+    dto.icon = this.icon ?? null;
     dto.links =
       this.links?.map((l) => ({
         id: l.id,
         url: l.url,
-        label: l.label ?? '',
       })) || [];
     dto.followers = this.followers?.length ?? 0;
     dto.following = this.following?.length ?? 0;
@@ -70,9 +70,10 @@ export class UserProfile {
 export class UserProfileDto {
   id: string;
   displayName: string;
-  bio?: string | null;
-  avatarUrl?: string | null;
-  links: { id: string; url: string; label: string }[] = [];
+  autobiography?: string | null;
+  icon?: string | null;
+  backgroundImage?: string | null;
+  links: { id: string; url: string }[] = [];
   isFollowing: boolean;
   followers: number = 0;
   following: number = 0;

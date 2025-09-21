@@ -1,3 +1,4 @@
+import { InternalServiceErrorException } from '@aws-sdk/client-sesv2';
 import {
   ConflictException,
   HttpException,
@@ -34,5 +35,22 @@ export class TooManyLoginAttempts extends HttpException {
 export class YouCannotFollowYourself extends BadRequestException {
   constructor() {
     super('YOU_CANNOT_FOLLOW_YOURSELF');
+  }
+}
+
+export class InvalidUserProfile extends BadRequestException {
+  constructor() {
+    super('INVALID_USER_PROFILE');
+  }
+}
+export class InvalidImageType extends BadRequestException {
+  constructor() {
+    super('INVALID_IMAGE_TYPE');
+  }
+}
+
+export class PictureUpdateFail extends InternalServiceErrorException {
+  constructor() {
+    super({ message: 'PICTURE_UPDATE_FAIL', $metadata: {} });
   }
 }

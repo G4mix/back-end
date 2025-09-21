@@ -23,6 +23,9 @@ import { GetAllUsersController } from './features/user-management/get-all-users/
 import { GetUserByIdController } from './features/user-management/get-user-by-id/v1/get-user-by-id.controller';
 import { DeleteUserController } from './features/user-management/delete-user/v1/delete-user.controller';
 import { ToggleFollowController } from './features/user-management/toggle-follow/v1/toggle-follow.controller';
+import { S3Client } from '@aws-sdk/client-s3';
+import { S3_CLIENT, S3Gateway } from './shared/gateways/s3.gateway';
+import { UpdateUserController } from './features/user-management/update-user/v1/update-user.controller';
 
 @Module({
   imports: [
@@ -66,11 +69,28 @@ import { ToggleFollowController } from './features/user-management/toggle-follow
       provide: SES_CLIENT,
       useFactory: (configService: ConfigService) =>
         new SESv2Client({
-          region: configService.get<string>('AWS_REGION'),
+          region: configService.get<string>('AWS_REGION')!,
+          credentials: {
+            accessKeyId: configService.get<string>('AWS_SES_KEY')!,
+            secretAccessKey: configService.get<string>('AWS_SES_SECRET')!,
+          },
+        }),
+      inject: [ConfigService],
+    },
+    {
+      provide: S3_CLIENT,
+      useFactory: (configService: ConfigService) =>
+        new S3Client({
+          region: configService.get<string>('AWS_REGION')!,
+          credentials: {
+            accessKeyId: configService.get<string>('AWS_S3_KEY')!,
+            secretAccessKey: configService.get<string>('AWS_S3_SECRET')!,
+          },
         }),
       inject: [ConfigService],
     },
     SESGateway,
+    S3Gateway,
   ],
   controllers: [
     GetHealthStatusController,
@@ -81,6 +101,7 @@ import { ToggleFollowController } from './features/user-management/toggle-follow
     GetUserByIdController,
     DeleteUserController,
     ToggleFollowController,
+    UpdateUserController,
   ],
 })
 export class AppModule {}

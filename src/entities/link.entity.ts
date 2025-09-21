@@ -16,9 +16,6 @@ export class Link {
   @Column({ length: 700 })
   url: string;
 
-  @Column({ length: 100, nullable: true })
-  label: string;
-
   @ManyToOne(() => UserProfile, (userProfile) => userProfile.links, {
     onDelete: 'CASCADE',
   })
