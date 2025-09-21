@@ -10,6 +10,7 @@ import { DataSource, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
 import { RefreshTokenOutput } from './refresh-token.dto';
+import { randomUUID } from 'crypto';
 
 interface ErrorResponse {
   message: string;
@@ -121,7 +122,7 @@ describe('/v1/auth/refresh-token (POST)', () => {
   it('should return 401 when user is not found', async () => {
     // Create refresh token for non-existent user
     const refreshToken = jwtService.sign(
-      { sub: 'non-existent-user-id', userProfileId: 'non-existent-profile-id' },
+      { sub: randomUUID(), userProfileId: 'non-existent-profile-id' },
       { expiresIn: REFRESH_TOKEN_EXPIRATION },
     );
 
