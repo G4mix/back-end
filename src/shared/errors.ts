@@ -4,6 +4,7 @@ import {
   HttpStatus,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 
 export class UserNotAuthorized extends ForbiddenException {
@@ -27,5 +28,11 @@ export class UserNotFound extends NotFoundException {
 export class TooManyLoginAttempts extends HttpException {
   constructor() {
     super('TOO_MANY_LOGIN_ATTEMPTS', HttpStatus.TOO_MANY_REQUESTS);
+  }
+}
+
+export class YouCannotFollowYourself extends BadRequestException {
+  constructor() {
+    super('YOU_CANNOT_FOLLOW_YOURSELF');
   }
 }

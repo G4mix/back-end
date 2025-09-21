@@ -22,6 +22,7 @@ import { RefreshTokenController } from './features/auth/refresh-token/v1/refresh
 import { GetAllUsersController } from './features/user-management/get-all-users/v1/get-all-users.controller';
 import { GetUserByIdController } from './features/user-management/get-user-by-id/v1/get-user-by-id.controller';
 import { DeleteUserController } from './features/user-management/delete-user/v1/delete-user.controller';
+import { ToggleFollowController } from './features/user-management/toggle-follow/v1/toggle-follow.controller';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { DeleteUserController } from './features/user-management/delete-user/v1/
     GetAllUsersController,
     GetUserByIdController,
     DeleteUserController,
+    ToggleFollowController,
   ],
 })
 export class AppModule {}
