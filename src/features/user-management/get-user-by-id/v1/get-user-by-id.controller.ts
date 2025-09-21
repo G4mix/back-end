@@ -7,7 +7,6 @@ import {
   Version,
 } from '@nestjs/common';
 import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
-import { Protected } from 'src/shared/decorators/protected.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserDto } from 'src/entities/user.entity';
@@ -25,7 +24,6 @@ export class GetUserByIdController {
 
   @Get('/:userProfileId')
   @Version('1')
-  @Protected()
   @LogResponseTime()
   async getUserbyId(
     @Param() params: GetUserByIdParamsInput,
@@ -42,6 +40,6 @@ export class GetUserByIdController {
       ],
     });
     if (!user) throw new UserNotFound();
-    return user.toDto(req.user.userProfileId);
+    return user.toDto(req.user?.userProfileId);
   }
 }
