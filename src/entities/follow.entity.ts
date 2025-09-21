@@ -17,7 +17,7 @@ export class Follow {
   @Column()
   followerUserId: string;
 
-  @Column({ nullable: true })
+  @Column()
   followingUserId: string;
 
   @ManyToOne(() => UserProfile, (userProfile) => userProfile.following, {
@@ -31,5 +31,5 @@ export class Follow {
   followingUser: UserProfile;
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 }

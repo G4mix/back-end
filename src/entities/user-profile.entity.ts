@@ -41,10 +41,10 @@ export class UserProfile {
   following: Follow[];
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 
   toDto(currentUserId?: string): UserProfileDto {
     const dto = new UserProfileDto();

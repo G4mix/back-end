@@ -25,8 +25,8 @@ export class Link {
   userProfile: UserProfile;
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 }

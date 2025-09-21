@@ -20,16 +20,16 @@ export class UserCode {
   user: User;
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 
   toDto(): UserCodeDto {
     const dto = new UserCodeDto();
     dto.id = this.id;
     dto.code = this.code ?? null;
-    dto.createdAt = this.created_at;
+    dto.createdAt = this.createdAt;
     return dto;
   }
 }

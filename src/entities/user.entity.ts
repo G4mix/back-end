@@ -35,7 +35,7 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   blockedUntil: Date | null;
 
-  @Column({ unique: true, name: 'user_code_id' })
+  @Column({ unique: true })
   userCodeId: string;
 
   @OneToOne(() => UserCode, (userCode) => userCode.user, {
@@ -45,7 +45,7 @@ export class User {
   @JoinColumn({ name: 'user_code_id' })
   userCode: UserCode;
 
-  @Column({ unique: true, name: 'user_profile_id' })
+  @Column({ unique: true })
   userProfileId: string;
 
   @OneToOne(() => UserProfile, (profile) => profile.user, {
@@ -62,10 +62,10 @@ export class User {
   oauthAccounts: UserOAuth[];
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 
   toDto(currentUserId?: string): UserDto {
     const dto = new UserDto();
