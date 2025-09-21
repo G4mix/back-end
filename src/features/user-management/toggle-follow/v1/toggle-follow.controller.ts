@@ -34,11 +34,9 @@ export class ToggleFollowController {
   @LogResponseTime()
   @HttpCode(HttpStatus.NO_CONTENT)
   async toggleFollow(
-    @Request() req: RequestWithUserData,
-    @Body() body: ToggleFollowInput,
+    @Request() { user: { userProfileId } }: RequestWithUserData,
+    @Body() { targetUserId }: ToggleFollowInput,
   ): Promise<void> {
-    const { userProfileId } = req.user;
-    const { targetUserId } = body;
     if (userProfileId === targetUserId) throw new YouCannotFollowYourself();
     const targetUser = await this.userRepository.findOne({
       where: { userProfileId: targetUserId },

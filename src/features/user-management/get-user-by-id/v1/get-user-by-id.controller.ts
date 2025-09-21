@@ -26,10 +26,9 @@ export class GetUserByIdController {
   @Version('1')
   @LogResponseTime()
   async getUserbyId(
-    @Param() params: GetUserByIdInput,
+    @Param() { userProfileId }: GetUserByIdInput,
     @Request() req: RequestWithUserData,
   ): Promise<UserDto> {
-    const { userProfileId } = params;
     const user = await this.userRepository.findOne({
       where: { userProfileId },
       relations: [

@@ -28,10 +28,8 @@ export class GetAllUsersController {
   @LogResponseTime()
   async getAllUsers(
     @Request() req: RequestWithUserData,
-    @Query() query: GetAllUsersInput,
+    @Query() { search, quantity, page }: GetAllUsersInput,
   ): Promise<GetAllUsersOutput> {
-    const { search, quantity, page } = query;
-    console.log(req.user.sub);
     const qb = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.userProfile', 'userProfile')
