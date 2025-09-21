@@ -25,7 +25,7 @@ import {
   S3Gateway,
   SUPPORTED_IMAGES,
   fileInterceptorOptions,
-} from '../../../../shared/gateways/s3.gateway';
+} from 'src/shared/gateways/s3.gateway';
 import { ConfigService } from '@nestjs/config';
 import { PictureUpdateFail } from 'src/shared/errors';
 

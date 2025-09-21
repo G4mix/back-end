@@ -7,7 +7,6 @@ import {
   Post,
   Version,
 } from '@nestjs/common';
-import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
 import { RefreshTokenInput, RefreshTokenOutput } from './refresh-token.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Claims } from 'src/jwt/jwt.strategy';
@@ -30,7 +29,6 @@ export class RefreshTokenController {
   @Post('/refresh-token')
   @Version('1')
   @HttpCode(HttpStatus.OK)
-  @LogResponseTime()
   async refreshToken(
     @Body() body: RefreshTokenInput,
   ): Promise<RefreshTokenOutput> {

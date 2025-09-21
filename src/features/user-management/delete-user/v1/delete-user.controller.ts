@@ -7,7 +7,6 @@ import {
   Request,
   Version,
 } from '@nestjs/common';
-import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -25,7 +24,6 @@ export class DeleteUserController {
   @Delete()
   @Version('1')
   @Protected()
-  @LogResponseTime()
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUser(@Request() req: RequestWithUserData): Promise<void> {
     await this.userRepository.delete(req.user.sub);

@@ -8,7 +8,6 @@ import {
   Body,
   Version,
 } from '@nestjs/common';
-import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -31,7 +30,6 @@ export class ToggleFollowController {
   @Post()
   @Version('1')
   @Protected()
-  @LogResponseTime()
   @HttpCode(HttpStatus.NO_CONTENT)
   async toggleFollow(
     @Request() { user: { userProfileId } }: RequestWithUserData,

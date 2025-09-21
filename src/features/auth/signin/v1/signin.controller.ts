@@ -15,7 +15,6 @@ import { SigninInput, SigninOutput } from './signin.dto';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
-import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
 import { TooManyLoginAttempts, UserNotFound } from 'src/shared/errors';
 
 @Controller('/auth')
@@ -33,7 +32,6 @@ export class SignInController {
   @Post('/signin')
   @Version('1')
   @HttpCode(HttpStatus.OK)
-  @LogResponseTime()
   async signin(@Body() body: SigninInput): Promise<SigninOutput> {
     const user = await this.userRepository.findOne({
       where: { email: body.email },

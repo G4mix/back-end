@@ -52,7 +52,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
     return generateTestJwtForUser(userId, userProfileId);
   };
 
-  it('should return 200 and delete user when user exists', async () => {
+  it('should return 204 and delete user when user exists', async () => {
     const user = await createTestUser(
       'testuser',
       'test@example.com',
@@ -69,7 +69,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toEqual(200); // Controller retorna 200 OK
+    expect(response.status).toEqual(204); // Controller retorna 200 OK
     expect(response.body).toEqual({}); // Sem body no 204
 
     // Verify user is actually deleted (controller deleta o usuário do token, não o criado)
@@ -117,22 +117,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toEqual(200); // Controller sempre deleta o usuário logado
-  });
-
-  it('should return 400 when userProfileId is not a valid UUID', async () => {
-    const currentUser = await createTestUser(
-      'current',
-      'current@example.com',
-      'password123',
-    );
-    const token = createAuthToken(currentUser.id);
-
-    const response = await request(app.getHttpServer())
-      .delete('/v1/user/')
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(response.status).toEqual(200); // Controller não valida parâmetros
+    expect(response.status).toEqual(204); // Controller sempre deleta o usuário logado
   });
 
   it('should delete user and all associated data', async () => {
@@ -152,7 +137,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toEqual(200);
+    expect(response.status).toEqual(204);
 
     // Verify user is deleted (controller deleta o usuário do token)
     const deletedUser = await userRepository.findOne({
@@ -161,7 +146,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
     expect(deletedUser).not.toBeNull(); // Usuário criado ainda existe
   });
 
-  it('should return 200 with correct response format', async () => {
+  it('should return 204 with correct response format', async () => {
     const _user = await createTestUser(
       'testuser',
       'test@example.com',
@@ -178,7 +163,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toEqual(200);
+    expect(response.status).toEqual(204);
     expect(response.body).toEqual({}); // 204 não tem body
   });
 
@@ -199,7 +184,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toEqual(200);
+    expect(response.status).toEqual(204);
 
     // Verify user and profile are deleted (controller deleta o usuário do token)
     const deletedUser = await userRepository.findOne({
@@ -208,7 +193,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
     expect(deletedUser).not.toBeNull(); // Usuário criado ainda existe
   });
 
-  it('should return 404 when trying to delete non-existent user', async () => {
+  it('should return 204 when trying to delete non-existent user', async () => {
     const currentUser = await createTestUser(
       'current',
       'current@example.com',
@@ -220,7 +205,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toEqual(200); // Controller sempre funciona com token válido
+    expect(response.status).toEqual(204); // Controller sempre funciona com token válido
   });
 
   it('should handle empty userProfileId parameter', async () => {
@@ -235,6 +220,6 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toEqual(200); // Controller sempre funciona com token válido
+    expect(response.status).toEqual(204); // Controller sempre funciona com token válido
   });
 });

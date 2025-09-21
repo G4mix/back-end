@@ -14,7 +14,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
 import { JwtService } from '@nestjs/jwt';
-import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
 import { UserProfile } from 'src/entities/user-profile.entity';
 import { UserCode } from 'src/entities/user-code.entity';
 import { hashSync } from 'bcrypt';
@@ -38,7 +37,6 @@ export class SignupController {
   @Post('/signup')
   @HttpCode(HttpStatus.CREATED)
   @Version('1')
-  @LogResponseTime()
   public async signup(@Body() body: SignupInput): Promise<SignupOutput> {
     const existingUser = await this.userRepository.findOne({
       where: { email: body.email.toLowerCase() },

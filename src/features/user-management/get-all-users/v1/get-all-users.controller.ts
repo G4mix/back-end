@@ -7,7 +7,6 @@ import {
   Request,
   Version,
 } from '@nestjs/common';
-import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { GetAllUsersOutput, GetAllUsersInput } from './get-all-users.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,7 +24,6 @@ export class GetAllUsersController {
   @Get()
   @Version('1')
   @Protected()
-  @LogResponseTime()
   async getAllUsers(
     @Request() req: RequestWithUserData,
     @Query() { search, quantity, page }: GetAllUsersInput,
