@@ -62,7 +62,7 @@ export class UserProfile {
     dto.following = this.following?.length ?? 0;
     dto.isFollowing = currentUserId
       ? this.followers?.some((f) => f.followerUserId === currentUserId)
-      : undefined;
+      : false;
     return dto;
   }
 }
@@ -73,7 +73,7 @@ export class UserProfileDto {
   bio?: string | null;
   avatarUrl?: string | null;
   links: { id: string; url: string; label: string }[] = [];
-  isFollowing?: boolean;
+  isFollowing: boolean;
   followers: number = 0;
   following: number = 0;
 }
