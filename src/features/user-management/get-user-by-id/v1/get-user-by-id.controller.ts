@@ -12,7 +12,7 @@ import { Repository } from 'typeorm';
 import { User, UserDto } from 'src/entities/user.entity';
 import { UserNotFound } from 'src/shared/errors';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
-import { GetUserByIdParamsInput } from './get-user-by-id.dto';
+import { GetUserByIdInput } from './get-user-by-id.dto';
 
 @Controller('/user')
 export class GetUserByIdController {
@@ -26,7 +26,7 @@ export class GetUserByIdController {
   @Version('1')
   @LogResponseTime()
   async getUserbyId(
-    @Param() params: GetUserByIdParamsInput,
+    @Param() params: GetUserByIdInput,
     @Request() req: RequestWithUserData,
   ): Promise<UserDto> {
     const { userProfileId } = params;

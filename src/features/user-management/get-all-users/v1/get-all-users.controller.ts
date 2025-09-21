@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { LogResponseTime } from 'src/shared/decorators/log-response-time.decorator';
 import { Protected } from 'src/shared/decorators/protected.decorator';
-import { GetAllUsersOutput, GetAllUsersQueryInput } from './get-all-users.dto';
+import { GetAllUsersOutput, GetAllUsersInput } from './get-all-users.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -28,7 +28,7 @@ export class GetAllUsersController {
   @LogResponseTime()
   async getAllUsers(
     @Request() req: RequestWithUserData,
-    @Query() query: GetAllUsersQueryInput,
+    @Query() query: GetAllUsersInput,
   ): Promise<GetAllUsersOutput> {
     const { search, quantity, page } = query;
     console.log(req.user.sub);

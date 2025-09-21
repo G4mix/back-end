@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { UserDto } from 'src/entities/user.entity';
 
-export class GetAllUsersQueryInput {
+export class GetAllUsersInput {
   @IsOptional()
   @IsNumber({}, { message: 'O campo "page" deve ser um número' })
   @Type(() => Number)
