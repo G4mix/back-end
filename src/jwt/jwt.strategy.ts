@@ -1,7 +1,11 @@
 /* eslint-disable */ 
 import { Injectable, Request, Param } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { InjectRepository } from '@nestjs/typeorm';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { User } from 'src/entities/user.entity';
+import { UserNotAuthorized } from 'src/shared/errors';
+import { Repository } from 'typeorm';
 
 export interface Claims {
 	sub: string;
@@ -18,7 +22,10 @@ export interface RequestWithUserData extends Request {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -28,7 +35,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: Claims) {
-    console.log(payload);
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub }
+    })
+    if (!user) throw new UserNotAuthorized();
     return payload;
   }
 }

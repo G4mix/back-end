@@ -14,11 +14,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       IS_PROTECTED_KEY,
       [context.getHandler(), context.getClass()],
     );
-
-    if (!isProtected) {
-      return true;
-    }
-
+    const request = context.switchToHttp().getRequest<Request>();
+    const hasToken = request.headers['authorization'] as string;
+    if (!isProtected && !hasToken) return true;
     return super.canActivate(context);
   }
 }
