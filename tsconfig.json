@@ -23,5 +23,5 @@
     "noFallthroughCasesInSwitch": false
   },
   "include": ["src", "src/setup-application.ts"],
-  "exclude": ["old-gamix", "dist"]
+  "exclude": ["dist"]
 }

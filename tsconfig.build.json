@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
   "include": ["src"],
-  "exclude": ["old-gamix", "dist", "test", "*.spec.ts"]
+  "exclude": ["dist", "test", "*.spec.ts"]
 }
