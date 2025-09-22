@@ -27,7 +27,7 @@ Endpoint para listar todos os usuários da plataforma Gamix com paginação e bu
       "userProfile": {
         "id": "uuid",
         "displayName": "Display Name",
-        "bio": "User bio",
+        "autobiography": "User bio",
         "links": [],
         "followers": [],
         "following": []

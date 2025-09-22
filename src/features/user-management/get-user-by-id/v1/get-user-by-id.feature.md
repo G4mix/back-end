@@ -19,7 +19,7 @@ Endpoint para buscar um usuário específico pelo ID do perfil. Retorna informa�
   "userProfile": {
     "id": "uuid",
     "displayName": "Display Name",
-    "bio": "User bio",
+    "autobiography": "User bio",
     "links": [
       {
         "id": "uuid",

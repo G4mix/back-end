@@ -28,7 +28,7 @@ Endpoint para registro de novos usuários na plataforma Gamix. Permite que usuá
     "userProfile": {
       "id": "uuid",
       "displayName": "Display Name",
-      "bio": "User bio",
+      "autobiography": "User bio",
       "links": [],
       "followers": [],
       "following": []
