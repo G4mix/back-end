@@ -12,7 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Claims } from 'src/jwt/jwt.strategy';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
-import { UserNotFound } from 'src/shared/errors';
+import { InvalidRefreshToken, UserNotFound } from 'src/shared/errors';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -32,7 +32,9 @@ export class RefreshTokenController {
   async refreshToken(
     @Body() body: RefreshTokenInput,
   ): Promise<RefreshTokenOutput> {
-    const userId = this.jwtService.decode<Claims>(body.refreshToken).sub;
+    const decodedToken = this.jwtService.decode<Claims>(body.refreshToken);
+    if (!decodedToken || !decodedToken.sub) throw new InvalidRefreshToken();
+    const userId = decodedToken.sub;
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new UserNotFound();
 

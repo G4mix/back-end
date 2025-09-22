@@ -86,14 +86,14 @@ describe('/v1/auth/refresh-token (POST)', () => {
     expect(body.refreshToken).toBeDefined(); // Should be a new token
   });
 
-  it('should return 500 when refresh token is invalid', async () => {
+  it('should return 400 when refresh token is invalid', async () => {
     const response = await request(app.getHttpServer())
       .post('/v1/auth/refresh-token')
       .send({
         refreshToken: 'invalid-token',
       });
 
-    expect(response.status).toEqual(500); // Server error due to invalid token format
+    expect(response.status).toEqual(400);
   });
 
   it('should return 400 when refresh token is expired', async () => {

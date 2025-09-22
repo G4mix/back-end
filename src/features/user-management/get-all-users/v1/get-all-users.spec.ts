@@ -227,7 +227,10 @@ describe('/v1/user (GET)', () => {
       .get('/v1/user?page=-1')
       .set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toEqual(500);
+    expect(response.status).toEqual(400);
+    expect(response.body.message).toContain(
+      'O campo "page" deve ser maior ou igual a 0',
+    );
   });
 
   it('should return 400 when quantity is not a number', async () => {
@@ -243,6 +246,24 @@ describe('/v1/user (GET)', () => {
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(400);
+  });
+
+  it('should return 400 when quantity is zero or negative', async () => {
+    const currentUser = await createTestUser(
+      'current',
+      'current@example.com',
+      'password123',
+    );
+    const token = createAuthToken(currentUser.id);
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/user?quantity=0')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toEqual(400);
+    expect(response.body.message).toContain(
+      'O campo "quantity" deve ser maior ou igual a 1',
+    );
   });
 
   it('should use default values when parameters are not provided', async () => {

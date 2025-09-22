@@ -54,3 +54,9 @@ export class PictureUpdateFail extends InternalServiceErrorException {
     super({ message: 'PICTURE_UPDATE_FAIL', $metadata: {} });
   }
 }
+
+export class InvalidRefreshToken extends BadRequestException {
+  constructor() {
+    super('INVALID_REFRESH_TOKEN');
+  }
+}

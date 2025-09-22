@@ -35,8 +35,8 @@ jobs:
           echo "AWS_SES_SECRET=dwadwadwa" >> .env && \
           echo "NODE_ENV=development" >> .env && \
           echo "JWT_SIGNING_KEY_SECRET=dwadwawajmdoiwandçiwand.dwad21cxajddwaikdawid.dwawadwadwaidjiwajdwajdwa" >> .env && \
-          echo "PUBLIC_BUCKET_NAME=gamix-pub" >> .env && \
-          echo "PRIVATE_BUCKET_NAME=gamix-priv" >> .env && \
+          echo "PUBLIC_BUCKET_NAME=gamix-public" >> .env && \
+          echo "PRIVATE_BUCKET_NAME=gamix-private" >> .env && \
           echo "GOOGLE_CLIENT_ID=dwadwadwa" >> .env && \
           echo "GOOGLE_CLIENT_SECRET=dwadwadwa" >> .env && \
           echo "GITHUB_CLIENT_ID=dwadwadwa" >> .env && \
