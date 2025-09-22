@@ -4,8 +4,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build --tsConfig tsconfig.build.json",
+    "build": "nest build --config tsconfig.build.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "audit": "npm audit --omit=dev --json",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
