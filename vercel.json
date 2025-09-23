@@ -8,10 +8,6 @@
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/dist/main.js" },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build"
-    }
+    { "src": "/(.*)", "dest": "/dist/main.js" }
   ]
 }
