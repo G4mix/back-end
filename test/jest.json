@@ -1,0 +1,25 @@
+{
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": "../src",
+  "testEnvironment": "node",
+  "testRegex": ".spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "collectCoverageFrom": [
+    "**/*.(t|j)s",
+    "!**/*.module.(t|j)s",
+    "!**/main.(t|j)s"
+  ],
+  "coverageDirectory": "../coverage",
+  "moduleNameMapper": {
+    "^src/(.*)$": "<rootDir>/$1",
+    "^test/(.*)$": "<rootDir>/../test/$1"
+  },
+  "maxWorkers": 1,
+  "testTimeout": 30000
+}

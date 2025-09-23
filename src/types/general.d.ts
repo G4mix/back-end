@@ -1,1 +1,0 @@
-export type Id<type=string> = { id: type } 

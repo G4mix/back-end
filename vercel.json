@@ -1,14 +1,14 @@
 {
   "version": 2,
   "public": false,
-  "routes": [
-    { "src": "/(.*)", "dest": "/dist/index.js" }
-  ],
   "builds": [
     {
-      "src": "dist/index.js",
+      "src": "dist/main.js",
       "use": "@vercel/node"
-    },
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/dist/main.js" },
     {
       "src": "package.json",
       "use": "@vercel/static-build"

@@ -19,12 +19,15 @@ jobs:
       - name: install deps
         run: |
           npm ci
+      - name: npm audit
+        run: |
+          npm run audit
       - name: check code style
         run: |
           npm run lint
       - name: env config
         run: |
-          echo "PG_DB_URL=postgresql://gamix:gamix-postgres-db@localhost:5432/gamix" >> .env && \
+          echo "PG_DB_URL=postgresql://postgres:postgres@localhost:5432/postgres" >> .env && \
           echo "PORT=8080" >> .env && \
           echo "AWS_S3_KEY=dawdwadwa" >> .env && \
           echo "AWS_S3_SECRET=dawdwadwa" >> .env && \
@@ -32,8 +35,8 @@ jobs:
           echo "AWS_SES_SECRET=dwadwadwa" >> .env && \
           echo "NODE_ENV=development" >> .env && \
           echo "JWT_SIGNING_KEY_SECRET=dwadwawajmdoiwandçiwand.dwad21cxajddwaikdawid.dwawadwadwaidjiwajdwajdwa" >> .env && \
-          echo "PUBLIC_BUCKET_NAME=gamix-pub" >> .env && \
-          echo "PRIVATE_BUCKET_NAME=gamix-priv" >> .env && \
+          echo "PUBLIC_BUCKET_NAME=gamix-public" >> .env && \
+          echo "PRIVATE_BUCKET_NAME=gamix-private" >> .env && \
           echo "GOOGLE_CLIENT_ID=dwadwadwa" >> .env && \
           echo "GOOGLE_CLIENT_SECRET=dwadwadwa" >> .env && \
           echo "GITHUB_CLIENT_ID=dwadwadwa" >> .env && \
@@ -41,6 +44,73 @@ jobs:
           echo "LINKEDIN_CLIENT_ID=dwadwadwa" >> .env && \
           echo "LINKEDIN_CLIENT_SECRET=dwadwadwa" >> .env && \
           echo "REDIRECT_URL=http://localhost:8080" >> .env
-      - name: run tests
+
+      - name: Install Docker
         run: |
-          npm run db:gen && npm run test
+          sudo apt-get remove -y docker docker-engine docker.io containerd runc || true
+
+          sudo apt-get update
+
+          sudo apt-get install -y ca-certificates curl gnupg lsb-release
+
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+          sudo apt-get update
+
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+          sudo systemctl start docker
+          sudo systemctl enable docker
+
+          sudo usermod -aG docker $USER
+
+          sleep 5
+
+          docker --version
+          docker compose version
+
+      - name: Start PostgreSQL with Docker Compose
+        run: |
+          cat > docker-compose.test.yml << EOF
+          services:
+            postgres:
+              image: postgres:14
+              restart: always
+              environment:
+                POSTGRES_USER: postgres
+                POSTGRES_PASSWORD: postgres
+                POSTGRES_DB: postgres
+              ports:
+                - "5432:5432"
+              volumes:
+                - postgres_test_data:/var/lib/postgresql/data
+                - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U postgres"]
+                interval: 5s
+                timeout: 5s
+                retries: 5
+
+          volumes:
+            postgres_test_data:
+          EOF
+
+          docker compose -f docker-compose.test.yml up -d postgres
+
+          echo "Waiting for PostgreSQL to be ready..."
+          timeout 60 bash -c 'until docker compose -f docker-compose.test.yml exec -T postgres pg_isready -U postgres; do sleep 2; done'
+
+          docker compose -f docker-compose.test.yml exec -T postgres psql -U postgres -d postgres -c "SELECT 1;"
+
+      - name: Run Tests
+        run: npm run test
+
+      - name: Stop Docker Compose
+        if: always()
+        run: |
+          docker compose -f docker-compose.test.yml down -v
+          # Clean up test volumes
+          docker volume prune -f
