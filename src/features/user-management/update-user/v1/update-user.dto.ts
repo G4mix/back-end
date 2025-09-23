@@ -40,12 +40,12 @@ class UpdateUserProfileInput {
   @IsString({ message: 'INVALID_NAME' })
   @Matches(/^[^{}]{3,300}$/, { message: 'INVALID_NAME' })
   @IsOptional()
-  displayName?: string | null;
+  displayName?: string;
 
   @IsString({ message: 'INVALID_AUTOBIOGRAPHY' })
   @Matches(/^[^{}]{3,500}$/, { message: 'INVALID_AUTOBIOGRAPHY' })
   @IsOptional()
-  autobiography?: string | null;
+  autobiography?: string;
 
   @IsOptional()
   @IsArray({ message: 'LINKS_MUST_BE_ARRAY' })

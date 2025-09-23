@@ -84,12 +84,11 @@ export class UpdateUserController {
         return updatedLink;
       });
 
-      const updatedUserProfile: Partial<UserProfile> = Object.assign(
-        {},
-        autobiography && { autobiography },
-        displayName && { displayName },
-        links && { links: updatedLinks },
-      );
+      const updatedUserProfile: Partial<UserProfile> = {
+        autobiography,
+        displayName,
+        links: updatedLinks,
+      };
 
       if (icon) {
         const userIconRes = await this.s3Gateway.uploadFile({
