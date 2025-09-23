@@ -8,12 +8,6 @@ import {
   Matches,
   MaxLength,
 } from 'class-validator';
-import {
-  HasMimeType,
-  IsFile,
-  MaxFileSize,
-  MemoryStoredFile,
-} from 'nestjs-form-data';
 import { InvalidUserProfile } from 'src/shared/errors';
 
 function parseLinksSafe(value: any) {
@@ -56,18 +50,6 @@ class UpdateUserProfileInput {
   @MaxLength(700, { each: true, message: 'LINK_TOO_LONG' })
   @Transform(({ value }) => parseLinksSafe(value))
   links?: string[];
-
-  @IsFile()
-  @MaxFileSize(15 * 1024 * 1024)
-  @HasMimeType(['image/jpeg', 'image/png'])
-  @IsOptional()
-  icon?: MemoryStoredFile;
-
-  @IsFile()
-  @MaxFileSize(15 * 1024 * 1024)
-  @HasMimeType(['image/jpeg', 'image/png'])
-  @IsOptional()
-  backgroundImage?: MemoryStoredFile;
 }
 
 export class UpdateUserInput {

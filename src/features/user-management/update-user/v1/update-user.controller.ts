@@ -77,16 +77,14 @@ export class UpdateUserController {
     await this.userRepository.update(id, updatedUser);
 
     if (Object.keys(userProfile).length > 0 || icon || backgroundImage) {
-      const { autobiography, displayName, links } = userProfile;
-      const updatedLinks = links?.map((link) => {
+      const updatedLinks = userProfile.links?.map((link) => {
         const updatedLink = new Link();
         updatedLink.url = link;
         return updatedLink;
       });
 
       const updatedUserProfile: Partial<UserProfile> = {
-        autobiography,
-        displayName,
+        ...userProfile,
         links: updatedLinks,
       };
 
