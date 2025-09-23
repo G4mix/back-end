@@ -27,7 +27,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       - name: build app
         run: |
-          npm run db:gen && npm run build
+          npm run build
       - name: deploy to production
         id: vercel-deploy
         uses: amondnet/vercel-action@v25
