@@ -9,26 +9,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { InvalidUserProfile } from 'src/shared/errors';
-
-function parseLinksSafe(value: any) {
-  if (Array.isArray(value)) return value;
-  if (typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) return parsed;
-    } catch {
-      return value
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
-    return value
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }
-  return [];
-}
+import { parseLinksSafe } from 'src/shared/utils/parseLinksSafe';
 
 class UpdateUserProfileInput {
   @IsString({ message: 'INVALID_NAME' })
