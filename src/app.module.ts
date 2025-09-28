@@ -33,6 +33,7 @@ import { Like } from './entities/like.entity';
 import { View } from './entities/view.entity';
 import { Tag } from './entities/tag.entity';
 import { Comment } from './entities/comment.entity';
+import { GetAllIdeasController } from './features/feed/ideas/get-all-ideas/v1/get-all-ideas.controller';
 
 @Module({
   imports: [
@@ -116,6 +117,7 @@ import { Comment } from './entities/comment.entity';
     ToggleFollowController,
     UpdateUserController,
     CreateIdeaController,
+    GetAllIdeasController,
   ],
 })
 export class AppModule {}
