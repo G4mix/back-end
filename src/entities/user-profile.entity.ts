@@ -10,6 +10,10 @@ import {
 import { User } from './user.entity';
 import { Follow } from './follow.entity';
 import { Link } from './link.entity';
+import { Idea } from './idea.entity';
+import { Comment } from './comment.entity';
+import { Like } from './like.entity';
+import { View } from './view.entity';
 
 @Entity('user_profiles')
 export class UserProfile {
@@ -39,6 +43,18 @@ export class UserProfile {
 
   @OneToMany(() => Follow, (follow) => follow.followerUser)
   following: Follow[];
+
+  @OneToMany(() => Idea, (idea) => idea.author)
+  ideas: Idea[];
+
+  @OneToMany(() => Comment, (comment) => comment.author)
+  comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.userProfile)
+  likes: Like[];
+
+  @OneToMany(() => View, (view) => view.userProfile)
+  views: View[];
 
   @CreateDateColumn()
   createdAt: Date;
