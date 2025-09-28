@@ -26,6 +26,13 @@ import { ToggleFollowController } from './features/user-management/toggle-follow
 import { S3Client } from '@aws-sdk/client-s3';
 import { S3_CLIENT, S3Gateway } from './shared/gateways/s3.gateway';
 import { UpdateUserController } from './features/user-management/update-user/v1/update-user.controller';
+import { CreateIdeaController } from './features/feed/ideas/create-idea/v1/create-idea.controller';
+import { Idea } from './entities/idea.entity';
+import { Image } from './entities/image.entity';
+import { Like } from './entities/like.entity';
+import { View } from './entities/view.entity';
+import { Tag } from './entities/tag.entity';
+import { Comment } from './entities/comment.entity';
 
 @Module({
   imports: [
@@ -53,6 +60,12 @@ import { UpdateUserController } from './features/user-management/update-user/v1/
       UserProfile,
       Follow,
       Link,
+      Idea,
+      Image,
+      Like,
+      View,
+      Tag,
+      Comment,
     ]),
     JwtModule.register({
       secret: process.env.JWT_SIGNING_KEY_SECRET,
@@ -102,6 +115,7 @@ import { UpdateUserController } from './features/user-management/update-user/v1/
     DeleteUserController,
     ToggleFollowController,
     UpdateUserController,
+    CreateIdeaController,
   ],
 })
 export class AppModule {}

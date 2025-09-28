@@ -69,11 +69,7 @@ export class UserProfile {
     dto.autobiography = this.autobiography ?? null;
     dto.backgroundImage = this.backgroundImage ?? null;
     dto.icon = this.icon ?? null;
-    dto.links =
-      this.links?.map((l) => ({
-        id: l.id,
-        url: l.url,
-      })) || [];
+    dto.links = this.links?.map((l) => l.url) || [];
     dto.followers = this.followers?.length ?? 0;
     dto.following = this.following?.length ?? 0;
     dto.isFollowing = currentUserId
@@ -90,7 +86,7 @@ export class UserProfileDto {
   autobiography?: string | null;
   icon?: string | null;
   backgroundImage?: string | null;
-  links: { id: string; url: string }[] = [];
+  links: string[] = [];
   isFollowing: boolean;
   followers: number = 0;
   following: number = 0;

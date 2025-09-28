@@ -20,12 +20,6 @@ export class Image {
   @Column({ type: 'varchar', length: 255 })
   alt: string;
 
-  @Column()
-  width: number;
-
-  @Column()
-  height: number;
-
   @Column({ nullable: true })
   @Index()
   ideaId: string | null;
@@ -46,8 +40,6 @@ export class Image {
     dto.id = this.id;
     dto.src = this.src;
     dto.alt = this.alt;
-    dto.width = this.width;
-    dto.height = this.height;
     dto.ideaId = this.ideaId;
     dto.createdAt = this.createdAt;
     dto.updatedAt = this.updatedAt;

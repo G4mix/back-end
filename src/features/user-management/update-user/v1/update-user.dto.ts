@@ -9,7 +9,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { InvalidUserProfile } from 'src/shared/errors';
-import { parseLinksSafe } from 'src/shared/utils/parseLinksSafe';
+import { parseArraySafe } from 'src/shared/utils/parseArraySafe';
 
 class UpdateUserProfileInput {
   @IsString({ message: 'INVALID_NAME' })
@@ -29,7 +29,7 @@ class UpdateUserProfileInput {
     { each: true, message: 'INVALID_LINK' },
   )
   @MaxLength(700, { each: true, message: 'LINK_TOO_LONG' })
-  @Transform(({ value }) => parseLinksSafe(value))
+  @Transform(({ value }) => parseArraySafe(value))
   links?: string[];
 }
 

@@ -1,4 +1,4 @@
-export const parseLinksSafe = (value: any) => {
+export const parseArraySafe = (value: any) => {
   if (Array.isArray(value)) return value;
   if (typeof value === 'string') {
     try {

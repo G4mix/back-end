@@ -8,23 +8,24 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm';
-import { UserProfile } from './user-profile.entity';
+import { UserProfile, UserProfileDto } from './user-profile.entity';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { View } from './view.entity';
 import { Tag } from './tag.entity';
 import { Image } from './image.entity';
+import { Link } from './link.entity';
 
 @Entity('ideas')
 export class Idea {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 70, nullable: true })
-  title: string | null;
+  @Column({ type: 'varchar', length: 70 })
+  title: string;
 
-  @Column({ type: 'varchar', length: 700, nullable: true })
-  description: string | null;
+  @Column({ type: 'varchar', length: 700 })
+  content: string;
 
   @Column()
   @Index()
@@ -44,6 +45,8 @@ export class Idea {
   @OneToMany(() => View, (view) => view.idea)
   views: View[];
 
+  @OneToMany(() => Link, (link) => link.idea)
+  links: Link[];
   @OneToMany(() => Tag, (tag) => tag.idea)
   tags: Tag[];
 
@@ -60,19 +63,18 @@ export class Idea {
     const dto = new IdeaDto();
     dto.id = this.id;
     dto.title = this.title;
-    dto.description = this.description;
+    dto.content = this.content;
     dto.author = this.author?.toDto(currentUserId);
     dto.comments = this.comments?.length ?? 0;
     dto.likes = this.likes?.length ?? 0;
     dto.views = this.views?.length ?? 0;
+    dto.links = this.links.map((link) => link.url) ?? [];
     dto.tags = this.tags?.map((tag) => tag.name) ?? [];
     dto.images =
       this.images?.map((image) => ({
         id: image.id,
         src: image.src,
         alt: image.alt,
-        width: image.width,
-        height: image.height,
       })) ?? [];
     dto.isLiked = currentUserId
       ? this.likes?.some((like) => like.userProfileId === currentUserId)
@@ -85,19 +87,18 @@ export class Idea {
 
 export class IdeaDto {
   id: string;
-  title: string | null;
-  description: string | null;
-  author: any; // UserProfileDto
+  title: string;
+  content: string;
+  author?: UserProfileDto;
   comments: number;
   likes: number;
   views: number;
+  links: string[];
   tags: string[];
   images: {
     id: string;
     src: string;
     alt: string;
-    width: number;
-    height: number;
   }[];
   isLiked: boolean;
   createdAt: Date;
