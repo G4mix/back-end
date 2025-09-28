@@ -60,3 +60,9 @@ export class InvalidRefreshToken extends BadRequestException {
     super('INVALID_REFRESH_TOKEN');
   }
 }
+
+export class InvalidEmailOrPassword extends BadRequestException {
+  constructor() {
+    super('INVALID_EMAIL_OR_PASSWORD');
+  }
+}

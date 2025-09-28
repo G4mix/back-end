@@ -78,9 +78,9 @@ describe('/v1/auth/signin (POST)', () => {
         password: 'password123',
       });
 
-    expect(response.status).toEqual(404);
+    expect(response.status).toEqual(400);
     const body = response.body as ErrorResponse;
-    expect(body.message).toContain('USER_NOT_FOUND');
+    expect(body.message).toContain('INVALID_EMAIL_OR_PASSWORD');
   });
 
   it('should return 400 when password is incorrect', async () => {
@@ -95,28 +95,7 @@ describe('/v1/auth/signin (POST)', () => {
 
     expect(response.status).toEqual(400);
     const body = response.body as ErrorResponse;
-    expect(body.message).toEqual('WRONG_PASSWORD_ONCE');
-  });
-
-  it('should return 400 with specific error messages for multiple wrong attempts', async () => {
-    const user = await createTestUser(
-      'testuser',
-      'test@example.com',
-      'correctpassword',
-    );
-    user.loginAttempts = 3;
-    await userRepository.save(user);
-
-    const response = await request(app.getHttpServer())
-      .post('/v1/auth/signin')
-      .send({
-        email: 'test@example.com',
-        password: 'wrongpassword',
-      });
-
-    expect(response.status).toEqual(400);
-    const body = response.body as ErrorResponse;
-    expect(body.message).toEqual('WRONG_PASSWORD_FOUR_TIMES');
+    expect(body.message).toEqual('INVALID_EMAIL_OR_PASSWORD');
   });
 
   it('should return 429 when account is blocked due to too many attempts', async () => {

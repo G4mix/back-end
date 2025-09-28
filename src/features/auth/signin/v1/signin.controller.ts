@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -15,7 +14,10 @@ import { SigninInput, SigninOutput } from './signin.dto';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
-import { TooManyLoginAttempts, UserNotFound } from 'src/shared/errors';
+import {
+  InvalidEmailOrPassword,
+  TooManyLoginAttempts,
+} from 'src/shared/errors';
 
 @Controller('/auth')
 export class SignInController {
@@ -43,7 +45,7 @@ export class SignInController {
       ],
     });
 
-    if (!user) throw new UserNotFound();
+    if (!user) throw new InvalidEmailOrPassword();
 
     // Verificação de e-mail (se tiver SES)
     // if (!user.verified) {
@@ -74,15 +76,7 @@ export class SignInController {
       }
       await this.userRepository.save(user);
 
-      const errors = [
-        'WRONG_PASSWORD_ONCE',
-        'WRONG_PASSWORD_TWICE',
-        'WRONG_PASSWORD_THREE_TIMES',
-        'WRONG_PASSWORD_FOUR_TIMES',
-        'WRONG_PASSWORD_FIVE_TIMES',
-      ];
-
-      throw new BadRequestException(errors[user.loginAttempts - 1]);
+      throw new InvalidEmailOrPassword();
     }
 
     const accessToken = this.jwtService.sign({
