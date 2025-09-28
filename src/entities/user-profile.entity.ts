@@ -65,7 +65,7 @@ export class UserProfile {
   toDto(currentUserId?: string): UserProfileDto {
     const dto = new UserProfileDto();
     dto.id = this.id;
-    dto.displayName = this.displayName ?? this.id;
+    dto.displayName = this.displayName ?? this.user.username;
     dto.autobiography = this.autobiography ?? null;
     dto.backgroundImage = this.backgroundImage ?? null;
     dto.icon = this.icon ?? null;
