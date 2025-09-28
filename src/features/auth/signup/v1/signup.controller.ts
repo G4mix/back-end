@@ -40,13 +40,6 @@ export class SignupController {
   public async signup(@Body() body: SignupInput): Promise<SignupOutput> {
     const existingUser = await this.userRepository.findOne({
       where: { email: body.email.toLowerCase() },
-      relations: [
-        'userProfile',
-        'userProfile.links',
-        'userProfile.followers',
-        'userProfile.following',
-        'userCode',
-      ],
     });
     if (existingUser) throw new UserAlreadyExists();
 
@@ -60,14 +53,9 @@ export class SignupController {
       userProfileId: userProfile.id,
       userCodeId: userCode.id,
     });
-    const userWithRelations = await this.userRepository.findOne({
-      where: { id: newUser.id },
-      relations: [
-        'userProfile',
-        'userProfile.links',
-        'userProfile.followers',
-        'userProfile.following',
-      ],
+    const userWithRelations = await this.userProfileRepository.findOne({
+      where: { id: newUser.userProfileId },
+      relations: ['links', 'followers', 'following', 'user'],
     });
 
     const accessToken = this.jwtService.sign({
@@ -86,7 +74,7 @@ export class SignupController {
     return {
       accessToken,
       refreshToken,
-      user: userWithRelations!.toDto(newUser.id),
+      userProfile: userWithRelations!.toDto(),
     };
   }
 }

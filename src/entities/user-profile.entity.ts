@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User, UserDto } from './user.entity';
 import { Follow } from './follow.entity';
 import { Link } from './link.entity';
 import { Idea } from './idea.entity';
@@ -79,6 +79,7 @@ export class UserProfile {
     dto.isFollowing = currentUserId
       ? this.followers?.some((f) => f.followerUserId === currentUserId)
       : false;
+    dto.user = this.user?.toDto();
     return dto;
   }
 }
@@ -93,4 +94,5 @@ export class UserProfileDto {
   isFollowing: boolean;
   followers: number = 0;
   following: number = 0;
+  user: UserDto;
 }

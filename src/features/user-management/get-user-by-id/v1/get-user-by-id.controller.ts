@@ -8,16 +8,16 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User, UserDto } from 'src/entities/user.entity';
 import { UserNotFound } from 'src/shared/errors';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { GetUserByIdInput } from './get-user-by-id.dto';
+import { UserProfile, UserProfileDto } from 'src/entities/user-profile.entity';
 
 @Controller('/user')
 export class GetUserByIdController {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(UserProfile)
+    private readonly userProfileRepository: Repository<UserProfile>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -26,15 +26,10 @@ export class GetUserByIdController {
   async getUserbyId(
     @Param() { userProfileId }: GetUserByIdInput,
     @Request() req: RequestWithUserData,
-  ): Promise<UserDto> {
-    const user = await this.userRepository.findOne({
-      where: { userProfileId },
-      relations: [
-        'userProfile',
-        'userProfile.links',
-        'userProfile.followers',
-        'userProfile.following',
-      ],
+  ): Promise<UserProfileDto> {
+    const user = await this.userProfileRepository.findOne({
+      where: { id: userProfileId },
+      relations: ['user', 'links', 'followers', 'following'],
     });
     if (!user) throw new UserNotFound();
     return user.toDto(req.user?.userProfileId);

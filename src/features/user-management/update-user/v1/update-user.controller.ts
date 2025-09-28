@@ -13,12 +13,12 @@ import {
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User, UserDto } from 'src/entities/user.entity';
+import { User } from 'src/entities/user.entity';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { UpdateUserInput } from './update-user.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { hashSync } from 'bcrypt';
-import { UserProfile } from 'src/entities/user-profile.entity';
+import { UserProfile, UserProfileDto } from 'src/entities/user-profile.entity';
 import { Link } from 'src/entities/link.entity';
 import { SESGateway } from 'src/shared/gateways/ses.gateway';
 import {
@@ -62,7 +62,7 @@ export class UpdateUserController {
       icon?: Express.Multer.File[];
       backgroundImage?: Express.Multer.File[];
     },
-  ): Promise<UserDto> {
+  ): Promise<UserProfileDto> {
     const icon = files.icon?.[0];
     const backgroundImage = files.backgroundImage?.[0];
 
@@ -141,9 +141,10 @@ export class UpdateUserController {
         'userProfile.links',
         'userProfile.followers',
         'userProfile.following',
+        'userProfile.user',
         'userCode',
       ],
     });
-    return user!.toDto();
+    return user!.userProfile.toDto();
   }
 }

@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserCode } from './user-code.entity';
-import { UserProfile, UserProfileDto } from './user-profile.entity';
+import { UserProfile } from './user-profile.entity';
 import { UserOAuth } from './user-oauth.entity';
 
 @Entity('users')
@@ -67,13 +67,12 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  toDto(currentUserId?: string): UserDto {
+  toDto(): UserDto {
     const dto = new UserDto();
     dto.id = this.id;
     dto.username = this.username;
     dto.email = this.email;
     dto.verified = this.verified;
-    dto.userProfile = this.userProfile?.toDto(currentUserId);
     return dto;
   }
 }
@@ -83,5 +82,4 @@ export class UserDto {
   username: string;
   email: string;
   verified: boolean;
-  userProfile: UserProfileDto;
 }

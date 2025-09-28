@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { UserDto } from 'src/entities/user.entity';
+import { UserProfileDto } from 'src/entities/user-profile.entity';
 
 export class GetAllUsersInput {
   @IsOptional()
@@ -25,5 +25,5 @@ export class GetAllUsersOutput {
   nextPage: number | null;
   pages: number;
   total: number;
-  data: UserDto[];
+  data: UserProfileDto[];
 }

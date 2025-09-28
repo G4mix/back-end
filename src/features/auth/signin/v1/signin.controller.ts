@@ -42,6 +42,7 @@ export class SignInController {
         'userProfile.links',
         'userProfile.followers',
         'userProfile.following',
+        'userProfile.user',
       ],
     });
 
@@ -96,7 +97,7 @@ export class SignInController {
     return {
       accessToken,
       refreshToken,
-      user: user.toDto(user.id),
+      userProfile: user.userProfile.toDto(),
     };
   }
 }
