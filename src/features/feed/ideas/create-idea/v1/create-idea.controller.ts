@@ -25,6 +25,7 @@ import { Idea, IdeaDto } from 'src/entities/idea.entity';
 import { Link } from 'src/entities/link.entity';
 import { Tag } from 'src/entities/tag.entity';
 import { Image } from 'src/entities/image.entity';
+import { AtLeastOneImage } from 'src/shared/errors';
 
 @Controller('/idea')
 export class CreateIdeaController {
@@ -45,8 +46,9 @@ export class CreateIdeaController {
     @Request() { user: { sub: id, userProfileId } }: RequestWithUserData,
     @Body()
     { title, content, links, tags }: CreateIdeaInput,
-    @UploadedFiles() images?: Express.Multer.File[],
+    @UploadedFiles() images: Express.Multer.File[],
   ): Promise<IdeaDto> {
+    if (images.length === 0) throw new AtLeastOneImage();
     const newIdea = new Idea();
     newIdea.title = title;
     newIdea.content = content;
@@ -82,7 +84,7 @@ export class CreateIdeaController {
     }
     newIdea.images = newImages;
 
-    await this.ideaRepository.save(newIdea);
+    if (newImages.length > 0) await this.ideaRepository.save(newIdea);
     return idea.toDto();
   }
 }
