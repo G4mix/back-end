@@ -66,3 +66,15 @@ export class InvalidEmailOrPassword extends BadRequestException {
     super('INVALID_EMAIL_OR_PASSWORD');
   }
 }
+
+export class IdeaNotFound extends NotFoundException {
+  constructor() {
+    super('IDEA_NOT_FOUND');
+  }
+}
+
+export class AtLeastOneImage extends NotFoundException {
+  constructor() {
+    super('AT_LEAST_ONE_IMAGE_IS_REQUIRED');
+  }
+}
