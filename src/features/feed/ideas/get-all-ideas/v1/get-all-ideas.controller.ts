@@ -16,7 +16,7 @@ import { Idea } from 'src/entities/idea.entity';
 export class GetAllIdeasController {
   constructor(
     @InjectRepository(Idea)
-    private readonly IdeaRepository: Repository<Idea>,
+    private readonly ideaRepository: Repository<Idea>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -26,7 +26,8 @@ export class GetAllIdeasController {
     @Request() req: RequestWithUserData,
     @Query() { quantity, page, authorId }: GetAllIdeasInput,
   ): Promise<GetAllIdeasOutput> {
-    const qb = this.IdeaRepository.createQueryBuilder('idea')
+    const qb = this.ideaRepository
+      .createQueryBuilder('idea')
       .leftJoinAndSelect('idea.author', 'author')
       .leftJoinAndSelect('author.user', 'user')
       .leftJoinAndSelect('idea.images', 'images')
