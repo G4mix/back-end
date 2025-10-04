@@ -31,20 +31,24 @@ export class ToggleLikeController {
     @Request() { user: { userProfileId } }: RequestWithUserData,
     @Body() { targetLikeId, likeType }: ToggleLikeInput,
   ): Promise<void> {
-    const targets = {
-      [LikeType.IDEA]: { userProfileId, ideaId: targetLikeId },
-      [LikeType.COMMENT]: { userProfileId, commentId: targetLikeId },
-    };
+    try {
+      const targets = {
+        [LikeType.IDEA]: { userProfileId, ideaId: targetLikeId },
+        [LikeType.COMMENT]: { userProfileId, commentId: targetLikeId },
+      };
 
-    const targetLike = await this.likeRepository.findOne({
-      where: targets[likeType],
-    });
+      const targetLike = await this.likeRepository.findOne({
+        where: targets[likeType],
+      });
 
-    if (targetLike) {
-      await this.likeRepository.delete(targetLike.id);
+      if (targetLike) {
+        await this.likeRepository.delete(targetLike.id);
+        return;
+      }
+
+      await this.likeRepository.insert(targets[likeType]);
+    } catch (_err) {
       return;
     }
-
-    await this.likeRepository.insert(targets[likeType]);
   }
 }

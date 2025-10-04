@@ -35,26 +35,30 @@ export class ToggleFollowController {
     @Request() { user: { userProfileId } }: RequestWithUserData,
     @Body() { targetUserId }: ToggleFollowInput,
   ): Promise<void> {
-    if (userProfileId === targetUserId) throw new YouCannotFollowYourself();
-    const targetUser = await this.userRepository.findOne({
-      where: { userProfileId: targetUserId },
-    });
-    if (!targetUser) throw new UserNotFound();
+    try {
+      if (userProfileId === targetUserId) throw new YouCannotFollowYourself();
+      const targetUser = await this.userRepository.findOne({
+        where: { userProfileId: targetUserId },
+      });
+      if (!targetUser) throw new UserNotFound();
 
-    const existingFollow = await this.followRepository.findOne({
-      where: {
+      const existingFollow = await this.followRepository.findOne({
+        where: {
+          followerUserId: userProfileId,
+          followingUserId: targetUserId,
+        },
+      });
+      if (existingFollow) {
+        await this.followRepository.delete(existingFollow.id);
+        return;
+      }
+
+      await this.followRepository.insert({
         followerUserId: userProfileId,
         followingUserId: targetUserId,
-      },
-    });
-    if (existingFollow) {
-      await this.followRepository.delete(existingFollow.id);
+      });
+    } catch (_err) {
       return;
     }
-
-    await this.followRepository.insert({
-      followerUserId: userProfileId,
-      followingUserId: targetUserId,
-    });
   }
 }
