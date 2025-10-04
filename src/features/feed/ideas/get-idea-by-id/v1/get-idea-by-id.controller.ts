@@ -6,6 +6,8 @@ import {
   Request,
   Version,
   Param,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { GetIdeaByIdInput } from './get-idea-by-id.dto';
 import { Repository } from 'typeorm';
@@ -23,6 +25,7 @@ export class GetIdeaByIdController {
 
   @Get('/:id')
   @Version('1')
+  @HttpCode(HttpStatus.CREATED)
   async getIdeaById(
     @Request() req: RequestWithUserData,
     @Param() { id }: GetIdeaByIdInput,

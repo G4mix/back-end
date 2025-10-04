@@ -78,3 +78,9 @@ export class AtLeastOneImage extends NotFoundException {
     super('AT_LEAST_ONE_IMAGE_IS_REQUIRED');
   }
 }
+
+export class ThatIsNotYourIdea extends NotFoundException {
+  constructor() {
+    super('THAT_IS_NOT_YOUR_IDEA');
+  }
+}

@@ -36,6 +36,7 @@ import { Comment } from './entities/comment.entity';
 import { GetAllIdeasController } from './features/feed/ideas/get-all-ideas/v1/get-all-ideas.controller';
 import { GetIdeaByIdController } from './features/feed/ideas/get-idea-by-id/v1/get-idea-by-id.controller';
 import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/update-idea.controller';
+import { DeleteIdeaController } from './features/feed/ideas/delete-idea/v1/delete-idea.controller';
 
 @Module({
   imports: [
@@ -122,6 +123,7 @@ import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/updat
     GetAllIdeasController,
     GetIdeaByIdController,
     UpdateIdeaController,
+    DeleteIdeaController,
   ],
 })
 export class AppModule {}

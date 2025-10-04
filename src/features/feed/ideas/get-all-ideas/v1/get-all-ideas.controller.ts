@@ -2,6 +2,8 @@ import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import {
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Logger,
   Query,
   Request,
@@ -22,6 +24,7 @@ export class GetAllIdeasController {
 
   @Get()
   @Version('1')
+  @HttpCode(HttpStatus.OK)
   async getAllIdeas(
     @Request() req: RequestWithUserData,
     @Query() { quantity, page, authorId }: GetAllIdeasInput,
