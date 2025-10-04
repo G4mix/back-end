@@ -28,6 +28,7 @@ import { Tag } from 'src/entities/tag.entity';
 import { Image } from 'src/entities/image.entity';
 import { AtLeastOneImage, IdeaNotFound } from 'src/shared/errors';
 import { GetIdeaByIdInput } from '../../get-idea-by-id/v1/get-idea-by-id.dto';
+import { safeSave } from 'src/shared/utils/safeSave';
 
 @Controller('/idea')
 export class UpdateIdeaController {
@@ -113,7 +114,7 @@ export class UpdateIdeaController {
     }
     idea.images = newImages;
 
-    await this.ideaRepository.save(idea);
+    await safeSave(this.ideaRepository, idea);
     return idea.toDto();
   }
 }

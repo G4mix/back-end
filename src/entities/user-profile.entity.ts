@@ -38,7 +38,10 @@ export class UserProfile {
   })
   user: User;
 
-  @OneToMany(() => Link, (link) => link.userProfile)
+  @OneToMany(() => Link, (link) => link.userProfile, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   links: Link[];
 
   @OneToMany(() => Follow, (follow) => follow.followingUser)

@@ -26,6 +26,7 @@ import { Link } from 'src/entities/link.entity';
 import { Tag } from 'src/entities/tag.entity';
 import { Image } from 'src/entities/image.entity';
 import { AtLeastOneImage } from 'src/shared/errors';
+import { safeSave } from 'src/shared/utils/safeSave';
 
 @Controller('/idea')
 export class CreateIdeaController {
@@ -68,7 +69,7 @@ export class CreateIdeaController {
     });
     newIdea.tags = newTags ?? [];
 
-    const idea = await this.ideaRepository.save(newIdea);
+    const idea = await safeSave(this.ideaRepository, newIdea);
     const newImages: Image[] = [];
     for (const image of images ?? []) {
       const ideaImageRes = await this.s3Gateway.uploadFile({
@@ -84,7 +85,7 @@ export class CreateIdeaController {
     }
     idea.images = newImages;
 
-    await this.ideaRepository.save(idea);
+    await safeSave(this.ideaRepository, idea);
     return idea.toDto();
   }
 }

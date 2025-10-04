@@ -18,6 +18,7 @@ import {
   InvalidEmailOrPassword,
   TooManyLoginAttempts,
 } from 'src/shared/errors';
+import { safeSave } from 'src/shared/utils/safeSave';
 
 @Controller('/auth')
 export class SignInController {
@@ -29,6 +30,7 @@ export class SignInController {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    // private readonly sesGateway: SESGateway,
   ) {}
 
   @Post('/signin')
@@ -48,13 +50,15 @@ export class SignInController {
 
     if (!user) throw new InvalidEmailOrPassword();
 
-    // Verificação de e-mail (se tiver SES)
     // if (!user.verified) {
-    //   const res = await this.sesService.checkEmailStatus(email);
+    //   const res = await this.sesGateway.checkEmailStatus(body.email);
     //   if (res?.status === 'Success') {
     //     user.verified = true;
     //     await this.userRepository.save(user);
-    //     await this.sesService.sendEmail({ template: 'SignUp', receiver: user.email });
+    //     await this.sesGateway.sendEmail({
+    //       template: 'SignUp',
+    //       receiver: user.email,
+    //     });
     //   }
     // }
 
@@ -66,7 +70,7 @@ export class SignInController {
       }
       user.loginAttempts = 0;
       user.blockedUntil = null;
-      await this.userRepository.save(user);
+      await safeSave(this.userRepository, user);
     }
 
     if (!(await compare(body.password, user.password))) {
@@ -75,7 +79,7 @@ export class SignInController {
         user.blockedUntil = new Date(now.getTime() + this.BLOCK_TIME_MS);
         // await this.sesService.sendEmail({ template: 'BlockedAccount', receiver: email });
       }
-      await this.userRepository.save(user);
+      await safeSave(this.userRepository, user);
 
       throw new InvalidEmailOrPassword();
     }
@@ -92,7 +96,7 @@ export class SignInController {
     user.loginAttempts = 0;
     user.blockedUntil = null;
     user.refreshToken = refreshToken;
-    await this.userRepository.save(user);
+    await safeSave(this.userRepository, user);
 
     return {
       accessToken,

@@ -14,6 +14,7 @@ import { View } from 'src/entities/view.entity';
 import { Repository } from 'typeorm';
 import { RecordViewInput } from './record-view.dto';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
+import { safeSave } from 'src/shared/utils/safeSave';
 
 @Controller('/view')
 export class RecordViewController {
@@ -31,14 +32,9 @@ export class RecordViewController {
     @Request() { user: { userProfileId } }: RequestWithUserData,
     @Body() { targetIdeaId }: RecordViewInput,
   ) {
-    try {
-      const view = await this.viewRepository.findOne({
-        where: { ideaId: targetIdeaId, userProfileId },
-      });
-      if (view) return;
-      await this.viewRepository.insert({ ideaId: targetIdeaId, userProfileId });
-    } catch (_err) {
-      return;
-    }
+    await safeSave(this.viewRepository, {
+      ideaId: targetIdeaId,
+      userProfileId,
+    });
   }
 }

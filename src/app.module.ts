@@ -39,6 +39,8 @@ import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/updat
 import { DeleteIdeaController } from './features/feed/ideas/delete-idea/v1/delete-idea.controller';
 import { ToggleLikeController } from './features/feed/toggle-like/v1/toggle-like.controller';
 import { RecordViewController } from './features/feed/ideas/record-view/v1/record-view.controller';
+import { CreateCommentController } from './features/feed/comments/create-comment/v1/create-comment.controller';
+import { GetAllCommentsController } from './features/feed/comments/get-all-comments/v1/get-all-comments.controller';
 
 @Module({
   imports: [
@@ -128,6 +130,8 @@ import { RecordViewController } from './features/feed/ideas/record-view/v1/recor
     DeleteIdeaController,
     ToggleLikeController,
     RecordViewController,
+    CreateCommentController,
+    GetAllCommentsController,
   ],
 })
 export class AppModule {}

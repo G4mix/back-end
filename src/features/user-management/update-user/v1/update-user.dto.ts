@@ -11,7 +11,25 @@ import {
 import { InvalidUserProfile } from 'src/shared/errors';
 import { parseArraySafe } from 'src/shared/utils/parseArraySafe';
 
-class UpdateUserProfileInput {
+class UpdateUserInput {
+  @IsString({ message: 'INVALID_NAME' })
+  @Matches(/^[^{}]{3,50}$/, { message: 'INVALID_NAME' })
+  @IsOptional()
+  username?: string;
+
+  @IsEmail({}, { message: 'INVALID_EMAIL' })
+  @IsOptional()
+  email?: string;
+
+  @IsString({ message: 'INVALID_PASSWORD' })
+  @Matches(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, {
+    message: 'INVALID_PASSWORD',
+  })
+  @IsOptional()
+  password?: string;
+}
+
+export class UpdateUserProfileInput {
   @IsString({ message: 'INVALID_NAME' })
   @Matches(/^[^{}]{3,300}$/, { message: 'INVALID_NAME' })
   @IsOptional()
@@ -31,24 +49,6 @@ class UpdateUserProfileInput {
   @MaxLength(700, { each: true, message: 'LINK_TOO_LONG' })
   @Transform(({ value }) => parseArraySafe(value))
   links?: string[];
-}
-
-export class UpdateUserInput {
-  @IsString({ message: 'INVALID_NAME' })
-  @Matches(/^[^{}]{3,50}$/, { message: 'INVALID_NAME' })
-  @IsOptional()
-  username?: string;
-
-  @IsEmail({}, { message: 'INVALID_EMAIL' })
-  @IsOptional()
-  email?: string;
-
-  @IsString({ message: 'INVALID_PASSWORD' })
-  @Matches(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, {
-    message: 'INVALID_PASSWORD',
-  })
-  @IsOptional()
-  password?: string;
 
   @IsOptional()
   @Transform(({ value }: { value: string }) => {
@@ -58,6 +58,6 @@ export class UpdateUserInput {
       throw new InvalidUserProfile();
     }
   })
-  @Type(() => UpdateUserProfileInput)
-  userProfile?: UpdateUserProfileInput;
+  @Type(() => UpdateUserInput)
+  user: UpdateUserInput = {};
 }

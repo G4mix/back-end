@@ -19,6 +19,7 @@ import { UserCode } from 'src/entities/user-code.entity';
 import { hashSync } from 'bcrypt';
 import { SESGateway } from 'src/shared/gateways/ses.gateway';
 import { UserAlreadyExists } from 'src/shared/errors';
+import { safeSave } from 'src/shared/utils/safeSave';
 
 @Controller('/auth')
 export class SignupController {
@@ -43,10 +44,10 @@ export class SignupController {
     });
     if (existingUser) throw new UserAlreadyExists();
 
-    const userProfile = await this.userProfileRepository.save({});
-    const userCode = await this.userCodeRepository.save({});
+    const userProfile = await safeSave(this.userProfileRepository, {});
+    const userCode = await safeSave(this.userCodeRepository, {});
     const password = hashSync(body.password, 10);
-    const newUser = await this.userRepository.save({
+    const newUser = await safeSave(this.userRepository, {
       ...body,
       password,
       email: body.email.toLowerCase(),

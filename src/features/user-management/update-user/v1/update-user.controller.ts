@@ -13,12 +13,11 @@ import {
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from 'src/entities/user.entity';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
-import { UpdateUserInput } from './update-user.dto';
+import { UpdateUserProfileInput } from './update-user.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { hashSync } from 'bcrypt';
-import { UserProfile, UserProfileDto } from 'src/entities/user-profile.entity';
+import { UserProfileDto } from 'src/entities/user-profile.entity';
 import { Link } from 'src/entities/link.entity';
 import { SESGateway } from 'src/shared/gateways/ses.gateway';
 import {
@@ -27,13 +26,15 @@ import {
   fileInterceptorOptions,
 } from 'src/shared/gateways/s3.gateway';
 import { ConfigService } from '@nestjs/config';
-import { PictureUpdateFail } from 'src/shared/errors';
+import { PictureUpdateFail, UserNotFound } from 'src/shared/errors';
+import { safeSave } from 'src/shared/utils/safeSave';
+import { UserProfile } from '../../../../entities/user-profile.entity';
 
 @Controller('/user')
 export class UpdateUserController {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(UserProfile)
+    private readonly userProfileRepository: Repository<UserProfile>,
     private readonly configService: ConfigService,
     private readonly sesGateway: SESGateway,
     private readonly s3Gateway: S3Gateway,
@@ -54,97 +55,72 @@ export class UpdateUserController {
     ),
   )
   async updateUser(
-    @Request() { user: { sub: id } }: RequestWithUserData,
-    @Body()
-    { email, password, username, userProfile = {} }: UpdateUserInput,
+    @Request() { user: { sub: id, userProfileId } }: RequestWithUserData,
+    @Body() { autobiography, displayName, links, user }: UpdateUserProfileInput,
     @UploadedFiles()
     files: {
       icon?: Express.Multer.File[];
       backgroundImage?: Express.Multer.File[];
     },
   ): Promise<UserProfileDto> {
+    const userProfile = await this.userProfileRepository.findOne({
+      where: { id: userProfileId },
+      relations: ['links', 'user'],
+    });
+    if (!userProfile) throw new UserNotFound();
     const icon = files.icon?.[0];
     const backgroundImage = files.backgroundImage?.[0];
 
-    const updatedUser: Partial<User> = Object.assign(
-      {},
-      email ? { verified: false, email } : undefined,
-      password && { password: hashSync(password, 10) },
-      username && { username },
-    );
-
-    if (email) await this.sesGateway.verifyIdentity(email);
-    await this.userRepository.update(id, updatedUser);
-
-    if (Object.keys(userProfile).length > 0 || icon || backgroundImage) {
-      const updatedLinks = userProfile.links?.map((link) => {
-        const updatedLink = new Link();
-        updatedLink.url = link;
-        return updatedLink;
+    if (icon) {
+      const userIconRes = await this.s3Gateway.uploadFile({
+        bucketName: this.configService.get<string>('PUBLIC_BUCKET_NAME')!,
+        key: `user-${id}/icon${SUPPORTED_IMAGES[icon.mimetype as keyof typeof SUPPORTED_IMAGES]}`,
+        file: icon.buffer,
       });
+      if (typeof userIconRes !== 'object') throw new PictureUpdateFail();
+      if (userIconRes.fileUrl) userProfile.icon = userIconRes.fileUrl;
+    }
 
-      const updatedUserProfile: Partial<UserProfile> = {
-        ...userProfile,
-        links: updatedLinks,
-      };
-
-      if (icon) {
-        const userIconRes = await this.s3Gateway.uploadFile({
-          bucketName: this.configService.get<string>('PUBLIC_BUCKET_NAME')!,
-          key: `user-${id}/icon${SUPPORTED_IMAGES[icon.mimetype as keyof typeof SUPPORTED_IMAGES]}`,
-          file: icon.buffer,
-        });
-        if (typeof userIconRes !== 'object') throw new PictureUpdateFail();
-        if (userIconRes.fileUrl) updatedUserProfile.icon = userIconRes.fileUrl;
-      }
-
-      if (backgroundImage) {
-        const userbackgroundImageRes = await this.s3Gateway.uploadFile({
-          bucketName: this.configService.get<string>('PUBLIC_BUCKET_NAME')!,
-          key: `user-${id}/backgroundImage${SUPPORTED_IMAGES[backgroundImage.mimetype as keyof typeof SUPPORTED_IMAGES]}`,
-          file: backgroundImage.buffer,
-        });
-        if (typeof userbackgroundImageRes !== 'object') {
-          throw new PictureUpdateFail();
-        }
-        if (userbackgroundImageRes.fileUrl) {
-          updatedUserProfile.backgroundImage = userbackgroundImageRes.fileUrl;
-        }
-      }
-
-      const userProfileRepo =
-        this.userRepository.manager.getRepository(UserProfile);
-
-      const profile = await userProfileRepo.findOne({
-        where: { user: { id } },
-        relations: ['links'],
+    if (backgroundImage) {
+      const userbackgroundImageRes = await this.s3Gateway.uploadFile({
+        bucketName: this.configService.get<string>('PUBLIC_BUCKET_NAME')!,
+        key: `user-${id}/backgroundImage${SUPPORTED_IMAGES[backgroundImage.mimetype as keyof typeof SUPPORTED_IMAGES]}`,
+        file: backgroundImage.buffer,
       });
-
-      if (profile) {
-        userProfileRepo.merge(profile, updatedUserProfile);
-        await userProfileRepo.save(profile);
-      } else {
-        const newProfile = userProfileRepo.create({
-          ...updatedUserProfile,
-          user: { id } as any,
-        });
-        await userProfileRepo.save(newProfile);
-
-        await this.userRepository.update(id, { userProfileId: newProfile.id });
+      if (typeof userbackgroundImageRes !== 'object') {
+        throw new PictureUpdateFail();
+      }
+      if (userbackgroundImageRes.fileUrl) {
+        userProfile.backgroundImage = userbackgroundImageRes.fileUrl;
       }
     }
 
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: [
-        'userProfile',
-        'userProfile.links',
-        'userProfile.followers',
-        'userProfile.following',
-        'userProfile.user',
-        'userCode',
-      ],
-    });
-    return user!.userProfile.toDto();
+    if (links) {
+      await this.userProfileRepository.manager.delete(Link, {
+        userProfileId,
+      });
+      const updatedLinks = links?.map((link) => {
+        const updatedLink = new Link();
+        updatedLink.url = link;
+        updatedLink.userProfileId = userProfileId;
+        return updatedLink;
+      });
+      userProfile.links = updatedLinks;
+    }
+    if (displayName) userProfile.displayName = displayName;
+    if (autobiography) userProfile.autobiography = autobiography;
+
+    const { email, password, username } = user;
+    if (email) {
+      userProfile.user.email = email;
+      userProfile.user.verified = false;
+      await this.sesGateway.verifyIdentity(email);
+    }
+    if (password) userProfile.user.password = hashSync(password, 10);
+    if (username) userProfile.user.username = username;
+
+    await safeSave(this.userProfileRepository, userProfile);
+
+    return userProfile.toDto();
   }
 }

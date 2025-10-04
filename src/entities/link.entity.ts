@@ -19,6 +19,10 @@ export class Link {
   @Index()
   ideaId: string | null;
 
+  @Column({ nullable: true })
+  @Index()
+  userProfileId: string | null;
+
   @Column({ length: 700 })
   url: string;
 
