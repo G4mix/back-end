@@ -31,22 +31,4 @@ export class Tag {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  toDto(): TagDto {
-    const dto = new TagDto();
-    dto.id = this.id;
-    dto.name = this.name;
-    dto.ideaId = this.ideaId;
-    dto.createdAt = this.createdAt;
-    dto.updatedAt = this.updatedAt;
-    return dto;
-  }
-}
-
-export class TagDto {
-  id: string;
-  name: string;
-  ideaId: string;
-  createdAt: Date;
-  updatedAt: Date;
 }

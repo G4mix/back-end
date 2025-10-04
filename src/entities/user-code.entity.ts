@@ -16,7 +16,7 @@ export class UserCode {
   @Column({ type: 'varchar', length: 6, nullable: true })
   code: string | null;
 
-  @OneToOne(() => User, (user) => user.userCode)
+  @OneToOne(() => User, (user) => user.userCode, { onDelete: 'CASCADE' })
   user: User;
 
   @CreateDateColumn()
@@ -24,18 +24,4 @@ export class UserCode {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  toDto(): UserCodeDto {
-    const dto = new UserCodeDto();
-    dto.id = this.id;
-    dto.code = this.code ?? null;
-    dto.createdAt = this.createdAt;
-    return dto;
-  }
-}
-
-export class UserCodeDto {
-  id: string;
-  code: string | null;
-  createdAt: Date;
 }

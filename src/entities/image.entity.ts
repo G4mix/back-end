@@ -40,9 +40,6 @@ export class Image {
     dto.id = this.id;
     dto.src = this.src;
     dto.alt = this.alt;
-    dto.ideaId = this.ideaId;
-    dto.createdAt = this.createdAt;
-    dto.updatedAt = this.updatedAt;
     return dto;
   }
 }
@@ -51,9 +48,4 @@ export class ImageDto {
   id: string;
   src: string;
   alt: string;
-  width: number;
-  height: number;
-  ideaId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
 }

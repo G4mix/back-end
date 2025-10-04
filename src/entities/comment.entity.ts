@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm';
-import { UserProfile } from './user-profile.entity';
+import { UserProfile, UserProfileDto } from './user-profile.entity';
 import { Idea } from './idea.entity';
 import { Like } from './like.entity';
 
@@ -81,7 +81,7 @@ export class Comment {
 export class CommentDto {
   id: string;
   content: string;
-  author: any; // UserProfileDto
+  author: UserProfileDto;
   ideaId: string;
   parentCommentId: string | null;
   likes: number;

@@ -36,20 +36,4 @@ export class View {
 
   @CreateDateColumn()
   createdAt: Date;
-
-  toDto(): ViewDto {
-    const dto = new ViewDto();
-    dto.id = this.id;
-    dto.ideaId = this.ideaId;
-    dto.userProfileId = this.userProfileId;
-    dto.createdAt = this.createdAt;
-    return dto;
-  }
-}
-
-export class ViewDto {
-  id: string;
-  ideaId: string;
-  userProfileId: string;
-  createdAt: Date;
 }

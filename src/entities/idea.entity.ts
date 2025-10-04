@@ -13,7 +13,7 @@ import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { View } from './view.entity';
 import { Tag } from './tag.entity';
-import { Image } from './image.entity';
+import { Image, ImageDto } from './image.entity';
 import { Link } from './link.entity';
 
 @Entity('ideas')
@@ -70,12 +70,7 @@ export class Idea {
     dto.views = this.views?.length ?? 0;
     dto.links = this.links.map((link) => link.url) ?? [];
     dto.tags = this.tags?.map((tag) => tag.name) ?? [];
-    dto.images =
-      this.images?.map((image) => ({
-        id: image.id,
-        src: image.src,
-        alt: image.alt,
-      })) ?? [];
+    dto.images = this.images?.map((image) => image.toDto()) ?? [];
     dto.isLiked = currentUserId
       ? this.likes?.some((like) => like.userProfileId === currentUserId)
       : false;
@@ -95,11 +90,7 @@ export class IdeaDto {
   views: number;
   links: string[];
   tags: string[];
-  images: {
-    id: string;
-    src: string;
-    alt: string;
-  }[];
+  images: ImageDto[];
   isLiked: boolean;
   createdAt: Date;
   updatedAt: Date;

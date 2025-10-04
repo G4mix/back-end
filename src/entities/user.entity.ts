@@ -38,20 +38,14 @@ export class User {
   @Column({ unique: true })
   userCodeId: string;
 
-  @OneToOne(() => UserCode, (userCode) => userCode.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => UserCode, (userCode) => userCode.user)
   @JoinColumn({ name: 'user_code_id' })
   userCode: UserCode;
 
   @Column({ unique: true })
   userProfileId: string;
 
-  @OneToOne(() => UserProfile, (profile) => profile.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => UserProfile, (profile) => profile.user)
   @JoinColumn({ name: 'user_profile_id' })
   userProfile: UserProfile;
 

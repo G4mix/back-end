@@ -47,22 +47,4 @@ export class Like {
 
   @CreateDateColumn()
   createdAt: Date;
-
-  toDto(): LikeDto {
-    const dto = new LikeDto();
-    dto.id = this.id;
-    dto.ideaId = this.ideaId;
-    dto.commentId = this.commentId;
-    dto.userProfileId = this.userProfileId;
-    dto.createdAt = this.createdAt;
-    return dto;
-  }
-}
-
-export class LikeDto {
-  id: string;
-  ideaId: string | null;
-  commentId: string | null;
-  userProfileId: string;
-  createdAt: Date;
 }

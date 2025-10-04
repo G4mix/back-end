@@ -32,7 +32,10 @@ export class UserProfile {
   @Column({ type: 'varchar', length: 2048, nullable: true })
   backgroundImage: string | null;
 
-  @OneToOne(() => User, (user) => user.userProfile)
+  @OneToOne(() => User, (user) => user.userProfile, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   user: User;
 
   @OneToMany(() => Link, (link) => link.userProfile)
