@@ -37,7 +37,8 @@ import { GetAllIdeasController } from './features/feed/ideas/get-all-ideas/v1/ge
 import { GetIdeaByIdController } from './features/feed/ideas/get-idea-by-id/v1/get-idea-by-id.controller';
 import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/update-idea.controller';
 import { DeleteIdeaController } from './features/feed/ideas/delete-idea/v1/delete-idea.controller';
-import { ToggleLikeController } from './features/feed/toggle-like-on-idea/v1/toggle-like.controller';
+import { ToggleLikeController } from './features/feed/toggle-like/v1/toggle-like.controller';
+import { RecordViewController } from './features/feed/ideas/record-view/v1/record-view.controller';
 
 @Module({
   imports: [
@@ -126,6 +127,7 @@ import { ToggleLikeController } from './features/feed/toggle-like-on-idea/v1/tog
     UpdateIdeaController,
     DeleteIdeaController,
     ToggleLikeController,
+    RecordViewController,
   ],
 })
 export class AppModule {}

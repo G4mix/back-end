@@ -83,6 +83,9 @@ export class Idea {
     dto.isLiked = currentUserId
       ? this.likes?.some((like) => like.userProfileId === currentUserId)
       : false;
+    dto.isViewed = currentUserId
+      ? this.views?.some((view) => view.userProfileId === currentUserId)
+      : false;
     dto.createdAt = this.createdAt;
     dto.updatedAt = this.updatedAt;
     return dto;
@@ -101,6 +104,7 @@ export class IdeaDto {
   tags: string[];
   images: ImageDto[];
   isLiked: boolean;
+  isViewed: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
