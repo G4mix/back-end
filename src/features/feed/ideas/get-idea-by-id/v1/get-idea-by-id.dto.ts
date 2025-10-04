@@ -1,6 +1,6 @@
 import { IsUUID } from 'class-validator';
 
 export class GetIdeaByIdInput {
-  @IsUUID()
+  @IsUUID(undefined, { message: 'INVALID_ID' })
   id: string;
 }

@@ -5,10 +5,10 @@ export class CreateCommentInput {
   @Matches(/^[^{}]{3,200}$/, { message: 'INVALID_CONTENT' })
   content: string;
 
-  @IsUUID()
+  @IsUUID(undefined, { message: 'INVALID_IDEA_ID' })
   ideaId: string;
 
-  @IsUUID()
+  @IsUUID(undefined, { message: 'INVALID_PARENT_COMMENT_ID' })
   @IsOptional()
   parentCommentId?: string;
 }

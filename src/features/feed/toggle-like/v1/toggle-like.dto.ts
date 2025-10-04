@@ -1,4 +1,4 @@
-import { IsEnum, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsUUID } from 'class-validator';
 
 export enum LikeType {
   IDEA = 'Idea',
@@ -6,8 +6,7 @@ export enum LikeType {
 }
 
 export class ToggleLikeInput {
-  @IsString({ message: 'INVALID_TARGET_LIKE_ID' })
-  @IsUUID()
+  @IsUUID(undefined, { message: 'INVALID_TARGET_LIKE_ID' })
   targetLikeId: string | undefined;
 
   @IsEnum(LikeType, { message: 'INVALID_LIKE_TYPE' })
