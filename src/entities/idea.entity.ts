@@ -45,12 +45,21 @@ export class Idea {
   @OneToMany(() => View, (view) => view.idea)
   views: View[];
 
-  @OneToMany(() => Link, (link) => link.idea)
+  @OneToMany(() => Link, (link) => link.idea, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   links: Link[];
-  @OneToMany(() => Tag, (tag) => tag.idea)
+  @OneToMany(() => Tag, (tag) => tag.idea, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   tags: Tag[];
 
-  @OneToMany(() => Image, (image) => image.idea)
+  @OneToMany(() => Image, (image) => image.idea, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   images: Image[];
 
   @CreateDateColumn()

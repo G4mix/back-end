@@ -67,31 +67,38 @@ export class UpdateIdeaController {
     });
     if (!idea) throw new IdeaNotFound();
 
-    const newIdea = new Idea();
-    if (title) newIdea.title = title;
-    if (content) newIdea.content = content;
-    newIdea.authorId = userProfileId;
+    if (title) idea.title = title;
+    if (content) idea.content = content;
+    idea.authorId = userProfileId;
 
     if (links) {
-      const newLinks = links?.map((link) => {
+      await this.ideaRepository.manager.delete(Link, { ideaId: idea.id });
+
+      const newLinks = links.map((link) => {
         const newLink = new Link();
         newLink.url = link;
+        newLink.ideaId = idea.id;
         return newLink;
       });
-      newIdea.links = newLinks ?? [];
+      idea.links = newLinks;
     }
 
     if (tags) {
-      const newTags = tags?.map((tag) => {
+      await this.ideaRepository.manager.delete(Tag, { ideaId: idea.id });
+
+      const newTags = tags.map((tag) => {
         const newTag = new Tag();
         newTag.name = tag;
+        newTag.ideaId = idea.id;
         return newTag;
       });
-      newIdea.tags = newTags ?? [];
+      idea.tags = newTags;
     }
 
     const newImages: Image[] = [];
     for (const image of images ?? []) {
+      await this.ideaRepository.manager.delete(Image, { ideaId: idea.id });
+
       const ideaImageRes = await this.s3Gateway.uploadFile({
         bucketName: this.configService.get<string>('PUBLIC_BUCKET_NAME')!,
         key: `user-${id}/ideas/${idea.id}/${image.originalname}`,
@@ -101,11 +108,11 @@ export class UpdateIdeaController {
       const newImage = new Image();
       newImage.alt = `Image ${image.originalname}`;
       newImage.src = ideaImageRes.fileUrl;
+      newImage.ideaId = idea.id;
       newImages.push(newImage);
     }
-    newIdea.images = newImages;
+    idea.images = newImages;
 
-    this.ideaRepository.merge(idea, newIdea);
     await this.ideaRepository.save(idea);
     return idea.toDto();
   }

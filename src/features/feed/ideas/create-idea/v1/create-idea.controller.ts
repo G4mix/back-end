@@ -82,9 +82,9 @@ export class CreateIdeaController {
       newImage.src = ideaImageRes.fileUrl;
       newImages.push(newImage);
     }
-    newIdea.images = newImages;
+    idea.images = newImages;
 
-    if (newImages.length > 0) await this.ideaRepository.save(newIdea);
+    await this.ideaRepository.save(idea);
     return idea.toDto();
   }
 }
