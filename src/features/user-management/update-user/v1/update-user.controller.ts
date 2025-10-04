@@ -107,8 +107,12 @@ export class UpdateUserController {
       });
       userProfile.links = updatedLinks;
     }
-    if (displayName) userProfile.displayName = displayName;
-    if (autobiography) userProfile.autobiography = autobiography;
+
+    Object.assign(
+      userProfile,
+      displayName && { displayName },
+      autobiography && { autobiography },
+    );
 
     const { email, password, username } = user;
     if (email) {
@@ -116,9 +120,11 @@ export class UpdateUserController {
       userProfile.user.verified = false;
       await this.sesGateway.verifyIdentity(email);
     }
-    if (password) userProfile.user.password = hashSync(password, 10);
-    if (username) userProfile.user.username = username;
-
+    Object.assign(
+      userProfile.user,
+      username && { username },
+      password && { password: hashSync(password, 10) },
+    );
     await safeSave(this.userProfileRepository, userProfile);
 
     return userProfile.toDto();
