@@ -1,12 +1,12 @@
 import {
   Controller,
-  Post,
   HttpCode,
   HttpStatus,
   Logger,
   Request,
-  Body,
   Version,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
