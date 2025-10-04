@@ -37,6 +37,7 @@ import { GetAllIdeasController } from './features/feed/ideas/get-all-ideas/v1/ge
 import { GetIdeaByIdController } from './features/feed/ideas/get-idea-by-id/v1/get-idea-by-id.controller';
 import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/update-idea.controller';
 import { DeleteIdeaController } from './features/feed/ideas/delete-idea/v1/delete-idea.controller';
+import { ToggleLikeController } from './features/feed/toggle-like-on-idea/v1/toggle-like.controller';
 
 @Module({
   imports: [
@@ -124,6 +125,7 @@ import { DeleteIdeaController } from './features/feed/ideas/delete-idea/v1/delet
     GetIdeaByIdController,
     UpdateIdeaController,
     DeleteIdeaController,
+    ToggleLikeController,
   ],
 })
 export class AppModule {}
