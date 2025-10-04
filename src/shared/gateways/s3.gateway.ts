@@ -97,7 +97,6 @@ export class S3Gateway {
         Prefix: folderPrefix,
       });
       const listedObjects = await this.s3.send(listCommand);
-      console.log(listedObjects);
 
       if (listedObjects.Contents?.length) {
         const deleteParams = {
@@ -106,16 +105,12 @@ export class S3Gateway {
             Objects: listedObjects.Contents.map((obj) => ({ Key: obj.Key! })),
           },
         };
-        console.log(deleteParams);
 
         const deleteCommand = new DeleteObjectsCommand(deleteParams);
-        const deleteResult = await this.s3.send(deleteCommand);
-        console.log('Deleted objects:', deleteResult.Deleted);
-      } else {
-        console.log('No objects found to delete.');
+        await this.s3.send(deleteCommand);
       }
-    } catch (err) {
-      console.error('Error deleting folder:', err);
+    } catch (_err) {
+      // Ignore this
     }
   }
 
