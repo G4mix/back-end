@@ -67,8 +67,7 @@ export class Comment {
     dto.ideaId = this.ideaId;
     dto.parentCommentId = this.parentCommentId;
     dto.likes = this.likes?.length ?? 0;
-    dto.replies =
-      this.replies?.map((reply) => reply.toDto(currentUserId)) ?? [];
+    dto.replies = this.replies?.length ?? 0;
     dto.isLiked = currentUserId
       ? this.likes?.some((like) => like.userProfileId === currentUserId)
       : false;
@@ -85,7 +84,7 @@ export class CommentDto {
   ideaId: string;
   parentCommentId: string | null;
   likes: number;
-  replies: CommentDto[];
+  replies: number;
   isLiked: boolean;
   createdAt: Date;
   updatedAt: Date;
