@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { createTestModule, setupTestApp } from './module';
+import { clearDatabase, createTestModule, setupTestApp } from './module';
 import { User } from 'src/users/entities/user.entity';
 import { UserCode } from 'src/users/entities/user-code.entity';
 import { UserProfile } from 'src/users/entities/user-profile.entity';
@@ -24,7 +24,7 @@ declare global {
   var sesClient: SESv2Client;
 }
 
-beforeEach(async () => {
+beforeAll(async () => {
   const module = await createTestModule();
   const app = await setupTestApp(module);
   global.app = app;
@@ -38,7 +38,13 @@ beforeEach(async () => {
   global.sesClient = app.get(SES_CLIENT);
 });
 
-afterEach(async () => {
+beforeEach(async () => {
+  await clearDatabase(app);
+  (s3Client.send as jest.Mock).mockClear();
+  (sesClient.send as jest.Mock).mockClear();
+});
+
+afterAll(async () => {
   if (global.dataSource?.isInitialized) await global.dataSource.destroy();
   if (global.app) await global.app.close();
 });

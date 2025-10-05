@@ -34,9 +34,6 @@ export const setupTestApp = async (moduleFixture: TestingModule) => {
   const app = moduleFixture.createNestApplication();
   setupApplication(app);
   await app.init();
-
-  await clearDatabase(app);
-
   return app;
 };
 
