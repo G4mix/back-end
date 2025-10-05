@@ -9,15 +9,15 @@ import {
 } from '@nestjs/common';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { GetAllUsersOutput, GetAllUsersInput } from './get-all-users.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from 'src/entities/user.entity';
+import { UserProfile } from 'src/entities/user-profile.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('/user')
 export class GetAllUsersController {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(UserProfile)
+    private readonly userProfileRepository: Repository<UserProfile>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -28,13 +28,15 @@ export class GetAllUsersController {
     @Request() req: RequestWithUserData,
     @Query() { search, quantity, page }: GetAllUsersInput,
   ): Promise<GetAllUsersOutput> {
-    const qb = this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.userProfile', 'userProfile')
+    const qb = this.userProfileRepository
+      .createQueryBuilder('userProfile')
+      .leftJoinAndSelect('userProfile.user', 'user')
       .leftJoinAndSelect('userProfile.links', 'links')
       .leftJoinAndSelect('userProfile.followers', 'followers')
       .leftJoinAndSelect('userProfile.following', 'following')
-      .where('user.id != :currentUserId', { currentUserId: req.user.sub });
+      .where('userProfile.id != :currentUserId', {
+        currentUserId: req.user.userProfileId,
+      });
 
     if (search && search.trim() !== '') {
       qb.andWhere(
@@ -54,7 +56,7 @@ export class GetAllUsersController {
       pages,
       page,
       nextPage: nextPage >= pages ? null : nextPage,
-      data: users.map((user) => user.toDto(req.user.sub)),
+      data: users.map((user) => user.toDto(req.user.userProfileId)),
     };
   }
 }

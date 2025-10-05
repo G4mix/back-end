@@ -1,91 +1,41 @@
-import { INestApplication } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
-import { UserCode } from 'src/entities/user-code.entity';
-import { UserProfile } from 'src/entities/user-profile.entity';
-import { createTestUserWithRelations } from 'test/user-helper';
-import { generateTestJwtForUser } from 'test/jwt-helper';
-import { createTestModule, setupTestApp } from 'test/test-setup';
+import { createTestUser } from 'test/test-helpers';
+import { generateTestJwt } from 'test/jwt-helper';
+
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { DataSource, Repository } from 'typeorm';
-import { UserDto } from 'src/entities/user.entity';
+
+import { UserProfileDto } from 'src/entities/user-profile.entity';
 
 interface ErrorResponse {
   message: string;
 }
 
 describe('/v1/user/{userProfileId} (GET)', () => {
-  let app: INestApplication<App>;
-  let userRepository: Repository<User>;
-  let userCodeRepository: Repository<UserCode>;
-  let userProfileRepository: Repository<UserProfile>;
-
-  beforeEach(async () => {
-    const moduleFixture = await createTestModule();
-    app = await setupTestApp(moduleFixture);
-
-    userRepository = app.get('UserRepository');
-    userCodeRepository = app.get('UserCodeRepository');
-    userProfileRepository = app.get('UserProfileRepository');
-  });
-
-  afterEach(async () => {
-    const dataSource = app.get(DataSource);
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-    await app.close();
-  });
-
-  const createTestUser = async (
-    username: string,
-    email: string,
-    password: string,
-  ) => {
-    const { user } = await createTestUserWithRelations(
-      userRepository,
-      userCodeRepository,
-      userProfileRepository,
-      username,
-      email,
-      password,
-    );
-    return user;
-  };
-
-  const createAuthToken = (userId: string, userProfileId?: string) => {
-    return generateTestJwtForUser(userId, userProfileId);
-  };
-
   it('should return 200 and user data when user exists', async () => {
-    const { user } = await createTestUserWithRelations(
-      userRepository,
-      userCodeRepository,
-      userProfileRepository,
+    const user = await createTestUser(
       'testuser',
       'test@example.com',
       'password123',
     );
-    const { user: currentUser } = await createTestUserWithRelations(
-      userRepository,
-      userCodeRepository,
-      userProfileRepository,
+    const currentUser = await createTestUser(
       'current',
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id, currentUser.userProfileId);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get(`/v1/user/${user.userProfileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserDto;
-    expect(body.id).toEqual(user.id);
-    expect(body.username).toEqual(user.username);
-    expect(body.email).toEqual(user.email);
-    expect(body.verified).toEqual(user.verified);
+    const body = response.body as UserProfileDto;
+    expect(body.id).toEqual(user.userProfileId);
+    expect(body.user.username).toEqual(user.username);
+    expect(body.user.email).toEqual(user.email);
+    expect(body.user.verified).toEqual(user.verified);
   });
 
   it('should return 200 when no token is provided', async () => {
@@ -122,7 +72,10 @@ describe('/v1/user/{userProfileId} (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user/00000000-0000-0000-0000-000000000000')
@@ -139,7 +92,10 @@ describe('/v1/user/{userProfileId} (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user/invalid-uuid')
@@ -161,16 +117,19 @@ describe('/v1/user/{userProfileId} (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get(`/v1/user/${user.userProfileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserDto;
-    expect(body.userProfile).toBeDefined();
-    expect(body.userProfile.id).toEqual(user.userProfileId);
+    const body = response.body as UserProfileDto;
+    expect(body.user).toBeDefined();
+    expect(body.user.id).toEqual(user.id);
   });
 
   it('should return user with links information', async () => {
@@ -184,16 +143,19 @@ describe('/v1/user/{userProfileId} (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get(`/v1/user/${user.userProfileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserDto;
-    expect(body.userProfile.links).toBeDefined();
-    expect(Array.isArray(body.userProfile.links)).toBe(true);
+    const body = response.body as UserProfileDto;
+    expect(body.links).toBeDefined();
+    expect(Array.isArray(body.links)).toBe(true);
   });
 
   it('should return user with followers information', async () => {
@@ -207,16 +169,19 @@ describe('/v1/user/{userProfileId} (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get(`/v1/user/${user.userProfileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserDto;
-    expect(body.userProfile.followers).toBeDefined();
-    expect(typeof body.userProfile.followers).toBe('number');
+    const body = response.body as UserProfileDto;
+    expect(body.followers).toBeDefined();
+    expect(typeof body.followers).toBe('number');
   });
 
   it('should return user with following information', async () => {
@@ -230,16 +195,19 @@ describe('/v1/user/{userProfileId} (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get(`/v1/user/${user.userProfileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserDto;
-    expect(body.userProfile.following).toBeDefined();
-    expect(typeof body.userProfile.following).toBe('number');
+    const body = response.body as UserProfileDto;
+    expect(body.following).toBeDefined();
+    expect(typeof body.following).toBe('number');
   });
 
   it('should return 200 when user is found by valid userProfileId', async () => {
@@ -253,15 +221,18 @@ describe('/v1/user/{userProfileId} (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get(`/v1/user/${user.userProfileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserDto;
-    expect(body.userProfile.id).toEqual(user.userProfileId);
+    const body = response.body as UserProfileDto;
+    expect(body.id).toEqual(user.userProfileId);
   });
 
   it('should handle empty userProfileId parameter', async () => {
@@ -270,7 +241,10 @@ describe('/v1/user/{userProfileId} (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user/')

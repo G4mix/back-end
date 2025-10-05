@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserCode } from './user-code.entity';
-import { UserProfile, UserProfileDto } from './user-profile.entity';
+import { UserProfile } from './user-profile.entity';
 import { UserOAuth } from './user-oauth.entity';
 
 @Entity('users')
@@ -38,20 +38,14 @@ export class User {
   @Column({ unique: true })
   userCodeId: string;
 
-  @OneToOne(() => UserCode, (userCode) => userCode.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => UserCode, (userCode) => userCode.user)
   @JoinColumn({ name: 'user_code_id' })
   userCode: UserCode;
 
   @Column({ unique: true })
   userProfileId: string;
 
-  @OneToOne(() => UserProfile, (profile) => profile.user, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => UserProfile, (profile) => profile.user)
   @JoinColumn({ name: 'user_profile_id' })
   userProfile: UserProfile;
 
@@ -67,13 +61,12 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  toDto(currentUserId?: string): UserDto {
+  toDto(): UserDto {
     const dto = new UserDto();
     dto.id = this.id;
     dto.username = this.username;
     dto.email = this.email;
     dto.verified = this.verified;
-    dto.userProfile = this.userProfile?.toDto(currentUserId);
     return dto;
   }
 }
@@ -83,5 +76,4 @@ export class UserDto {
   username: string;
   email: string;
   verified: boolean;
-  userProfile: UserProfileDto;
 }

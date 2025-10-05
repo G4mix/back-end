@@ -26,6 +26,21 @@ import { ToggleFollowController } from './features/user-management/toggle-follow
 import { S3Client } from '@aws-sdk/client-s3';
 import { S3_CLIENT, S3Gateway } from './shared/gateways/s3.gateway';
 import { UpdateUserController } from './features/user-management/update-user/v1/update-user.controller';
+import { CreateIdeaController } from './features/feed/ideas/create-idea/v1/create-idea.controller';
+import { Idea } from './entities/idea.entity';
+import { Image } from './entities/image.entity';
+import { Like } from './entities/like.entity';
+import { View } from './entities/view.entity';
+import { Tag } from './entities/tag.entity';
+import { Comment } from './entities/comment.entity';
+import { GetAllIdeasController } from './features/feed/ideas/get-all-ideas/v1/get-all-ideas.controller';
+import { GetIdeaByIdController } from './features/feed/ideas/get-idea-by-id/v1/get-idea-by-id.controller';
+import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/update-idea.controller';
+import { DeleteIdeaController } from './features/feed/ideas/delete-idea/v1/delete-idea.controller';
+import { ToggleLikeController } from './features/feed/toggle-like/v1/toggle-like.controller';
+import { RecordViewController } from './features/feed/ideas/record-view/v1/record-view.controller';
+import { CreateCommentController } from './features/feed/comments/create-comment/v1/create-comment.controller';
+import { GetAllCommentsController } from './features/feed/comments/get-all-comments/v1/get-all-comments.controller';
 
 @Module({
   imports: [
@@ -53,6 +68,12 @@ import { UpdateUserController } from './features/user-management/update-user/v1/
       UserProfile,
       Follow,
       Link,
+      Idea,
+      Image,
+      Like,
+      View,
+      Tag,
+      Comment,
     ]),
     JwtModule.register({
       secret: process.env.JWT_SIGNING_KEY_SECRET,
@@ -102,6 +123,15 @@ import { UpdateUserController } from './features/user-management/update-user/v1/
     DeleteUserController,
     ToggleFollowController,
     UpdateUserController,
+    CreateIdeaController,
+    GetAllIdeasController,
+    GetIdeaByIdController,
+    UpdateIdeaController,
+    DeleteIdeaController,
+    ToggleLikeController,
+    RecordViewController,
+    CreateCommentController,
+    GetAllCommentsController,
   ],
 })
 export class AppModule {}

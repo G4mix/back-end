@@ -1,21 +1,21 @@
 import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { UserDto } from 'src/entities/user.entity';
+import { UserProfileDto } from 'src/entities/user-profile.entity';
 
 export class GetAllUsersInput {
   @IsOptional()
-  @IsNumber({}, { message: 'O campo "page" deve ser um número' })
-  @Min(0, { message: 'O campo "page" deve ser maior ou igual a 0' })
+  @IsNumber({}, { message: 'INVALID_PAGE' })
+  @Min(0, { message: 'INVALID_PAGE' })
   @Type(() => Number)
   page: number = 0;
 
   @Type(() => Number)
-  @IsNumber({}, { message: 'O campo "quantity" deve ser um número' })
-  @Min(1, { message: 'O campo "quantity" deve ser maior ou igual a 1' })
+  @IsNumber({}, { message: 'INVALID_QUANTITY' })
+  @Min(1, { message: 'INVALID_QUANTITY' })
   @IsOptional()
   quantity: number = 10;
 
-  @IsString({ message: 'O campo "search" deve ser uma string' })
+  @IsString({ message: 'INVALID_SEARCH' })
   @IsOptional()
   search?: string | undefined = '';
 }
@@ -25,5 +25,5 @@ export class GetAllUsersOutput {
   nextPage: number | null;
   pages: number;
   total: number;
-  data: UserDto[];
+  data: UserProfileDto[];
 }

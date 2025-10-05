@@ -60,3 +60,27 @@ export class InvalidRefreshToken extends BadRequestException {
     super('INVALID_REFRESH_TOKEN');
   }
 }
+
+export class InvalidEmailOrPassword extends BadRequestException {
+  constructor() {
+    super('INVALID_EMAIL_OR_PASSWORD');
+  }
+}
+
+export class IdeaNotFound extends NotFoundException {
+  constructor() {
+    super('IDEA_NOT_FOUND');
+  }
+}
+
+export class AtLeastOneImage extends NotFoundException {
+  constructor() {
+    super('AT_LEAST_ONE_IMAGE_IS_REQUIRED');
+  }
+}
+
+export class ThatIsNotYourIdea extends NotFoundException {
+  constructor() {
+    super('THAT_IS_NOT_YOUR_IDEA');
+  }
+}

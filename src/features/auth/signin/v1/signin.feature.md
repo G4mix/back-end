@@ -51,8 +51,7 @@ Endpoint para autenticação de usuários na plataforma Gamix. Permite que usuá
 - **Senha**: Deve coincidir com o hash armazenado
 
 ## Tratamento de Erros
-- **401**: Usuário não encontrado
-- **400**: Senha incorreta (com contador de tentativas)
+- **400**: Senha ou e-mail incorretos
 - **429**: Muitas tentativas de login (conta bloqueada temporariamente)
 
 ## Segurança

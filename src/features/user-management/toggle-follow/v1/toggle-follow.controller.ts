@@ -16,6 +16,7 @@ import { Follow } from 'src/entities/follow.entity';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { UserNotFound, YouCannotFollowYourself } from 'src/shared/errors';
 import { ToggleFollowInput } from './toggle-follow.dto';
+import { safeSave } from 'src/shared/utils/safeSave';
 
 @Controller('/follow')
 export class ToggleFollowController {
@@ -52,7 +53,7 @@ export class ToggleFollowController {
       return;
     }
 
-    await this.followRepository.insert({
+    await safeSave(this.followRepository, {
       followerUserId: userProfileId,
       followingUserId: targetUserId,
     });

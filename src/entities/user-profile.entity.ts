@@ -7,9 +7,13 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User, UserDto } from './user.entity';
 import { Follow } from './follow.entity';
 import { Link } from './link.entity';
+import { Idea } from './idea.entity';
+import { Comment } from './comment.entity';
+import { Like } from './like.entity';
+import { View } from './view.entity';
 
 @Entity('user_profiles')
 export class UserProfile {
@@ -28,10 +32,16 @@ export class UserProfile {
   @Column({ type: 'varchar', length: 2048, nullable: true })
   backgroundImage: string | null;
 
-  @OneToOne(() => User, (user) => user.userProfile)
+  @OneToOne(() => User, (user) => user.userProfile, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   user: User;
 
-  @OneToMany(() => Link, (link) => link.userProfile)
+  @OneToMany(() => Link, (link) => link.userProfile, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   links: Link[];
 
   @OneToMany(() => Follow, (follow) => follow.followingUser)
@@ -39,6 +49,18 @@ export class UserProfile {
 
   @OneToMany(() => Follow, (follow) => follow.followerUser)
   following: Follow[];
+
+  @OneToMany(() => Idea, (idea) => idea.author)
+  ideas: Idea[];
+
+  @OneToMany(() => Comment, (comment) => comment.author)
+  comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.userProfile)
+  likes: Like[];
+
+  @OneToMany(() => View, (view) => view.userProfile)
+  views: View[];
 
   @CreateDateColumn()
   createdAt: Date;
@@ -49,20 +71,17 @@ export class UserProfile {
   toDto(currentUserId?: string): UserProfileDto {
     const dto = new UserProfileDto();
     dto.id = this.id;
-    dto.displayName = this.displayName ?? this.id;
+    dto.displayName = this.displayName ?? this.user.username;
     dto.autobiography = this.autobiography ?? null;
     dto.backgroundImage = this.backgroundImage ?? null;
     dto.icon = this.icon ?? null;
-    dto.links =
-      this.links?.map((l) => ({
-        id: l.id,
-        url: l.url,
-      })) || [];
+    dto.links = this.links?.map((l) => l.url) || [];
     dto.followers = this.followers?.length ?? 0;
     dto.following = this.following?.length ?? 0;
     dto.isFollowing = currentUserId
       ? this.followers?.some((f) => f.followerUserId === currentUserId)
       : false;
+    dto.user = this.user?.toDto();
     return dto;
   }
 }
@@ -73,8 +92,9 @@ export class UserProfileDto {
   autobiography?: string | null;
   icon?: string | null;
   backgroundImage?: string | null;
-  links: { id: string; url: string }[] = [];
+  links: string[] = [];
   isFollowing: boolean;
   followers: number = 0;
   following: number = 0;
+  user: UserDto;
 }

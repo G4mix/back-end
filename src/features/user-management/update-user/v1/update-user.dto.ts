@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { plainToInstance, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsEmail,
@@ -7,30 +7,30 @@ import {
   IsUrl,
   Matches,
   MaxLength,
+  validateSync,
 } from 'class-validator';
 import { InvalidUserProfile } from 'src/shared/errors';
+import { parseArraySafe } from 'src/shared/utils/parseArraySafe';
 
-function parseLinksSafe(value: any) {
-  if (Array.isArray(value)) return value;
-  if (typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) return parsed;
-    } catch {
-      return value
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
-    return value
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }
-  return [];
+class UpdateUserInput {
+  @IsString({ message: 'INVALID_NAME' })
+  @Matches(/^[^{}]{3,50}$/, { message: 'INVALID_NAME' })
+  @IsOptional()
+  username?: string;
+
+  @IsEmail({}, { message: 'INVALID_EMAIL' })
+  @IsOptional()
+  email?: string;
+
+  @IsString({ message: 'INVALID_PASSWORD' })
+  @Matches(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, {
+    message: 'INVALID_PASSWORD',
+  })
+  @IsOptional()
+  password?: string;
 }
 
-class UpdateUserProfileInput {
+export class UpdateUserProfileInput {
   @IsString({ message: 'INVALID_NAME' })
   @Matches(/^[^{}]{3,300}$/, { message: 'INVALID_NAME' })
   @IsOptional()
@@ -48,35 +48,21 @@ class UpdateUserProfileInput {
     { each: true, message: 'INVALID_LINK' },
   )
   @MaxLength(700, { each: true, message: 'LINK_TOO_LONG' })
-  @Transform(({ value }) => parseLinksSafe(value))
+  @Transform(({ value }) => parseArraySafe(value))
   links?: string[];
-}
-
-export class UpdateUserInput {
-  @IsString({ message: 'INVALID_NAME' })
-  @Matches(/^[^{}]{3,50}$/, { message: 'INVALID_NAME' })
-  @IsOptional()
-  username?: string;
-
-  @IsEmail({}, { message: 'INVALID_EMAIL' })
-  @IsOptional()
-  email?: string;
-
-  @IsString({ message: 'INVALID_PASSWORD' })
-  @Matches(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, {
-    message: 'INVALID_PASSWORD',
-  })
-  @IsOptional()
-  password?: string;
 
   @IsOptional()
   @Transform(({ value }: { value: string }) => {
     try {
-      return JSON.parse(value);
+      const parsed = JSON.parse(value);
+      const instance = plainToInstance(UpdateUserInput, parsed);
+      const errors = validateSync(instance);
+      if (errors.length) throw new InvalidUserProfile();
+      return instance;
     } catch (_e) {
       throw new InvalidUserProfile();
     }
   })
-  @Type(() => UpdateUserProfileInput)
-  userProfile?: UpdateUserProfileInput;
+  @Type(() => UpdateUserInput)
+  user: UpdateUserInput = {};
 }

@@ -1,64 +1,15 @@
-import { INestApplication } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
-import { UserCode } from 'src/entities/user-code.entity';
-import { UserProfile } from 'src/entities/user-profile.entity';
-import { createTestUserWithRelations } from 'test/user-helper';
-import { createTestModule, setupTestApp } from 'test/test-setup';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { DataSource, Repository } from 'typeorm';
-import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
 import { RefreshTokenOutput } from './refresh-token.dto';
 import { randomUUID } from 'crypto';
+import { createTestUser } from 'test/test-helpers';
 
 interface ErrorResponse {
   message: string;
 }
 
 describe('/v1/auth/refresh-token (POST)', () => {
-  let app: INestApplication<App>;
-  let userRepository: Repository<User>;
-  let userCodeRepository: Repository<UserCode>;
-  let userProfileRepository: Repository<UserProfile>;
-  let jwtService: JwtService;
-
-  beforeEach(async () => {
-    const moduleFixture = await createTestModule();
-    app = await setupTestApp(moduleFixture);
-
-    userRepository = app.get('UserRepository');
-    userCodeRepository = app.get('UserCodeRepository');
-    userProfileRepository = app.get('UserProfileRepository');
-    jwtService = app.get(JwtService);
-  });
-
-  afterEach(async () => {
-    const dataSource = app.get(DataSource);
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-    await app.close();
-  });
-
-  const createTestUser = async (
-    username: string,
-    email: string,
-    password: string,
-  ) => {
-    const { user } = await createTestUserWithRelations(
-      userRepository,
-      userCodeRepository,
-      userProfileRepository,
-      username,
-      email,
-      password,
-    );
-    return user;
-  };
-
   it('should return 200 and new tokens when refresh token is valid', async () => {
-    // Create user with refresh token
     const user = await createTestUser(
       'testuser',
       'test@example.com',

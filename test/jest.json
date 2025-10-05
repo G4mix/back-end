@@ -20,6 +20,7 @@
     "^src/(.*)$": "<rootDir>/$1",
     "^test/(.*)$": "<rootDir>/../test/$1"
   },
+  "setupFilesAfterEnv": ["<rootDir>/../test/test-setup.ts"],
   "maxWorkers": 1,
   "testTimeout": 30000
 }

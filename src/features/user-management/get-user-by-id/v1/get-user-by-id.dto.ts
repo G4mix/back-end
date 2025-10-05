@@ -1,7 +1,6 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsUUID } from 'class-validator';
 
 export class GetUserByIdInput {
-  @IsString({ message: 'O campo "userProfileId" deve ser uma string' })
-  @IsUUID()
+  @IsUUID(undefined, { message: 'INVALID_USER_PROFILE_ID' })
   userProfileId: string;
 }

@@ -1,58 +1,13 @@
-import { INestApplication } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
-import { UserCode } from 'src/entities/user-code.entity';
-import { UserProfile } from 'src/entities/user-profile.entity';
-import { createTestUserWithRelations } from 'test/user-helper';
-import { createTestModule, setupTestApp } from 'test/test-setup';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { DataSource, Repository } from 'typeorm';
 import { compareSync } from 'bcrypt';
 import { SignupOutput } from './signup.dto';
+import { createTestUser } from 'test/test-helpers';
 
 interface ErrorResponse {
   message: string;
 }
 
 describe('/v1/auth/signup (POST)', () => {
-  let app: INestApplication<App>;
-  let userRepository: Repository<User>;
-  let userCodeRepository: Repository<UserCode>;
-  let userProfileRepository: Repository<UserProfile>;
-
-  beforeEach(async () => {
-    const moduleFixture = await createTestModule();
-    app = await setupTestApp(moduleFixture);
-
-    userRepository = app.get('UserRepository');
-    userCodeRepository = app.get('UserCodeRepository');
-    userProfileRepository = app.get('UserProfileRepository');
-  });
-
-  afterEach(async () => {
-    const dataSource = app.get(DataSource);
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-    await app.close();
-  });
-
-  const createTestUser = async (
-    username: string,
-    email: string,
-    password: string,
-  ) => {
-    const { user } = await createTestUserWithRelations(
-      userRepository,
-      userCodeRepository,
-      userProfileRepository,
-      username,
-      email,
-      password,
-    );
-    return user;
-  };
-
   it('should return 201 and create user when data is valid', async () => {
     const response = await request(app.getHttpServer())
       .post('/v1/auth/signup')
@@ -66,10 +21,10 @@ describe('/v1/auth/signup (POST)', () => {
     const body = response.body as SignupOutput;
     expect(body.accessToken).toBeDefined();
     expect(body.refreshToken).toBeDefined();
-    expect(body.user).toBeDefined();
-    expect(body.user.email).toEqual('test@example.com');
-    expect(body.user.username).toEqual('testuser');
-    expect(body.user.verified).toEqual(false);
+    expect(body.userProfile).toBeDefined();
+    expect(body.userProfile.user.email).toEqual('test@example.com');
+    expect(body.userProfile.user.username).toEqual('testuser');
+    expect(body.userProfile.user.verified).toEqual(false);
   });
 
   it('should return 400 when email is invalid', async () => {

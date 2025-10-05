@@ -1,77 +1,24 @@
-import { INestApplication } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
-import { UserCode } from 'src/entities/user-code.entity';
-import { UserProfile } from 'src/entities/user-profile.entity';
-import { createTestUserWithRelations } from 'test/user-helper';
-import { generateTestJwtForUser } from 'test/jwt-helper';
-import { createTestModule, setupTestApp } from 'test/test-setup';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { DataSource, Repository } from 'typeorm';
 import { GetAllUsersOutput } from './get-all-users.dto';
+import { createTestUser } from 'test/test-helpers';
+import { generateTestJwt } from 'test/jwt-helper';
 
 describe('/v1/user (GET)', () => {
-  let app: INestApplication<App>;
-  let userRepository: Repository<User>;
-  let userCodeRepository: Repository<UserCode>;
-  let userProfileRepository: Repository<UserProfile>;
-
-  beforeEach(async () => {
-    const moduleFixture = await createTestModule();
-    app = await setupTestApp(moduleFixture);
-
-    userRepository = app.get('UserRepository');
-    userCodeRepository = app.get('UserCodeRepository');
-    userProfileRepository = app.get('UserProfileRepository');
-  });
-
-  afterEach(async () => {
-    const dataSource = app.get(DataSource);
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-    await app.close();
-  });
-
-  const createTestUser = async (
-    username: string,
-    email: string,
-    password: string,
-  ) => {
-    const { user } = await createTestUserWithRelations(
-      userRepository,
-      userCodeRepository,
-      userProfileRepository,
-      username,
-      email,
-      password,
-    );
-    return user;
-  };
-
-  const createAuthToken = (userId: string, userProfileId?: string) => {
-    return generateTestJwtForUser(userId, userProfileId);
-  };
-
   it('should return 200 and list users with pagination', async () => {
     // Create test users
-    const _user1 = await createTestUser(
-      'user1',
-      'user1@example.com',
-      'password123',
-    );
-    const _user2 = await createTestUser(
-      'user2',
-      'user2@example.com',
-      'password123',
-    );
+    await createTestUser('user1', 'user1@example.com', 'password123');
+    await createTestUser('user2', 'user2@example.com', 'password123');
     const currentUser = await createTestUser(
       'current',
       'current@example.com',
       'password123',
     );
 
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user?page=0&quantity=10')
@@ -101,23 +48,18 @@ describe('/v1/user (GET)', () => {
 
   it('should return 200 with search functionality', async () => {
     // Create test users
-    const _user1 = await createTestUser(
-      'john_doe',
-      'john@example.com',
-      'password123',
-    );
-    const _user2 = await createTestUser(
-      'jane_smith',
-      'jane@example.com',
-      'password123',
-    );
+    await createTestUser('john_doe', 'john@example.com', 'password123');
+    await createTestUser('jane_smith', 'jane@example.com', 'password123');
     const currentUser = await createTestUser(
       'current',
       'current@example.com',
       'password123',
     );
 
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user?search=john')
@@ -126,7 +68,7 @@ describe('/v1/user (GET)', () => {
     expect(response.status).toEqual(200);
     const body = response.body as GetAllUsersOutput;
     expect(body.data).toHaveLength(1);
-    expect(body.data[0].username).toEqual('john_doe');
+    expect(body.data[0].user.username).toEqual('john_doe');
   });
 
   it('should return 200 with empty search results', async () => {
@@ -135,7 +77,10 @@ describe('/v1/user (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user?search=nonexistent')
@@ -160,7 +105,10 @@ describe('/v1/user (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user?page=0&quantity=5')
@@ -186,7 +134,10 @@ describe('/v1/user (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user?page=0&quantity=10')
@@ -204,7 +155,10 @@ describe('/v1/user (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user?page=0&quantity=100')
@@ -221,16 +175,17 @@ describe('/v1/user (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user?page=-1')
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(400);
-    expect(response.body.message).toContain(
-      'O campo "page" deve ser maior ou igual a 0',
-    );
+    expect(response.body.message).toContain('INVALID_PAGE');
   });
 
   it('should return 400 when quantity is not a number', async () => {
@@ -239,7 +194,10 @@ describe('/v1/user (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user?quantity=invalid')
@@ -254,16 +212,17 @@ describe('/v1/user (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user?quantity=0')
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(400);
-    expect(response.body.message).toContain(
-      'O campo "quantity" deve ser maior ou igual a 1',
-    );
+    expect(response.body.message).toContain('INVALID_QUANTITY');
   });
 
   it('should use default values when parameters are not provided', async () => {
@@ -272,7 +231,10 @@ describe('/v1/user (GET)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user')
@@ -295,7 +257,10 @@ describe('/v1/user (GET)', () => {
       'other@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .get('/v1/user')
@@ -304,7 +269,7 @@ describe('/v1/user (GET)', () => {
     expect(response.status).toEqual(200);
     const body = response.body as GetAllUsersOutput;
     expect(body.data).toHaveLength(1);
-    expect(body.data[0].id).toEqual(otherUser.id);
-    expect(body.data[0].id).not.toEqual(currentUser.id);
+    expect(body.data[0].id).toEqual(otherUser.userProfileId);
+    expect(body.data[0].id).not.toEqual(currentUser.userProfileId);
   });
 });

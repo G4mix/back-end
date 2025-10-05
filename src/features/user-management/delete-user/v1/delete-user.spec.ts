@@ -1,57 +1,8 @@
-import { INestApplication } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
-import { UserCode } from 'src/entities/user-code.entity';
-import { UserProfile } from 'src/entities/user-profile.entity';
-import { createTestUserWithRelations } from 'test/user-helper';
-import { generateTestJwtForUser } from 'test/jwt-helper';
-import { createTestModule, setupTestApp } from 'test/test-setup';
+import { generateTestJwt } from 'test/jwt-helper';
+import { createTestUser } from 'test/test-helpers';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { DataSource, Repository } from 'typeorm';
 
 describe('/v1/user/{userProfileId} (DELETE)', () => {
-  let app: INestApplication<App>;
-  let userRepository: Repository<User>;
-  let userCodeRepository: Repository<UserCode>;
-  let userProfileRepository: Repository<UserProfile>;
-
-  beforeEach(async () => {
-    const moduleFixture = await createTestModule();
-    app = await setupTestApp(moduleFixture);
-
-    userRepository = app.get('UserRepository');
-    userCodeRepository = app.get('UserCodeRepository');
-    userProfileRepository = app.get('UserProfileRepository');
-  });
-
-  afterEach(async () => {
-    const dataSource = app.get(DataSource);
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-    await app.close();
-  });
-
-  const createTestUser = async (
-    username: string,
-    email: string,
-    password: string,
-  ) => {
-    const { user } = await createTestUserWithRelations(
-      userRepository,
-      userCodeRepository,
-      userProfileRepository,
-      username,
-      email,
-      password,
-    );
-    return user;
-  };
-
-  const createAuthToken = (userId: string, userProfileId?: string) => {
-    return generateTestJwtForUser(userId, userProfileId);
-  };
-
   it('should return 204 and delete user when user exists', async () => {
     const user = await createTestUser(
       'testuser',
@@ -63,7 +14,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({ sub: currentUser.id });
 
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
@@ -111,7 +62,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({ sub: currentUser.id });
 
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
@@ -131,7 +82,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({ sub: currentUser.id });
 
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
@@ -157,7 +108,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({ sub: currentUser.id });
 
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
@@ -178,7 +129,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({ sub: currentUser.id });
 
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
@@ -199,7 +150,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({ sub: currentUser.id });
 
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
@@ -214,7 +165,7 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = createAuthToken(currentUser.id);
+    const token = generateTestJwt({ sub: currentUser.id });
 
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')

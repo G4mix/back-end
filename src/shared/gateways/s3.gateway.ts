@@ -2,6 +2,7 @@ import {
   CreateBucketCommand,
   DeleteObjectsCommand,
   ListBucketsCommand,
+  ListObjectsV2Command,
   PutBucketPolicyCommand,
   PutObjectCommand,
   PutPublicAccessBlockCommand,
@@ -86,6 +87,30 @@ export class S3Gateway {
     } catch (err) {
       const errorMessage = (err as Error)?.message;
       return errorMessage;
+    }
+  }
+
+  public async deleteFolder(bucketName: string, folderPrefix: string) {
+    try {
+      const listCommand = new ListObjectsV2Command({
+        Bucket: bucketName,
+        Prefix: folderPrefix,
+      });
+      const listedObjects = await this.s3.send(listCommand);
+
+      if (listedObjects.Contents?.length) {
+        const deleteParams = {
+          Bucket: bucketName,
+          Delete: {
+            Objects: listedObjects.Contents.map((obj) => ({ Key: obj.Key! })),
+          },
+        };
+
+        const deleteCommand = new DeleteObjectsCommand(deleteParams);
+        await this.s3.send(deleteCommand);
+      }
+    } catch (_err) {
+      // Ignore this
     }
   }
 
