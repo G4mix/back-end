@@ -1,33 +1,24 @@
-import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { UserCode } from 'src/entities/user-code.entity';
-import { UserProfile } from 'src/entities/user-profile.entity';
 import { hashSync } from 'bcrypt';
 
-export async function createTestUserWithRelations(
-  userRepository: Repository<User>,
-  userCodeRepository: Repository<UserCode>,
-  userProfileRepository: Repository<UserProfile>,
+export async function createTestUser(
   username: string,
   email: string,
   password: string,
-): Promise<{ user: User; userCode: UserCode; userProfile: UserProfile }> {
-  // Create UserCode first
-  const userCode = await userCodeRepository.save({
+): Promise<User> {
+  const userCode = await global.userCodeRepository.save({
     code: null,
   });
 
-  // Create UserProfile
-  const userProfile = await userProfileRepository.save({
+  const userProfile = await global.userProfileRepository.save({
     displayName: username,
     icon: null,
     autobiography: null,
     backgroundImage: null,
   });
 
-  // Create User with relationships
   const hashedPassword = hashSync(password, 10);
-  const user = await userRepository.save({
+  const user = await global.userRepository.save({
     username,
     email,
     password: hashedPassword,
@@ -36,5 +27,5 @@ export async function createTestUserWithRelations(
     userProfileId: userProfile.id,
   });
 
-  return { user, userCode, userProfile };
+  return user;
 }

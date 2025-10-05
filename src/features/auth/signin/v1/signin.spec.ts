@@ -1,57 +1,12 @@
-import { INestApplication } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
-import { UserCode } from 'src/entities/user-code.entity';
-import { UserProfile } from 'src/entities/user-profile.entity';
-import { createTestUserWithRelations } from 'test/user-helper';
-import { createTestModule, setupTestApp } from 'test/test-setup';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { DataSource, Repository } from 'typeorm';
 import { SigninOutput } from './signin.dto';
+import { createTestUser } from 'test/user-helper';
 
 interface ErrorResponse {
   message: string;
 }
 
 describe('/v1/auth/signin (POST)', () => {
-  let app: INestApplication<App>;
-  let userRepository: Repository<User>;
-  let userCodeRepository: Repository<UserCode>;
-  let userProfileRepository: Repository<UserProfile>;
-
-  beforeEach(async () => {
-    const moduleFixture = await createTestModule();
-    app = await setupTestApp(moduleFixture);
-
-    userRepository = app.get('UserRepository');
-    userCodeRepository = app.get('UserCodeRepository');
-    userProfileRepository = app.get('UserProfileRepository');
-  });
-
-  afterEach(async () => {
-    const dataSource = app.get(DataSource);
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-    await app.close();
-  });
-
-  const createTestUser = async (
-    username: string,
-    email: string,
-    password: string,
-  ) => {
-    const { user } = await createTestUserWithRelations(
-      userRepository,
-      userCodeRepository,
-      userProfileRepository,
-      username,
-      email,
-      password,
-    );
-    return user;
-  };
-
   it('should return 200 and tokens when credentials are valid', async () => {
     await createTestUser('testuser', 'test@example.com', 'password123');
 
@@ -66,8 +21,8 @@ describe('/v1/auth/signin (POST)', () => {
     const body = response.body as SigninOutput;
     expect(body.accessToken).toBeDefined();
     expect(body.refreshToken).toBeDefined();
-    expect(body.user).toBeDefined();
-    expect(body.user.email).toEqual('test@example.com');
+    expect(body.userProfile).toBeDefined();
+    expect(body.userProfile.user.email).toEqual('test@example.com');
   });
 
   it('should return 401 when user is not found', async () => {

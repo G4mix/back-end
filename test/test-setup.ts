@@ -1,74 +1,33 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from 'src/app.module';
-import { SESGateway } from 'src/shared/gateways/ses.gateway';
-import { setupApplication } from 'src/setup-application';
-import { DataSource } from 'typeorm';
 import { INestApplication } from '@nestjs/common';
+import { DataSource, Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { createTestModule, setupTestApp } from './module';
+import { User } from 'src/users/entities/user.entity';
+import { UserCode } from 'src/users/entities/user-code.entity';
+import { UserProfile } from 'src/users/entities/user-profile.entity';
+import { App } from 'supertest/types';
 
-export const createTestModule = async () => {
-  const moduleFixture: TestingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(SESGateway)
-    .useValue({
-      verifyIdentity: jest.fn().mockResolvedValue({ success: true }),
-      sendEmail: jest.fn().mockResolvedValue({ success: true }),
-    })
-    .compile();
+declare global {
+  var app: INestApplication<App>;
+  var dataSource: DataSource;
+  var jwtService: JwtService;
+  var userRepository: Repository<User>;
+  var userCodeRepository: Repository<UserCode>;
+  var userProfileRepository: Repository<UserProfile>;
+}
 
-  return moduleFixture;
-};
+beforeEach(async () => {
+  const module = await createTestModule();
+  const app = await setupTestApp(module);
+  global.app = app;
+  global.dataSource = app.get(DataSource);
+  global.jwtService = app.get(JwtService);
+  global.userRepository = app.get('UserRepository');
+  global.userCodeRepository = app.get('UserCodeRepository');
+  global.userProfileRepository = app.get('UserProfileRepository');
+});
 
-export const setupTestApp = async (moduleFixture: TestingModule) => {
-  const app = moduleFixture.createNestApplication();
-  setupApplication(app);
-  await app.init();
-
-  await clearDatabase(app);
-
-  return app;
-};
-
-export const clearDatabase = async (app: INestApplication) => {
-  const dataSource = app.get(DataSource);
-
-  try {
-    // Disable foreign key checks temporarily
-    await dataSource.query('SET session_replication_role = replica;');
-
-    // Get all table names from the database
-    const tables = await dataSource.query(`
-      SELECT tablename FROM pg_tables 
-      WHERE schemaname = 'public' 
-      AND tablename NOT LIKE 'pg_%' 
-      AND tablename != 'migrations'
-    `);
-
-    // Clear all tables
-    for (const table of tables) {
-      const tableName = (table as { tablename: string }).tablename;
-      try {
-        await dataSource.query(
-          `TRUNCATE TABLE "${tableName}" RESTART IDENTITY CASCADE;`,
-        );
-      } catch (_error) {
-        // If truncate fails, try delete
-        try {
-          await dataSource.query(`DELETE FROM "${tableName}";`);
-        } catch (deleteError) {
-          // Ignore delete errors for tables that might not exist
-          console.warn(
-            `Could not clear table ${tableName}:`,
-            (deleteError as Error).message,
-          );
-        }
-      }
-    }
-
-    // Re-enable foreign key checks
-    await dataSource.query('SET session_replication_role = DEFAULT;');
-  } catch (error) {
-    console.warn('Error clearing database:', (error as Error).message);
-    // Continue with tests even if clearing fails
-  }
-};
+afterEach(async () => {
+  if (global.dataSource?.isInitialized) await global.dataSource.destroy();
+  if (global.app) await global.app.close();
+});
