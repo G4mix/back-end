@@ -1,60 +1,8 @@
-import { INestApplication } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
-import { UserCode } from 'src/entities/user-code.entity';
-import { UserProfile } from 'src/entities/user-profile.entity';
-import { Follow } from 'src/entities/follow.entity';
-import { createTestUserWithRelations } from 'test/user-helper';
-import { generateTestJwtForUser } from 'test/jwt-helper';
-import { createTestModule, setupTestApp } from 'test/test-setup';
+import { createTestUser } from 'test/user-helper';
+import { generateTestJwt } from 'test/jwt-helper';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { DataSource, Repository } from 'typeorm';
 
 describe('/v1/follow (POST)', () => {
-  let app: INestApplication<App>;
-  let userRepository: Repository<User>;
-  let userCodeRepository: Repository<UserCode>;
-  let userProfileRepository: Repository<UserProfile>;
-  let followRepository: Repository<Follow>;
-
-  beforeEach(async () => {
-    const moduleFixture = await createTestModule();
-    app = await setupTestApp(moduleFixture);
-
-    userRepository = app.get('UserRepository');
-    userCodeRepository = app.get('UserCodeRepository');
-    userProfileRepository = app.get('UserProfileRepository');
-    followRepository = app.get('FollowRepository');
-  });
-
-  afterEach(async () => {
-    const dataSource = app.get(DataSource);
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-    await app.close();
-  });
-
-  const createTestUser = async (
-    username: string,
-    email: string,
-    password: string,
-  ) => {
-    const { user } = await createTestUserWithRelations(
-      userRepository,
-      userCodeRepository,
-      userProfileRepository,
-      username,
-      email,
-      password,
-    );
-    return user;
-  };
-
-  const createAuthToken = (userId: string, userProfileId?: string) => {
-    return generateTestJwtForUser(userId, userProfileId);
-  };
-
   it('should return 204 and create follow relationship successfully', async () => {
     const follower = await createTestUser(
       'follower',
@@ -66,7 +14,10 @@ describe('/v1/follow (POST)', () => {
       'target@example.com',
       'password123',
     );
-    const token = createAuthToken(follower.id, follower.userProfileId);
+    const token = generateTestJwt({
+      sub: follower.id,
+      userProfileId: follower.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .post('/v1/follow')
@@ -105,7 +56,10 @@ describe('/v1/follow (POST)', () => {
       followingUserId: targetUser.userProfileId,
     });
 
-    const token = createAuthToken(follower.id, follower.userProfileId);
+    const token = generateTestJwt({
+      sub: follower.id,
+      userProfileId: follower.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .post('/v1/follow')
@@ -132,7 +86,10 @@ describe('/v1/follow (POST)', () => {
       'user@example.com',
       'password123',
     );
-    const token = createAuthToken(user.id, user.userProfileId);
+    const token = generateTestJwt({
+      sub: user.id,
+      userProfileId: user.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .post('/v1/follow')
@@ -151,7 +108,10 @@ describe('/v1/follow (POST)', () => {
       'follower@example.com',
       'password123',
     );
-    const token = createAuthToken(follower.id, follower.userProfileId);
+    const token = generateTestJwt({
+      sub: follower.id,
+      userProfileId: follower.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .post('/v1/follow')
@@ -170,7 +130,10 @@ describe('/v1/follow (POST)', () => {
       'follower@example.com',
       'password123',
     );
-    const token = createAuthToken(follower.id, follower.userProfileId);
+    const token = generateTestJwt({
+      sub: follower.id,
+      userProfileId: follower.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .post('/v1/follow')
@@ -186,7 +149,10 @@ describe('/v1/follow (POST)', () => {
       'follower@example.com',
       'password123',
     );
-    const token = createAuthToken(follower.id, follower.userProfileId);
+    const token = generateTestJwt({
+      sub: follower.id,
+      userProfileId: follower.userProfileId,
+    });
 
     const response = await request(app.getHttpServer())
       .post('/v1/follow')
@@ -230,7 +196,10 @@ describe('/v1/follow (POST)', () => {
       'target@example.com',
       'password123',
     );
-    const token = createAuthToken(follower.id, follower.userProfileId);
+    const token = generateTestJwt({
+      sub: follower.id,
+      userProfileId: follower.userProfileId,
+    });
 
     // First follow
     let response = await request(app.getHttpServer())
@@ -304,8 +273,14 @@ describe('/v1/follow (POST)', () => {
       'password123',
     );
 
-    const token1 = createAuthToken(follower1.id, follower1.userProfileId);
-    const token2 = createAuthToken(follower2.id, follower2.userProfileId);
+    const token1 = generateTestJwt({
+      sub: follower1.id,
+      userProfileId: follower1.userProfileId,
+    });
+    const token2 = generateTestJwt({
+      sub: follower2.id,
+      userProfileId: follower2.userProfileId,
+    });
 
     // First user follows target
     let response = await request(app.getHttpServer())
@@ -361,7 +336,10 @@ describe('/v1/follow (POST)', () => {
       'password123',
     );
 
-    const token = createAuthToken(follower.id, follower.userProfileId);
+    const token = generateTestJwt({
+      sub: follower.id,
+      userProfileId: follower.userProfileId,
+    });
 
     // Follow first target
     let response = await request(app.getHttpServer())

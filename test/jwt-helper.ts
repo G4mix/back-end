@@ -27,13 +27,3 @@ export function generateTestJwt(payload: Partial<TestJwtPayload> = {}): string {
     'a-string-secret-at-least-256-bits-long';
   return jwt.sign(jwtPayload, secret);
 }
-
-export function generateTestJwtForUser(
-  userId: string,
-  userProfileId = 'profile-id',
-): string {
-  return generateTestJwt({
-    sub: userId,
-    userProfileId,
-  });
-}

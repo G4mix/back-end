@@ -1,21 +1,32 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
-import { SESGateway } from 'src/shared/gateways/ses.gateway';
+import { SES_CLIENT } from 'src/shared/gateways/ses.gateway';
 import { setupApplication } from 'src/setup-application';
 import { DataSource } from 'typeorm';
 import { INestApplication } from '@nestjs/common';
+import { S3_CLIENT } from 'src/shared/gateways/s3.gateway';
 
 export const createTestModule = async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
   })
-    .overrideProvider(SESGateway)
+    .overrideProvider(SES_CLIENT)
     .useValue({
-      verifyIdentity: jest.fn().mockResolvedValue({ success: true }),
-      sendEmail: jest.fn().mockResolvedValue({ success: true }),
+      send: jest.fn().mockImplementation(() =>
+        Promise.resolve({
+          $metadata: { httpStatusCode: 200 },
+        }),
+      ),
+    })
+    .overrideProvider(S3_CLIENT)
+    .useValue({
+      send: jest.fn().mockImplementation(() =>
+        Promise.resolve({
+          $metadata: { httpStatusCode: 200 },
+        }),
+      ),
     })
     .compile();
-
   return moduleFixture;
 };
 

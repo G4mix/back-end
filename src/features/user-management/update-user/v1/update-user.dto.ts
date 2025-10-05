@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { plainToInstance, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsEmail,
@@ -7,6 +7,7 @@ import {
   IsUrl,
   Matches,
   MaxLength,
+  validateSync,
 } from 'class-validator';
 import { InvalidUserProfile } from 'src/shared/errors';
 import { parseArraySafe } from 'src/shared/utils/parseArraySafe';
@@ -53,7 +54,11 @@ export class UpdateUserProfileInput {
   @IsOptional()
   @Transform(({ value }: { value: string }) => {
     try {
-      return JSON.parse(value);
+      const parsed = JSON.parse(value);
+      const instance = plainToInstance(UpdateUserInput, parsed);
+      const errors = validateSync(instance);
+      if (errors.length) throw new InvalidUserProfile();
+      return instance;
     } catch (_e) {
       throw new InvalidUserProfile();
     }
