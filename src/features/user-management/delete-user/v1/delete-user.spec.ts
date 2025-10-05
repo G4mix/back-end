@@ -1,5 +1,5 @@
 import { generateTestJwt } from 'test/jwt-helper';
-import { createTestUser } from 'test/user-helper';
+import { createTestUser } from 'test/test-helpers';
 import request from 'supertest';
 
 describe('/v1/user/{userProfileId} (DELETE)', () => {

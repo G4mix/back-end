@@ -1,4 +1,4 @@
-import { createTestUser } from 'test/user-helper';
+import { createTestUser } from 'test/test-helpers';
 import { generateTestJwt } from 'test/jwt-helper';
 import request from 'supertest';
 

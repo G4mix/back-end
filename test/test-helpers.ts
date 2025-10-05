@@ -6,11 +6,11 @@ export async function createTestUser(
   email: string,
   password: string,
 ): Promise<User> {
-  const userCode = await global.userCodeRepository.save({
+  const userCode = await userCodeRepository.save({
     code: null,
   });
 
-  const userProfile = await global.userProfileRepository.save({
+  const userProfile = await userProfileRepository.save({
     displayName: username,
     icon: null,
     autobiography: null,
@@ -18,7 +18,7 @@ export async function createTestUser(
   });
 
   const hashedPassword = hashSync(password, 10);
-  const user = await global.userRepository.save({
+  const user = await userRepository.save({
     username,
     email,
     password: hashedPassword,

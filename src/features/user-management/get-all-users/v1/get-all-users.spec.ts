@@ -1,7 +1,7 @@
 import { User } from 'src/entities/user.entity';
 import request from 'supertest';
 import { GetAllUsersOutput } from './get-all-users.dto';
-import { createTestUser } from 'test/user-helper';
+import { createTestUser } from 'test/test-helpers';
 import { generateTestJwt } from 'test/jwt-helper';
 
 describe('/v1/user (GET)', () => {

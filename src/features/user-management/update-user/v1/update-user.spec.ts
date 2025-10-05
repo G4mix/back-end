@@ -1,6 +1,6 @@
 /* eslint-disable */
 import request from 'supertest';
-import { createTestUser } from 'test/user-helper';
+import { createTestUser } from 'test/test-helpers';
 import { generateTestJwt } from 'test/jwt-helper';
 
 describe('/v1/user (PATCH)', () => {

@@ -2,7 +2,7 @@ import request from 'supertest';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
 import { RefreshTokenOutput } from './refresh-token.dto';
 import { randomUUID } from 'crypto';
-import { createTestUser } from 'test/user-helper';
+import { createTestUser } from 'test/test-helpers';
 
 interface ErrorResponse {
   message: string;

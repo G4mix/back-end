@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { SigninOutput } from './signin.dto';
-import { createTestUser } from 'test/user-helper';
+import { createTestUser } from 'test/test-helpers';
 
 interface ErrorResponse {
   message: string;
