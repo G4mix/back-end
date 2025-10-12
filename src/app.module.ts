@@ -41,6 +41,7 @@ import { ToggleLikeController } from './features/feed/toggle-like/v1/toggle-like
 import { RecordViewController } from './features/feed/ideas/record-view/v1/record-view.controller';
 import { CreateCommentController } from './features/feed/comments/create-comment/v1/create-comment.controller';
 import { GetAllCommentsController } from './features/feed/comments/get-all-comments/v1/get-all-comments.controller';
+import { GetCommentByIdController } from './features/feed/comments/get-comment-by-id/v1/get-comment-by-id.controller';
 
 @Module({
   imports: [
@@ -132,6 +133,7 @@ import { GetAllCommentsController } from './features/feed/comments/get-all-comme
     RecordViewController,
     CreateCommentController,
     GetAllCommentsController,
+    GetCommentByIdController,
   ],
 })
 export class AppModule {}

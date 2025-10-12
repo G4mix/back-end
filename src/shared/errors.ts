@@ -84,3 +84,9 @@ export class ThatIsNotYourIdea extends NotFoundException {
     super('THAT_IS_NOT_YOUR_IDEA');
   }
 }
+
+export class CommentNotFound extends NotFoundException {
+  constructor() {
+    super('COMMENT_NOT_FOUND');
+  }
+}
