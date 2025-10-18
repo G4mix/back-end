@@ -4,13 +4,6 @@ import request from 'supertest';
 
 describe('/v1/comment (GET)', () => {
   it('should return 200 and all comments for an idea', async () => {
-    // pegar ideiaId - OK
-    // criar 3 usuarios, 1 sendo autor da ideia - OK
-    // demais usuarios devem ser os autores dos comentarios - OK
-    // criar 2 comentários - OK
-    // listar comentarios da ideia - OK
-    // verificar retorno, 200 OK, 2 comentarios - OK
-
     const user1 = await createTestUser(
       'testuser',
       'test@example.com',
@@ -61,13 +54,21 @@ describe('/v1/comment (GET)', () => {
         ideaId: idea.id,
       });
 
-    const getComments = await request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .get(`/v1/comment?ideaId=${idea.id}`)
 
-      console.log('Ideas after comments:', idea)
-      console.log('Get comments: ', JSON.stringify(getComments.body, null, 2));
-      expect(getComments.status).toEqual(200);
-      expect(getComments.body.data.length).toEqual(2);
+      expect(response.status).toEqual(200);
+      expect(response.body.data.length).toEqual(2);
 
+  });
+
+  it('should return 400 when idea id does not exist', async () => {
+      const ideaId = '1';
+      const response = await request(app.getHttpServer())
+      .get(`/v1/comment?ideaId=${ideaId}`)
+
+      expect(response.status).toBe(400);
+      expect(response.body.data).toBeUndefined();
+      expect(response.body.message).toContain('INVALID_IDEA_ID');
   });
 });
