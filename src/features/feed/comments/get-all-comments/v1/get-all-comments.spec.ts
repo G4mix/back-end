@@ -62,7 +62,7 @@ describe('/v1/comment (GET)', () => {
 
   });
 
-  it('should return 400 when idea id does not exist', async () => {
+  it('should return 400 when idea id is invalid', async () => {
       const ideaId = '1';
       const response = await request(app.getHttpServer())
       .get(`/v1/comment?ideaId=${ideaId}`)
@@ -70,5 +70,14 @@ describe('/v1/comment (GET)', () => {
       expect(response.status).toBe(400);
       expect(response.body.data).toBeUndefined();
       expect(response.body.message).toContain('INVALID_IDEA_ID');
+  });
+
+  it('should return 404 when ideaId does not exist', async () => {
+      const ideaId = '1e9c20a4-3f8d-4b71-8c0e-92a15f0b6d2c';
+      const response = await request(app.getHttpServer())
+      .get(`/v1/comment?ideaId=${ideaId}`)
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toContain('IDEA_NOT_FOUND');
   });
 });
