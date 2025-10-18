@@ -17,6 +17,7 @@ import { Like } from 'src/entities/like.entity';
 import { Link } from 'src/entities/link.entity';
 import { Tag } from 'src/entities/tag.entity';
 import { View } from 'src/entities/view.entity';
+import { Comment } from 'src/entities/comment.entity';
 
 declare global {
   var app: INestApplication<App>;
