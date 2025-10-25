@@ -1,0 +1,56 @@
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  Post,
+  Request,
+  Version,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  CollaborationRequest,
+  CollaborationRequestStatus,
+} from 'src/entities/collaboration-request.entity';
+import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
+import { Protected } from 'src/shared/decorators/protected.decorator';
+import { Repository } from 'typeorm';
+import { CollaborationRequestInput } from './collaboration-request.dto';
+import { safeSave } from 'src/shared/utils/safeSave';
+import { PendingCollaborationRequestAlreadyExists } from 'src/shared/errors';
+
+@Controller('/collaboration-request')
+export class CollaborationRequestController {
+  constructor(
+    @InjectRepository(CollaborationRequest)
+    private readonly collaborationRequestRepository: Repository<CollaborationRequest>,
+  ) {}
+  readonly logger = new Logger(this.constructor.name);
+
+  @Post()
+  @Version('1')
+  @Protected()
+  @HttpCode(HttpStatus.CREATED)
+  async collaborationRequest(
+    @Request() { user: { userProfileId } }: RequestWithUserData,
+    @Body() { message, ideaId }: CollaborationRequestInput,
+  ): Promise<CollaborationRequest> {
+    const collaborationRequest =
+      await this.collaborationRequestRepository.findOne({
+        where: {
+          requesterId: userProfileId,
+          ideaId,
+          status: CollaborationRequestStatus.PENDING,
+        },
+      });
+    if (collaborationRequest) {
+      throw new PendingCollaborationRequestAlreadyExists();
+    }
+    return await safeSave(this.collaborationRequestRepository, {
+      ideaId,
+      message,
+      requesterId: userProfileId,
+    });
+  }
+}

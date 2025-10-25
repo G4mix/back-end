@@ -13,14 +13,15 @@ import { Idea } from './idea.entity';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { View } from './view.entity';
+import { CollaborationRequest } from './collaboration-request.entity';
 
-@Entity('user_profiles')
+@Entity('profiles')
 export class Profile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 300, nullable: true })
-  displayName: string | null;
+  @Column({ type: 'varchar', length: 300 })
+  displayName: string;
 
   @Column({ type: 'varchar', length: 2048, nullable: true })
   icon: string | null;
@@ -55,6 +56,9 @@ export class Profile {
   })
   ideas: Idea[];
 
+  @OneToMany(() => CollaborationRequest, (req) => req.requester)
+  collaborationRequests: CollaborationRequest[];
+
   @OneToMany(() => Comment, (comment) => comment.author, {
     cascade: true,
     orphanedRowAction: 'delete',
@@ -82,7 +86,7 @@ export class Profile {
   toDto(currentUserId?: string): ProfileDto {
     const dto = new ProfileDto();
     dto.id = this.id;
-    dto.displayName = this.displayName ?? this.user.username;
+    dto.displayName = this.displayName;
     dto.autobiography = this.autobiography ?? null;
     dto.backgroundImage = this.backgroundImage ?? null;
     dto.icon = this.icon ?? null;

@@ -41,7 +41,9 @@ export class SignupController {
     });
     if (existingUser) throw new UserAlreadyExists();
 
-    const profile = await safeSave(this.profileRepository, {});
+    const profile = await safeSave(this.profileRepository, {
+      displayName: body.username,
+    });
     const password = hashSync(body.password, 10);
     const newUser = await safeSave(this.userRepository, {
       ...body,
