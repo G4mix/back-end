@@ -7,6 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { Profile, ProfileDto } from './profile.entity';
 import { Comment } from './comment.entity';
@@ -32,9 +33,13 @@ export class Idea {
   @ManyToOne(() => Profile, (profile) => profile.ideas, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'author_id' })
   author: Profile;
 
-  @OneToMany(() => Comment, (comment) => comment.idea)
+  @OneToMany(() => Comment, (comment) => comment.idea, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   comments: Comment[];
 
   @OneToMany(() => Like, (like) => like.idea)
@@ -46,10 +51,7 @@ export class Idea {
   @Column({ type: 'jsonb', default: [] })
   links: string[];
 
-  @OneToMany(() => Tag, (tag) => tag.idea, {
-    cascade: true,
-    orphanedRowAction: 'delete',
-  })
+  @OneToMany(() => Tag, (tag) => tag.idea)
   tags: Tag[];
 
   @Column({ type: 'jsonb', default: [] })
@@ -74,10 +76,10 @@ export class Idea {
     dto.tags = this.tags?.map((tag) => tag.name) ?? [];
     dto.images = this.images ?? [];
     dto.isLiked = currentUserId
-      ? this.likes?.some((like) => like.userProfileId === currentUserId)
+      ? this.likes?.some((like) => like.profileId === currentUserId)
       : false;
     dto.isViewed = currentUserId
-      ? this.views?.some((view) => view.userProfileId === currentUserId)
+      ? this.views?.some((view) => view.profileId === currentUserId)
       : false;
     dto.createdAt = this.createdAt;
     dto.updatedAt = this.updatedAt;

@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { Idea } from './idea.entity';
 
@@ -24,6 +25,7 @@ export class Tag {
   @ManyToOne(() => Idea, (idea) => idea.tags, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'idea_id' })
   idea: Idea;
 
   @CreateDateColumn()

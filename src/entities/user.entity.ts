@@ -41,7 +41,10 @@ export class User {
   @Column({ type: 'varchar', unique: true, nullable: true })
   refreshToken: string | null;
 
-  @OneToMany(() => OAuth, (oauth) => oauth.user)
+  @OneToMany(() => OAuth, (oauth) => oauth.user, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   oauth: OAuth[];
 
   @CreateDateColumn()

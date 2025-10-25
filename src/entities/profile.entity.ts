@@ -40,22 +40,40 @@ export class Profile {
   @Column({ type: 'jsonb', default: [] })
   links: string[];
 
-  @OneToMany(() => Follow, (follow) => follow.followingUser)
+  @OneToMany(() => Follow, (follow) => follow.followingUser, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   followers: Follow[];
 
-  @OneToMany(() => Follow, (follow) => follow.followerUser)
+  @OneToMany(() => Follow, (follow) => follow.followerUser, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   following: Follow[];
 
-  @OneToMany(() => Idea, (idea) => idea.author)
+  @OneToMany(() => Idea, (idea) => idea.author, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   ideas: Idea[];
 
-  @OneToMany(() => Comment, (comment) => comment.author)
+  @OneToMany(() => Comment, (comment) => comment.author, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   comments: Comment[];
 
-  @OneToMany(() => Like, (like) => like.profile)
+  @OneToMany(() => Like, (like) => like.profile, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   likes: Like[];
 
-  @OneToMany(() => View, (view) => view.profile)
+  @OneToMany(() => View, (view) => view.profile, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   views: View[];
 
   @CreateDateColumn()

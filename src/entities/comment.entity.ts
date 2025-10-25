@@ -6,6 +6,7 @@ import {
   OneToMany,
   CreateDateColumn,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { Profile, ProfileDto } from './profile.entity';
 import { Idea } from './idea.entity';
@@ -26,6 +27,7 @@ export class Comment {
   @ManyToOne(() => Idea, (idea) => idea.comments, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'idea_id' })
   idea: Idea;
 
   @Column({ nullable: true })
@@ -35,6 +37,7 @@ export class Comment {
   @ManyToOne(() => Comment, (comment) => comment.replies, {
     onDelete: 'RESTRICT',
   })
+  @JoinColumn({ name: 'parent_comment_id' })
   parentComment: Comment | null;
 
   @OneToMany(() => Comment, (comment) => comment.parentComment)
@@ -47,6 +50,7 @@ export class Comment {
   @ManyToOne(() => Profile, (profile) => profile.comments, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'author_id' })
   author: Profile;
 
   @OneToMany(() => Like, (like) => like.comment)
@@ -65,7 +69,7 @@ export class Comment {
     dto.likes = this.likes?.length ?? 0;
     dto.replies = this.replies?.length ?? 0;
     dto.isLiked = currentUserId
-      ? this.likes?.some((like) => like.userProfileId === currentUserId)
+      ? this.likes?.some((like) => like.profileId === currentUserId)
       : false;
     dto.createdAt = this.createdAt;
     return dto;
