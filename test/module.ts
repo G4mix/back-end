@@ -5,6 +5,12 @@ import { setupApplication } from 'src/setup-application';
 import { DataSource } from 'typeorm';
 import { INestApplication } from '@nestjs/common';
 import { S3_CLIENT } from 'src/shared/gateways/s3.gateway';
+import { ConfigService } from '@nestjs/config';
+
+jest.mock('@nestjs/throttler', () => ({
+  ...jest.requireActual('@nestjs/throttler'),
+  Throttle: () => () => {},
+}));
 
 export const createTestModule = async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -25,6 +31,14 @@ export const createTestModule = async () => {
           $metadata: { httpStatusCode: 200 },
         }),
       ),
+    })
+    .overrideProvider(ConfigService)
+    .useValue({
+      get: (key: string) => {
+        if (key === 'RATE_LIMIT') return 10000;
+        if (key === 'RATE_LIMIT_TTL') return 1000;
+        return process.env[key];
+      },
     })
     .compile();
   return moduleFixture;

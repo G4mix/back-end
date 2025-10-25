@@ -14,6 +14,7 @@ import { Idea } from 'src/entities/idea.entity';
 import { Like } from 'src/entities/like.entity';
 import { Tag } from 'src/entities/tag.entity';
 import { View } from 'src/entities/view.entity';
+import { TestingModule } from '@nestjs/testing';
 
 declare global {
   var app: INestApplication<App>;
@@ -31,9 +32,8 @@ declare global {
   var viewRepository: Repository<View>;
 }
 
-beforeAll(async () => {
-  const module = await createTestModule();
-  const app = await setupTestApp(module);
+export const mocksSetup = async (moduleFixture: TestingModule) => {
+  const app = await setupTestApp(moduleFixture);
   global.app = app;
   global.dataSource = app.get(DataSource);
   global.jwtService = app.get(JwtService);
@@ -47,6 +47,11 @@ beforeAll(async () => {
   global.viewRepository = app.get('ViewRepository');
   global.s3Client = app.get(S3_CLIENT);
   global.sesClient = app.get(SES_CLIENT);
+};
+
+beforeAll(async () => {
+  const moduleFixture = await createTestModule();
+  await mocksSetup(moduleFixture);
 });
 
 beforeEach(async () => {

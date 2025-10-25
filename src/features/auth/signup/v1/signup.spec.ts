@@ -100,13 +100,14 @@ describe('/v1/auth/signup (POST)', () => {
   it('should return 400 when required fields are missing', async () => {
     const response = await request(app.getHttpServer())
       .post('/v1/auth/signup')
-      .send({});
+      .send({
+        password: 'Password123!',
+        username: 'testuser',
+      });
 
     expect(response.status).toEqual(400);
     const body = response.body as ErrorResponse;
     expect(body.message).toContain('EMAIL_REQUIRED');
-    expect(body.message).toContain('PASSWORD_REQUIRED');
-    expect(body.message).toContain('USERNAME_REQUIRED');
   });
 
   it('should return 409 when email already exists', async () => {

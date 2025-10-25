@@ -14,7 +14,10 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = generateTestJwt({ sub: currentUser.id });
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.profileId,
+    });
 
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
@@ -62,8 +65,10 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = generateTestJwt({ sub: currentUser.id });
-
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.profileId,
+    });
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
@@ -82,8 +87,10 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = generateTestJwt({ sub: currentUser.id });
-
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.profileId,
+    });
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
@@ -108,8 +115,10 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = generateTestJwt({ sub: currentUser.id });
-
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.profileId,
+    });
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
@@ -129,8 +138,10 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = generateTestJwt({ sub: currentUser.id });
-
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.profileId,
+    });
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
@@ -150,8 +161,10 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = generateTestJwt({ sub: currentUser.id });
-
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.profileId,
+    });
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);
@@ -165,8 +178,10 @@ describe('/v1/user/{userProfileId} (DELETE)', () => {
       'current@example.com',
       'password123',
     );
-    const token = generateTestJwt({ sub: currentUser.id });
-
+    const token = generateTestJwt({
+      sub: currentUser.id,
+      userProfileId: currentUser.profileId,
+    });
     const response = await request(app.getHttpServer())
       .delete('/v1/user/')
       .set('Authorization', `Bearer ${token}`);

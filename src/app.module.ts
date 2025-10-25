@@ -39,6 +39,7 @@ import { RecordViewController } from './features/feed/ideas/record-view/v1/recor
 import { CreateCommentController } from './features/feed/comments/create-comment/v1/create-comment.controller';
 import { GetAllCommentsController } from './features/feed/comments/get-all-comments/v1/get-all-comments.controller';
 import { GetCommentByIdController } from './features/feed/comments/get-comment-by-id/v1/get-comment-by-id.controller';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -74,6 +75,17 @@ import { GetCommentByIdController } from './features/feed/comments/get-comment-b
       secret: process.env.JWT_SIGNING_KEY_SECRET,
       signOptions: { expiresIn: '1h' },
     }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          name: 'default',
+          ttl: config.get('RATE_LIMIT_TTL') ?? 60000,
+          limit: config.get('RATE_LIMIT') ?? 500,
+        },
+      ],
+    }),
   ],
   providers: [
     JwtStrategy,
@@ -107,6 +119,7 @@ import { GetCommentByIdController } from './features/feed/comments/get-comment-b
     },
     SESGateway,
     S3Gateway,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
   controllers: [
     GetHealthStatusController,

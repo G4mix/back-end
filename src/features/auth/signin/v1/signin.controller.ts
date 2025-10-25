@@ -16,23 +16,22 @@ import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
 import { InvalidEmailOrPassword } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safeSave';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('/auth')
 export class SignInController {
-  private readonly MAX_ATTEMPTS = 5;
-  private readonly BLOCK_TIME_MS = 30 * 60 * 1000;
   readonly logger = new Logger(this.constructor.name);
 
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
-    // private readonly sesGateway: SESGateway,
   ) {}
 
   @Post('/signin')
   @Version('1')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async signin(@Body() body: SigninInput): Promise<SigninOutput> {
     const user = await this.userRepository.findOne({
       where: { email: body.email },
@@ -46,17 +45,7 @@ export class SignInController {
 
     if (!user) throw new InvalidEmailOrPassword();
 
-    // if (!user.verified) {
-    //   const res = await this.sesGateway.checkEmailStatus(body.email);
-    //   if (res?.status === 'Success') {
-    //     user.verified = true;
-    //     await this.userRepository.save(user);
-    //     await this.sesGateway.sendEmail({
-    //       template: 'SignUp',
-    //       receiver: user.email,
-    //     });
-    //   }
-    // }
+    // todo: if the user is not verified, send a verification email
 
     if (!(await compare(body.password, user.password))) {
       throw new InvalidEmailOrPassword();
