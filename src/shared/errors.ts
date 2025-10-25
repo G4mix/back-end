@@ -96,3 +96,15 @@ export class CollaborationRequestNotFound extends NotFoundException {
     super('COLLABORATION_REQUEST_NOT_FOUND');
   }
 }
+
+export class CollaborationRequestIsNotPending extends BadRequestException {
+  constructor() {
+    super('COLLABORATION_REQUEST_IS_NOT_PENDING');
+  }
+}
+
+export class PendingCollaborationRequestAlreadyExists extends ConflictException {
+  constructor() {
+    super('PENDING_COLLABORATION_REQUEST_ALREADY_EXISTS');
+  }
+}

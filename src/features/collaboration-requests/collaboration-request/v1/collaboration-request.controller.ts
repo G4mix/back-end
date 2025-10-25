@@ -9,12 +9,16 @@ import {
   Version,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CollaborationRequest } from 'src/entities/collaboration-request.entity';
+import {
+  CollaborationRequest,
+  CollaborationRequestStatus,
+} from 'src/entities/collaboration-request.entity';
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { Repository } from 'typeorm';
 import { CollaborationRequestInput } from './collaboration-request.dto';
 import { safeSave } from 'src/shared/utils/safeSave';
+import { PendingCollaborationRequestAlreadyExists } from 'src/shared/errors';
 
 @Controller('/collaboration-request')
 export class CollaborationRequestController {
@@ -32,6 +36,17 @@ export class CollaborationRequestController {
     @Request() { user: { userProfileId } }: RequestWithUserData,
     @Body() { message, ideaId }: CollaborationRequestInput,
   ): Promise<CollaborationRequest> {
+    const collaborationRequest =
+      await this.collaborationRequestRepository.findOne({
+        where: {
+          requesterId: userProfileId,
+          ideaId,
+          status: CollaborationRequestStatus.PENDING,
+        },
+      });
+    if (collaborationRequest) {
+      throw new PendingCollaborationRequestAlreadyExists();
+    }
     return await safeSave(this.collaborationRequestRepository, {
       ideaId,
       message,

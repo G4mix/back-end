@@ -4,7 +4,6 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
-  Unique,
   JoinColumn,
 } from 'typeorm';
 import { Profile } from './profile.entity';
@@ -17,7 +16,6 @@ export enum CollaborationRequestStatus {
 }
 
 @Entity('collaboration_requests')
-@Unique(['idea', 'requester'])
 export class CollaborationRequest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
