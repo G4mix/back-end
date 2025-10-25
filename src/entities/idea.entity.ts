@@ -8,13 +8,11 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm';
-import { UserProfile, UserProfileDto } from './user-profile.entity';
+import { Profile, ProfileDto } from './profile.entity';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { View } from './view.entity';
 import { Tag } from './tag.entity';
-import { Image, ImageDto } from './image.entity';
-import { Link } from './link.entity';
 
 @Entity('ideas')
 export class Idea {
@@ -31,10 +29,10 @@ export class Idea {
   @Index()
   authorId: string;
 
-  @ManyToOne(() => UserProfile, (userProfile) => userProfile.ideas, {
+  @ManyToOne(() => Profile, (profile) => profile.ideas, {
     onDelete: 'CASCADE',
   })
-  author: UserProfile;
+  author: Profile;
 
   @OneToMany(() => Comment, (comment) => comment.idea)
   comments: Comment[];
@@ -45,22 +43,17 @@ export class Idea {
   @OneToMany(() => View, (view) => view.idea)
   views: View[];
 
-  @OneToMany(() => Link, (link) => link.idea, {
-    cascade: true,
-    orphanedRowAction: 'delete',
-  })
-  links: Link[];
+  @Column({ type: 'jsonb', default: [] })
+  links: string[];
+
   @OneToMany(() => Tag, (tag) => tag.idea, {
     cascade: true,
     orphanedRowAction: 'delete',
   })
   tags: Tag[];
 
-  @OneToMany(() => Image, (image) => image.idea, {
-    cascade: true,
-    orphanedRowAction: 'delete',
-  })
-  images: Image[];
+  @Column({ type: 'jsonb', default: [] })
+  images: string[];
 
   @CreateDateColumn()
   createdAt: Date;
@@ -77,9 +70,9 @@ export class Idea {
     dto.comments = this.comments?.length ?? 0;
     dto.likes = this.likes?.length ?? 0;
     dto.views = this.views?.length ?? 0;
-    dto.links = this.links.map((link) => link.url) ?? [];
+    dto.links = this.links ?? [];
     dto.tags = this.tags?.map((tag) => tag.name) ?? [];
-    dto.images = this.images?.map((image) => image.toDto()) ?? [];
+    dto.images = this.images ?? [];
     dto.isLiked = currentUserId
       ? this.likes?.some((like) => like.userProfileId === currentUserId)
       : false;
@@ -96,13 +89,13 @@ export class IdeaDto {
   id: string;
   title: string;
   content: string;
-  author?: UserProfileDto;
+  author?: ProfileDto;
   comments: number;
   likes: number;
   views: number;
   links: string[];
   tags: string[];
-  images: ImageDto[];
+  images: string[];
   isLiked: boolean;
   isViewed: boolean;
   createdAt: Date;

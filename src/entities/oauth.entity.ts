@@ -4,20 +4,27 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
+  JoinColumn,
   Index,
   Unique,
 } from 'typeorm';
 import { User } from './user.entity';
 
+export enum OAuthProvider {
+  GOOGLE = 'Google',
+  GITHUB = 'Github',
+  LINKEDIN = 'LinkedIn',
+}
+
 @Entity('user_oauth')
 @Unique(['provider', 'email'])
 @Index(['userId'])
-export class UserOAuth {
+export class OAuth {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  provider: string;
+  @Column({ type: 'enum', enum: OAuthProvider })
+  provider: OAuthProvider;
 
   @Column({ unique: true })
   email: string;
@@ -25,9 +32,10 @@ export class UserOAuth {
   @Column()
   userId: string;
 
-  @ManyToOne(() => User, (user) => user.oauthAccounts, {
+  @ManyToOne(() => User, (user) => user.oauth, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @CreateDateColumn()

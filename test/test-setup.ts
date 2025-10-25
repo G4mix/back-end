@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { clearDatabase, createTestModule, setupTestApp } from './module';
 import { User } from 'src/entities/user.entity';
 import { UserCode } from 'src/entities/user-code.entity';
-import { UserProfile } from 'src/entities/user-profile.entity';
+import { UserProfile } from 'src/entities/profile.entity';
 import { App } from 'supertest/types';
 import { S3Client } from '@aws-sdk/client-s3';
 import { S3_CLIENT } from '../src/shared/gateways/s3.gateway';

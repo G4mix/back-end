@@ -17,7 +17,7 @@ import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { UpdateUserProfileInput } from './update-user.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { hashSync } from 'bcrypt';
-import { UserProfileDto } from 'src/entities/user-profile.entity';
+import { UserProfileDto } from 'src/entities/profile.entity';
 import { Link } from 'src/entities/link.entity';
 import { SESGateway } from 'src/shared/gateways/ses.gateway';
 import {
@@ -28,7 +28,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PictureUpdateFail, UserNotFound } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safeSave';
-import { UserProfile } from '../../../../entities/user-profile.entity';
+import { UserProfile } from '../../../../entities/profile.entity';
 
 @Controller('/user')
 export class UpdateUserController {

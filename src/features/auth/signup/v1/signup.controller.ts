@@ -14,7 +14,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
 import { JwtService } from '@nestjs/jwt';
-import { UserProfile } from 'src/entities/user-profile.entity';
+import { UserProfile } from 'src/entities/profile.entity';
 import { UserCode } from 'src/entities/user-code.entity';
 import { hashSync } from 'bcrypt';
 import { SESGateway } from 'src/shared/gateways/ses.gateway';

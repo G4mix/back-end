@@ -3,7 +3,7 @@ import { generateTestJwt } from 'test/jwt-helper';
 
 import request from 'supertest';
 
-import { UserProfileDto } from 'src/entities/user-profile.entity';
+import { UserProfileDto } from 'src/entities/profile.entity';
 
 interface ErrorResponse {
   message: string;

@@ -11,7 +11,7 @@ import { Repository } from 'typeorm';
 import { UserNotFound } from 'src/shared/errors';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { GetUserByIdInput } from './get-user-by-id.dto';
-import { UserProfile, UserProfileDto } from 'src/entities/user-profile.entity';
+import { UserProfile, UserProfileDto } from 'src/entities/profile.entity';
 
 @Controller('/user')
 export class GetUserByIdController {

@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { UserProfileDto } from 'src/entities/user-profile.entity';
+import { UserProfileDto } from 'src/entities/profile.entity';
 
 export class GetAllUsersInput {
   @IsOptional()

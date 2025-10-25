@@ -10,7 +10,7 @@ import {
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { GetAllUsersOutput, GetAllUsersInput } from './get-all-users.dto';
 import { Repository } from 'typeorm';
-import { UserProfile } from 'src/entities/user-profile.entity';
+import { UserProfile } from 'src/entities/profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('/user')

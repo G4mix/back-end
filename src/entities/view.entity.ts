@@ -7,7 +7,7 @@ import {
   Index,
   Unique,
 } from 'typeorm';
-import { UserProfile } from './user-profile.entity';
+import { Profile } from './profile.entity';
 import { Idea } from './idea.entity';
 
 @Entity('views')
@@ -29,10 +29,10 @@ export class View {
   @Index()
   userProfileId: string;
 
-  @ManyToOne(() => UserProfile, (userProfile) => userProfile.views, {
+  @ManyToOne(() => Profile, (profile) => profile.views, {
     onDelete: 'CASCADE',
   })
-  userProfile: UserProfile;
+  profile: Profile;
 
   @CreateDateColumn()
   createdAt: Date;

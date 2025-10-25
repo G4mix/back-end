@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   Unique,
 } from 'typeorm';
-import { UserProfile } from './user-profile.entity';
+import { Profile } from './profile.entity';
 
 @Entity('follows')
 @Unique(['followerUserId', 'followingUserId'])
@@ -20,15 +20,15 @@ export class Follow {
   @Column()
   followingUserId: string;
 
-  @ManyToOne(() => UserProfile, (userProfile) => userProfile.following, {
+  @ManyToOne(() => Profile, (profile) => profile.following, {
     onDelete: 'CASCADE',
   })
-  followerUser: UserProfile;
+  followerUser: Profile;
 
-  @ManyToOne(() => UserProfile, (userProfile) => userProfile.followers, {
+  @ManyToOne(() => Profile, (profile) => profile.followers, {
     onDelete: 'CASCADE',
   })
-  followingUser: UserProfile;
+  followingUser: Profile;
 
   @CreateDateColumn()
   createdAt: Date;
