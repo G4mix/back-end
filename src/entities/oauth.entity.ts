@@ -16,7 +16,7 @@ export enum OAuthProvider {
   LINKEDIN = 'LinkedIn',
 }
 
-@Entity('user_oauth')
+@Entity('oauth')
 @Unique(['provider', 'email'])
 @Index(['userId'])
 export class OAuth {

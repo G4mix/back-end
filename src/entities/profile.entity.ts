@@ -13,8 +13,9 @@ import { Idea } from './idea.entity';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { View } from './view.entity';
+import { CollaborationRequest } from './collaboration-request.entity';
 
-@Entity('user_profiles')
+@Entity('profiles')
 export class Profile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -54,6 +55,9 @@ export class Profile {
     orphanedRowAction: 'delete',
   })
   ideas: Idea[];
+
+  @OneToMany(() => CollaborationRequest, (req) => req.requester)
+  collaborationRequests: CollaborationRequest[];
 
   @OneToMany(() => Comment, (comment) => comment.author, {
     cascade: true,

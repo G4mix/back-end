@@ -14,6 +14,7 @@ import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { View } from './view.entity';
 import { Tag } from './tag.entity';
+import { CollaborationRequest } from './collaboration-request.entity';
 
 @Entity('ideas')
 export class Idea {
@@ -41,6 +42,9 @@ export class Idea {
     orphanedRowAction: 'delete',
   })
   comments: Comment[];
+
+  @OneToMany(() => CollaborationRequest, (req) => req.idea)
+  collaborationRequests: CollaborationRequest[];
 
   @OneToMany(() => Like, (like) => like.idea)
   likes: Like[];
