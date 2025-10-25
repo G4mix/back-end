@@ -40,10 +40,10 @@ export class RefreshTokenController {
 
     const accessToken = this.jwtService.sign({
       sub: user.id,
-      userProfileId: user.userProfileId,
+      userProfileId: user.profileId,
     });
     const refreshToken = this.jwtService.sign(
-      { sub: user.id, userProfileId: user.userProfileId },
+      { sub: user.id, userProfileId: user.profileId },
       { expiresIn: REFRESH_TOKEN_EXPIRATION },
     );
 

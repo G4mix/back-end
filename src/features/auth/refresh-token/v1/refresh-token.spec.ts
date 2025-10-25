@@ -17,7 +17,7 @@ describe('/v1/auth/refresh-token (POST)', () => {
     );
 
     const refreshToken = jwtService.sign(
-      { sub: user.id, userProfileId: user.userProfileId },
+      { sub: user.id, userProfileId: user.profileId },
       { expiresIn: REFRESH_TOKEN_EXPIRATION },
     );
 
@@ -57,7 +57,7 @@ describe('/v1/auth/refresh-token (POST)', () => {
 
     // Create expired refresh token
     const expiredRefreshToken = jwtService.sign(
-      { sub: user.id, userProfileId: user.userProfileId },
+      { sub: user.id, userProfileId: user.profileId },
       { expiresIn: '-1h' }, // Expired 1 hour ago
     );
 
@@ -73,7 +73,7 @@ describe('/v1/auth/refresh-token (POST)', () => {
   it('should return 401 when user is not found', async () => {
     // Create refresh token for non-existent user
     const refreshToken = jwtService.sign(
-      { sub: randomUUID(), userProfileId: 'non-existent-profile-id' },
+      { sub: randomUUID(), profileId: 'non-existent-profile-id' },
       { expiresIn: REFRESH_TOKEN_EXPIRATION },
     );
 
@@ -117,7 +117,7 @@ describe('/v1/auth/refresh-token (POST)', () => {
     );
 
     const oldRefreshToken = jwtService.sign(
-      { sub: user.id, userProfileId: user.userProfileId },
+      { sub: user.id, userProfileId: user.profileId },
       { expiresIn: REFRESH_TOKEN_EXPIRATION },
     );
 
@@ -151,7 +151,7 @@ describe('/v1/auth/refresh-token (POST)', () => {
     );
 
     const refreshToken = jwtService.sign(
-      { sub: user.id, userProfileId: user.userProfileId },
+      { sub: user.id, userProfileId: user.profileId },
       { expiresIn: REFRESH_TOKEN_EXPIRATION },
     );
 

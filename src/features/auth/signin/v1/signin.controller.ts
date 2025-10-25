@@ -14,10 +14,7 @@ import { SigninInput, SigninOutput } from './signin.dto';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
-import {
-  InvalidEmailOrPassword,
-  TooManyLoginAttempts,
-} from 'src/shared/errors';
+import { InvalidEmailOrPassword } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safeSave';
 
 @Controller('/auth')
@@ -40,11 +37,10 @@ export class SignInController {
     const user = await this.userRepository.findOne({
       where: { email: body.email },
       relations: [
-        'userProfile',
-        'userProfile.links',
-        'userProfile.followers',
-        'userProfile.following',
-        'userProfile.user',
+        'profile',
+        'profile.followers',
+        'profile.following',
+        'profile.user',
       ],
     });
 
@@ -62,46 +58,26 @@ export class SignInController {
     //   }
     // }
 
-    const now = new Date();
-
-    if (user.loginAttempts >= this.MAX_ATTEMPTS) {
-      if (user.blockedUntil && user.blockedUntil > now) {
-        throw new TooManyLoginAttempts();
-      }
-      user.loginAttempts = 0;
-      user.blockedUntil = null;
-      await safeSave(this.userRepository, user);
-    }
-
     if (!(await compare(body.password, user.password))) {
-      user.loginAttempts += 1;
-      if (user.loginAttempts === this.MAX_ATTEMPTS) {
-        user.blockedUntil = new Date(now.getTime() + this.BLOCK_TIME_MS);
-        // await this.sesService.sendEmail({ template: 'BlockedAccount', receiver: email });
-      }
-      await safeSave(this.userRepository, user);
-
       throw new InvalidEmailOrPassword();
     }
 
     const accessToken = this.jwtService.sign({
       sub: user.id,
-      userProfileId: user.userProfileId,
+      userProfileId: user.profileId,
     });
     const refreshToken = this.jwtService.sign(
-      { sub: user.id, userProfileId: user.userProfileId },
+      { sub: user.id, userProfileId: user.profileId },
       { expiresIn: REFRESH_TOKEN_EXPIRATION },
     );
 
-    user.loginAttempts = 0;
-    user.blockedUntil = null;
     user.refreshToken = refreshToken;
     await safeSave(this.userRepository, user);
 
     return {
       accessToken,
       refreshToken,
-      userProfile: user.userProfile.toDto(),
+      userProfile: user.profile.toDto(),
     };
   }
 }
