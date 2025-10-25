@@ -42,6 +42,7 @@ import { GetCommentByIdController } from './features/feed/comments/get-comment-b
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { CollaborationRequestController } from './features/collaboration-requests/collaboration-request/v1/collaboration-request.controller';
 import { CollaborationRequest } from './entities/collaboration-request.entity';
+import { GetCollaborationRequestController } from './features/collaboration-requests/get-collaboration-request/v1/get-collaboration-request.controller';
 
 @Module({
   imports: [
@@ -145,6 +146,7 @@ import { CollaborationRequest } from './entities/collaboration-request.entity';
     GetAllCommentsController,
     GetCommentByIdController,
     CollaborationRequestController,
+    GetCollaborationRequestController,
   ],
 })
 export class AppModule {}

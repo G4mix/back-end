@@ -23,8 +23,8 @@ import {
   UserNotAuthorized,
 } from 'src/shared/errors';
 
-@Controller('/collaboration-requests')
-export class CollaborationRequestsController {
+@Controller('/get-collaboration-request')
+export class GetCollaborationRequestController {
   constructor(
     @InjectRepository(CollaborationRequest)
     private readonly collaborationRequestRepository: Repository<CollaborationRequest>,
