@@ -40,6 +40,8 @@ import { CreateCommentController } from './features/feed/comments/create-comment
 import { GetAllCommentsController } from './features/feed/comments/get-all-comments/v1/get-all-comments.controller';
 import { GetCommentByIdController } from './features/feed/comments/get-comment-by-id/v1/get-comment-by-id.controller';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { CollaborationRequestController } from './features/collaboration-requests/collaboration-request/v1/collaboration-request.controller';
+import { CollaborationRequest } from './entities/collaboration-request.entity';
 
 @Module({
   imports: [
@@ -70,6 +72,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       View,
       Tag,
       Comment,
+      CollaborationRequest,
     ]),
     JwtModule.register({
       secret: process.env.JWT_SIGNING_KEY_SECRET,
@@ -141,6 +144,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     CreateCommentController,
     GetAllCommentsController,
     GetCommentByIdController,
+    CollaborationRequestController,
   ],
 })
 export class AppModule {}

@@ -90,3 +90,9 @@ export class CommentNotFound extends NotFoundException {
     super('COMMENT_NOT_FOUND');
   }
 }
+
+export class CollaborationRequestNotFound extends NotFoundException {
+  constructor() {
+    super('COLLABORATION_REQUEST_NOT_FOUND');
+  }
+}

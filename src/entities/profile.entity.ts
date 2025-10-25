@@ -20,8 +20,8 @@ export class Profile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 300, nullable: true })
-  displayName: string | null;
+  @Column({ type: 'varchar', length: 300 })
+  displayName: string;
 
   @Column({ type: 'varchar', length: 2048, nullable: true })
   icon: string | null;
@@ -86,7 +86,7 @@ export class Profile {
   toDto(currentUserId?: string): ProfileDto {
     const dto = new ProfileDto();
     dto.id = this.id;
-    dto.displayName = this.displayName ?? this.user.username;
+    dto.displayName = this.displayName;
     dto.autobiography = this.autobiography ?? null;
     dto.backgroundImage = this.backgroundImage ?? null;
     dto.icon = this.icon ?? null;
