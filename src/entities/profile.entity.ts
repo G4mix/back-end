@@ -31,10 +31,7 @@ export class Profile {
   @Column({ type: 'varchar', length: 2048, nullable: true })
   backgroundImage: string | null;
 
-  @OneToOne(() => User, (user) => user.profile, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => User, (user) => user.profile)
   user: User;
 
   @Column({ type: 'jsonb', default: [] })

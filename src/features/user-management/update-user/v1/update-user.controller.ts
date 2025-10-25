@@ -108,7 +108,7 @@ export class UpdateUserController {
     if (email) {
       userProfile.user.email = email;
       userProfile.user.verified = false;
-      await this.sesGateway.verifyIdentity(email);
+      // todo: send email verification
     }
     Object.assign(
       userProfile.user,

@@ -33,8 +33,8 @@ export class ToggleLikeController {
     @Body() { targetLikeId, likeType }: ToggleLikeInput,
   ): Promise<void> {
     const targets = {
-      [LikeType.IDEA]: { userProfileId, ideaId: targetLikeId },
-      [LikeType.COMMENT]: { userProfileId, commentId: targetLikeId },
+      [LikeType.IDEA]: { profileId: userProfileId, ideaId: targetLikeId },
+      [LikeType.COMMENT]: { profileId: userProfileId, commentId: targetLikeId },
     };
 
     const targetLike = await this.likeRepository.findOne({

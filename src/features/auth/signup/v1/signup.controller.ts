@@ -65,7 +65,7 @@ export class SignupController {
 
     await this.userRepository.update(newUser.id, { refreshToken });
 
-    this.sesGateway.verifyIdentity(body.email);
+    // todo: send email verification
 
     return {
       accessToken,

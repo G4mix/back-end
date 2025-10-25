@@ -49,7 +49,6 @@ export class GetAllUsersController {
     const [users, total] = await qb.getManyAndCount();
     const pages = Math.ceil(total / quantity);
     const nextPage = page + 1;
-
     return {
       total,
       pages,
