@@ -5,16 +5,14 @@ import { GetHealthStatusController } from './features/get-health-status/v1/get-h
 import { join } from 'path';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { User } from './entities/user.entity';
-import { UserCode } from './entities/user-code.entity';
-import { UserOAuth } from './entities/oauth.entity';
-import { UserProfile } from './entities/profile.entity';
+import { OAuth } from './entities/oauth.entity';
+import { Profile } from './entities/profile.entity';
 import { SignInController } from './features/auth/signin/v1/signin.controller';
 import { SignupController } from './features/auth/signup/v1/signup.controller';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './jwt/auth.guard';
 import { JwtStrategy } from './jwt/jwt.strategy';
 import { Follow } from './entities/follow.entity';
-import { Link } from './entities/link.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
 import { SESv2Client } from '@aws-sdk/client-sesv2';
@@ -28,7 +26,6 @@ import { S3_CLIENT, S3Gateway } from './shared/gateways/s3.gateway';
 import { UpdateUserController } from './features/user-management/update-user/v1/update-user.controller';
 import { CreateIdeaController } from './features/feed/ideas/create-idea/v1/create-idea.controller';
 import { Idea } from './entities/idea.entity';
-import { Image } from './entities/image.entity';
 import { Like } from './entities/like.entity';
 import { View } from './entities/view.entity';
 import { Tag } from './entities/tag.entity';
@@ -64,13 +61,10 @@ import { GetCommentByIdController } from './features/feed/comments/get-comment-b
     }),
     TypeOrmModule.forFeature([
       User,
-      UserCode,
-      UserOAuth,
-      UserProfile,
+      OAuth,
+      Profile,
       Follow,
-      Link,
       Idea,
-      Image,
       Like,
       View,
       Tag,

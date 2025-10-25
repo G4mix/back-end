@@ -9,7 +9,7 @@ import {
   MaxLength,
   validateSync,
 } from 'class-validator';
-import { InvalidUserProfile } from 'src/shared/errors';
+import { InvalidProfile } from 'src/shared/errors';
 import { parseArraySafe } from 'src/shared/utils/parseArraySafe';
 
 class UpdateUserInput {
@@ -30,7 +30,7 @@ class UpdateUserInput {
   password?: string;
 }
 
-export class UpdateUserProfileInput {
+export class UpdateProfileInput {
   @IsString({ message: 'INVALID_NAME' })
   @Matches(/^[^{}]{3,300}$/, { message: 'INVALID_NAME' })
   @IsOptional()
@@ -57,10 +57,10 @@ export class UpdateUserProfileInput {
       const parsed = JSON.parse(value);
       const instance = plainToInstance(UpdateUserInput, parsed);
       const errors = validateSync(instance);
-      if (errors.length) throw new InvalidUserProfile();
+      if (errors.length) throw new InvalidProfile();
       return instance;
     } catch (_e) {
-      throw new InvalidUserProfile();
+      throw new InvalidProfile();
     }
   })
   @Type(() => UpdateUserInput)

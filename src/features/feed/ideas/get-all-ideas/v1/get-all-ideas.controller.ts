@@ -33,12 +33,10 @@ export class GetAllIdeasController {
       .createQueryBuilder('idea')
       .leftJoinAndSelect('idea.author', 'author')
       .leftJoinAndSelect('author.user', 'user')
-      .leftJoinAndSelect('idea.images', 'images')
       .leftJoinAndSelect('idea.tags', 'tags')
       .leftJoinAndSelect('idea.comments', 'comments')
       .leftJoinAndSelect('idea.likes', 'likes')
-      .leftJoinAndSelect('idea.views', 'views')
-      .leftJoinAndSelect('idea.links', 'links');
+      .leftJoinAndSelect('idea.views', 'views');
 
     if (authorId) {
       qb.andWhere('idea.authorId = :authorId', { authorId });

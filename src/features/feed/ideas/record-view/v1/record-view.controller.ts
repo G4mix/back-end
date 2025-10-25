@@ -34,7 +34,7 @@ export class RecordViewController {
   ) {
     await safeSave(this.viewRepository, {
       ideaId: targetIdeaId,
-      userProfileId,
+      profileId: userProfileId,
     });
   }
 }

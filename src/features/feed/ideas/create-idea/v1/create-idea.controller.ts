@@ -22,9 +22,7 @@ import {
 } from 'src/shared/gateways/s3.gateway';
 import { ConfigService } from '@nestjs/config';
 import { Idea, IdeaDto } from 'src/entities/idea.entity';
-import { Link } from 'src/entities/link.entity';
 import { Tag } from 'src/entities/tag.entity';
-import { Image } from 'src/entities/image.entity';
 import { AtLeastOneImage } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safeSave';
 
@@ -55,12 +53,7 @@ export class CreateIdeaController {
     newIdea.content = content;
     newIdea.authorId = userProfileId;
 
-    const newLinks = links?.map((link) => {
-      const newLink = new Link();
-      newLink.url = link;
-      return newLink;
-    });
-    newIdea.links = newLinks ?? [];
+    newIdea.links = links ?? [];
 
     const newTags = tags?.map((tag) => {
       const newTag = new Tag();
@@ -70,7 +63,7 @@ export class CreateIdeaController {
     newIdea.tags = newTags ?? [];
 
     const idea = await safeSave(this.ideaRepository, newIdea);
-    const newImages: Image[] = [];
+    const newImages: string[] = [];
     for (const image of images ?? []) {
       const ideaImageRes = await this.s3Gateway.uploadFile({
         bucketName: this.configService.get<string>('PUBLIC_BUCKET_NAME')!,
@@ -78,10 +71,7 @@ export class CreateIdeaController {
         file: image.buffer,
       });
       if (typeof ideaImageRes !== 'object') continue;
-      const newImage = new Image();
-      newImage.alt = `Image ${image.originalname}`;
-      newImage.src = ideaImageRes.fileUrl;
-      newImages.push(newImage);
+      newImages.push(ideaImageRes.fileUrl);
     }
     idea.images = newImages;
 

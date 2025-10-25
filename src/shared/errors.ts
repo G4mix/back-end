@@ -38,9 +38,9 @@ export class YouCannotFollowYourself extends BadRequestException {
   }
 }
 
-export class InvalidUserProfile extends BadRequestException {
+export class InvalidProfile extends BadRequestException {
   constructor() {
-    super('INVALID_USER_PROFILE');
+    super('INVALID_PROFILE');
   }
 }
 export class InvalidImageType extends BadRequestException {
