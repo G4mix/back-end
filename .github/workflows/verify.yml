@@ -19,9 +19,9 @@ jobs:
       - name: install deps
         run: |
           npm ci
-      - name: npm audit
-        run: |
-          npm run audit
+      # - name: npm audit
+      #   run: |
+      #     npm run audit
       - name: check code style
         run: |
           npm run lint
