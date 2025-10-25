@@ -5,9 +5,9 @@ export class CollaborationApprovalInput {
   @IsUUID(undefined, { message: 'INVALID_COLLABORATION_REQUEST_ID' })
   collaborationRequestId: string;
 
-  @IsIn([
-    CollaborationRequestStatus.APPROVED,
-    CollaborationRequestStatus.REJECTED,
-  ])
+  @IsIn(
+    [CollaborationRequestStatus.APPROVED, CollaborationRequestStatus.REJECTED],
+    { message: 'INVALID_STATUS' },
+  )
   readonly status: CollaborationRequestStatus;
 }
