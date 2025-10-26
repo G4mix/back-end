@@ -262,18 +262,4 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     this.server.to(chatId).emit(event, data);
   }
-
-  public sendToUser(userProfileId: string, event: string, data: any) {
-    const userSockets = this.userSockets.get(userProfileId);
-    if (userSockets) {
-      userSockets.forEach((socketId) => {
-        this.server.to(socketId).emit(event, data);
-      });
-    }
-  }
-
-  public isUserOnline(userProfileId: string): boolean {
-    const userSockets = this.userSockets.get(userProfileId);
-    return userSockets ? userSockets.size > 0 : false;
-  }
 }
