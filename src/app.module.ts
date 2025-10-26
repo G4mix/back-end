@@ -45,6 +45,7 @@ import { CollaborationRequest } from './entities/collaboration-request.entity';
 import { Chat } from './entities/chat.entity';
 import { GetAllChatsController } from './features/chat/get-all-chats/v1/get-all-chats.controller';
 import { StartChatController } from './features/chat/start-chat/v1/start-chat.controller';
+import { SendMessageController } from './features/chat/send-message/v1/send-message.controller';
 import { GetCollaborationRequestController } from './features/collaboration-requests/get-collaboration-request/v1/get-collaboration-request.controller';
 import { CollaborationApprovalController } from './features/collaboration-requests/collaboration-approval/v1/collaboration-approval.controller';
 import { GetChatController } from './features/chat/get-chat/v1/get-chat.controller';
@@ -157,6 +158,7 @@ import { GetChatController } from './features/chat/get-chat/v1/get-chat.controll
     GetAllChatsController,
     GetChatController,
     StartChatController,
+    SendMessageController,
   ],
 })
 export class AppModule {}
