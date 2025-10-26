@@ -20,6 +20,7 @@ import { safeSave } from '../utils/safe-save.util';
 
 interface AuthenticatedSocket extends Socket {
   userProfileId?: string;
+  currentChatId?: string;
 }
 
 export class JoinChatData {
@@ -30,15 +31,7 @@ export class JoinChatData {
   token: string;
 }
 
-export class LeaveChatData {
-  @IsUUID()
-  chatId: string;
-}
-
 export class SendMessageData {
-  @IsUUID()
-  chatId: string;
-
   @IsString()
   content: string;
 }
@@ -132,6 +125,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       client.userProfileId = userProfileId;
+      client.currentChatId = data.chatId;
 
       if (!this.userSockets.has(userProfileId)) {
         this.userSockets.set(userProfileId, new Set());
@@ -156,21 +150,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ChatEvents.LEAVE_CHAT)
-  async handleLeaveChat(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody(new ValidationPipe({ transform: true })) data: LeaveChatData,
-  ) {
+  async handleLeaveChat(@ConnectedSocket() client: AuthenticatedSocket) {
     try {
       const userProfileId = client.userProfileId;
+      const chatId = client.currentChatId;
 
-      if (userProfileId) {
-        await client.leave(data.chatId);
-        this.logger.log(`User ${userProfileId} left chat ${data.chatId}`);
+      if (userProfileId && chatId) {
+        await client.leave(chatId);
+        client.currentChatId = undefined;
+        this.logger.log(`User ${userProfileId} left chat ${chatId}`);
 
-        client.emit(ChatEvents.LEFT_CHAT, { chatId: data.chatId });
-        client.to(data.chatId).emit(ChatEvents.USER_LEFT, {
+        client.emit(ChatEvents.LEFT_CHAT, { chatId: chatId });
+        client.to(chatId).emit(ChatEvents.USER_LEFT, {
           userProfileId,
-          chatId: data.chatId,
+          chatId: chatId,
+        });
+      } else {
+        client.emit(ChatEvents.LEAVE_CHAT_ERROR, {
+          message: 'User not authenticated or not in any chat',
         });
       }
     } catch (error) {
@@ -188,15 +185,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     try {
       const userProfileId = client.userProfileId;
+      const chatId = client.currentChatId;
 
-      if (!userProfileId) {
+      if (!userProfileId || !chatId) {
         client.emit(ChatEvents.SEND_MESSAGE_ERROR, {
-          message: 'User not authenticated',
+          message: 'User not authenticated or not in a chat',
         });
         return;
       }
 
-      const chat = await this.getChat(data.chatId);
+      const chat = await this.getChat(chatId);
       if (!chat) {
         client.emit(ChatEvents.SEND_MESSAGE_ERROR, {
           message: 'Chat not found',
@@ -218,13 +216,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         data.content,
       );
 
-      this.broadcastToChat(data.chatId, ChatEvents.NEW_MESSAGE, {
-        chatId: data.chatId,
+      this.broadcastToChat(chatId, ChatEvents.NEW_MESSAGE, {
+        chatId: chatId,
         message: newMessage,
       });
 
       this.logger.log(
-        `Message sent in chat ${data.chatId} by user ${userProfileId}`,
+        `Message sent in chat ${chatId} by user ${userProfileId}`,
       );
     } catch (error) {
       this.logger.error('Error sending message:', error);
