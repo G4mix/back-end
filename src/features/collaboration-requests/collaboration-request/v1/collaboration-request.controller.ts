@@ -18,13 +18,20 @@ import { Protected } from 'src/shared/decorators/protected.decorator';
 import { Repository } from 'typeorm';
 import { CollaborationRequestInput } from './collaboration-request.dto';
 import { safeSave } from 'src/shared/utils/safeSave';
-import { PendingCollaborationRequestAlreadyExists } from 'src/shared/errors';
+import {
+  IdeaNotFound,
+  PendingCollaborationRequestAlreadyExists,
+  YouCannotRequestCollaborationForYourOwnIdea,
+} from 'src/shared/errors';
+import { Idea } from 'src/entities/idea.entity';
 
 @Controller('/collaboration-request')
 export class CollaborationRequestController {
   constructor(
     @InjectRepository(CollaborationRequest)
     private readonly collaborationRequestRepository: Repository<CollaborationRequest>,
+    @InjectRepository(Idea)
+    private readonly ideaRepository: Repository<Idea>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -47,6 +54,15 @@ export class CollaborationRequestController {
     if (collaborationRequest) {
       throw new PendingCollaborationRequestAlreadyExists();
     }
+    const idea = await this.ideaRepository.findOne({
+      where: { id: ideaId },
+    });
+    if (!idea) throw new IdeaNotFound();
+
+    if (idea.authorId === userProfileId) {
+      throw new YouCannotRequestCollaborationForYourOwnIdea();
+    }
+
     return await safeSave(this.collaborationRequestRepository, {
       ideaId,
       message,

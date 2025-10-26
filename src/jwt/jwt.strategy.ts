@@ -16,7 +16,7 @@ export interface Claims {
 }
 
 export interface RequestWithUserData extends Request {
-  user: Claims;
+  user: Claims & { user: User };
 }
 
 
@@ -39,6 +39,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       where: { id: payload.sub }
     })
     if (!user) throw new UserNotAuthorized();
-    return payload;
+    return { ...payload, user };
   }
 }

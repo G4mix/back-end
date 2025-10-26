@@ -5,9 +5,11 @@ import {
   ManyToOne,
   CreateDateColumn,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { Profile } from './profile.entity';
 import { Idea } from './idea.entity';
+import { Chat } from './chat.entity';
 
 export enum CollaborationRequestStatus {
   PENDING = 'Pending',
@@ -26,6 +28,9 @@ export class CollaborationRequest {
   @Column()
   requesterId: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  chatId: string | null;
+
   @ManyToOne(() => Idea, (idea) => idea.collaborationRequests, {
     onDelete: 'CASCADE',
   })
@@ -37,6 +42,12 @@ export class CollaborationRequest {
   })
   @JoinColumn({ name: 'requester_id' })
   requester: Profile;
+
+  @OneToOne(() => Chat, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'chat_id' })
+  chat: Chat;
 
   @Column({
     type: 'enum',

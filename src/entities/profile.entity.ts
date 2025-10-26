@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToMany,
 } from 'typeorm';
 import { User, UserDto } from './user.entity';
 import { Follow } from './follow.entity';
@@ -14,6 +15,7 @@ import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { View } from './view.entity';
 import { CollaborationRequest } from './collaboration-request.entity';
+import { Chat } from './chat.entity';
 
 @Entity('profiles')
 export class Profile {
@@ -76,6 +78,9 @@ export class Profile {
     orphanedRowAction: 'delete',
   })
   views: View[];
+
+  @ManyToMany(() => Chat, (chat) => chat.members)
+  chats: Chat[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -19,17 +19,21 @@ import { Protected } from 'src/shared/decorators/protected.decorator';
 import { Repository } from 'typeorm';
 import { CollaborationApprovalInput } from './collaboration-approval.dto';
 import {
+  ChatNotFound,
   CollaborationRequestIsNotPending,
   CollaborationRequestNotFound,
   UserNotAuthorized,
 } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safeSave';
+import { Chat } from 'src/entities/chat.entity';
 
 @Controller('/collaboration-approval')
 export class CollaborationApprovalController {
   constructor(
     @InjectRepository(CollaborationRequest)
     private readonly collaborationRequestRepository: Repository<CollaborationRequest>,
+    @InjectRepository(Chat)
+    private readonly chatRepository: Repository<Chat>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -52,6 +56,11 @@ export class CollaborationApprovalController {
     }
     if (collaborationRequest.idea.authorId !== userProfileId) {
       throw new UserNotAuthorized();
+    }
+    if (status === CollaborationRequestStatus.APPROVED) {
+      if (!collaborationRequest.chatId) throw new ChatNotFound();
+      await this.chatRepository.delete(collaborationRequest.chatId);
+      collaborationRequest.chatId = null;
     }
     collaborationRequest.status = status;
     await safeSave(this.collaborationRequestRepository, collaborationRequest);

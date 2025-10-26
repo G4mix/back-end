@@ -42,6 +42,9 @@ import { GetCommentByIdController } from './features/feed/comments/get-comment-b
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { CollaborationRequestController } from './features/collaboration-requests/collaboration-request/v1/collaboration-request.controller';
 import { CollaborationRequest } from './entities/collaboration-request.entity';
+import { Chat } from './entities/chat.entity';
+import { GetAllChatsController } from './features/chat/get-all-chats/v1/get-all-chats.controller';
+import { StartChatController } from './features/chat/start-chat/v1/start-chat.controller';
 import { GetCollaborationRequestController } from './features/collaboration-requests/get-collaboration-request/v1/get-collaboration-request.controller';
 import { CollaborationApprovalController } from './features/collaboration-requests/collaboration-approval/v1/collaboration-approval.controller';
 
@@ -75,6 +78,7 @@ import { CollaborationApprovalController } from './features/collaboration-reques
       Tag,
       Comment,
       CollaborationRequest,
+      Chat,
     ]),
     JwtModule.register({
       secret: process.env.JWT_SIGNING_KEY_SECRET,
@@ -149,6 +153,8 @@ import { CollaborationApprovalController } from './features/collaboration-reques
     CollaborationRequestController,
     GetCollaborationRequestController,
     CollaborationApprovalController,
+    GetAllChatsController,
+    StartChatController,
   ],
 })
 export class AppModule {}
