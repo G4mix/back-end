@@ -16,12 +16,14 @@ import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { safeSave } from 'src/shared/utils/safeSave';
 import { ChatNotFound, UserNotAuthorized } from 'src/shared/errors';
+import { ChatEvents, ChatGateway } from 'src/shared/gateways/chat.gateway';
 
 @Controller('/chat')
 export class SendMessageController {
   constructor(
     @InjectRepository(Chat)
     private readonly chatRepository: Repository<Chat>,
+    private readonly chatGateway: ChatGateway,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -51,11 +53,19 @@ export class SendMessageController {
       content,
       timestamp: new Date(),
     };
+
     const updatedMessages = [...(chat.messages || []), newMessage];
+
     await safeSave(this.chatRepository, {
       ...chat,
       messages: updatedMessages,
     });
+
+    this.chatGateway.broadcastToChat(chatId, ChatEvents.NEW_MESSAGE, {
+      chatId,
+      message: newMessage,
+    });
+
     return newMessage;
   }
 }
