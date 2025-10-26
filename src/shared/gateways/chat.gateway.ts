@@ -42,20 +42,6 @@ export interface NewMessageEvent {
   };
 }
 
-export interface UserJoinedEvent {
-  userProfileId: string;
-  chatId: string;
-}
-
-export interface UserLeftEvent {
-  userProfileId: string;
-  chatId: string;
-}
-
-export interface ChatError {
-  message: string;
-}
-
 export enum ChatEvents {
   NEW_MESSAGE = 'new_message',
   USER_JOINED = 'user_joined',

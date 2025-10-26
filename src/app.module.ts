@@ -161,7 +161,6 @@ import { GetChatController } from './features/chat/get-chat/v1/get-chat.controll
     GetChatController,
     StartChatController,
     SendMessageController,
-    ChatGateway,
   ],
 })
 export class AppModule {}
