@@ -88,6 +88,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userProfileId = client.userProfileId;
     if (!userProfileId) return;
 
+    client.currentChatId = undefined;
+
     const userSockets = this.userSockets.get(userProfileId);
     if (userSockets) {
       userSockets.delete(client.id);
