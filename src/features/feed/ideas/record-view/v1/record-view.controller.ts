@@ -14,7 +14,7 @@ import { View } from 'src/entities/view.entity';
 import { Repository } from 'typeorm';
 import { RecordViewInput } from './record-view.dto';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 
 @Controller('/view')
 export class RecordViewController {

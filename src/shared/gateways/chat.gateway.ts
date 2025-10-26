@@ -7,6 +7,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
+import { ValidationPipe } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,22 +15,31 @@ import { Repository } from 'typeorm';
 import { Chat } from 'src/entities/chat.entity';
 import { JwtService } from '@nestjs/jwt';
 import { Claims } from 'src/jwt/jwt.strategy';
+import { IsString, IsUUID } from 'class-validator';
+import { safeSave } from '../utils/safe-save.util';
 
 interface AuthenticatedSocket extends Socket {
   userProfileId?: string;
 }
 
-export interface JoinChatData {
+export class JoinChatData {
+  @IsUUID()
   chatId: string;
+
+  @IsString()
   token: string;
 }
 
-export interface LeaveChatData {
+export class LeaveChatData {
+  @IsUUID()
   chatId: string;
 }
 
-export interface SendMessageData {
+export class SendMessageData {
+  @IsUUID()
   chatId: string;
+
+  @IsString()
   content: string;
 }
 
@@ -58,8 +68,7 @@ export enum ChatEvents {
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
+    origin: process.env.FRONTEND_URL!,
   },
   namespace: '/chat',
 })
@@ -98,7 +107,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(ChatEvents.JOIN_CHAT)
   async handleJoinChat(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: JoinChatData,
+    @MessageBody(new ValidationPipe({ transform: true })) data: JoinChatData,
   ) {
     try {
       const userProfileId = this.extractUserProfileIdFromToken(data.token);
@@ -108,7 +117,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      const hasAccess = await this.verifyChatAccess(data.chatId, userProfileId);
+      const chat = await this.getChat(data.chatId);
+      if (!chat) {
+        client.emit(ChatEvents.JOIN_CHAT_ERROR, { message: 'Chat not found' });
+        return;
+      }
+
+      const hasAccess = this.verifyChatAccess(chat, userProfileId);
       if (!hasAccess) {
         client.emit(ChatEvents.JOIN_CHAT_ERROR, {
           message: 'Access denied to this chat',
@@ -143,7 +158,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(ChatEvents.LEAVE_CHAT)
   async handleLeaveChat(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: LeaveChatData,
+    @MessageBody(new ValidationPipe({ transform: true })) data: LeaveChatData,
   ) {
     try {
       const userProfileId = client.userProfileId;
@@ -169,7 +184,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(ChatEvents.SEND_MESSAGE)
   async handleSendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: SendMessageData,
+    @MessageBody(new ValidationPipe({ transform: true })) data: SendMessageData,
   ) {
     try {
       const userProfileId = client.userProfileId;
@@ -181,7 +196,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      const hasAccess = await this.verifyChatAccess(data.chatId, userProfileId);
+      const chat = await this.getChat(data.chatId);
+      if (!chat) {
+        client.emit(ChatEvents.SEND_MESSAGE_ERROR, {
+          message: 'Chat not found',
+        });
+        return;
+      }
+
+      const hasAccess = this.verifyChatAccess(chat, userProfileId);
       if (!hasAccess) {
         client.emit(ChatEvents.SEND_MESSAGE_ERROR, {
           message: 'Access denied to this chat',
@@ -189,15 +212,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      const message = {
-        senderId: userProfileId,
-        content: data.content,
-        timestamp: new Date(),
-      };
+      const newMessage = await this.sendMessage(
+        chat,
+        userProfileId,
+        data.content,
+      );
 
       this.broadcastToChat(data.chatId, ChatEvents.NEW_MESSAGE, {
         chatId: data.chatId,
-        message,
+        message: newMessage,
       });
 
       this.logger.log(
@@ -210,19 +233,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
     }
   }
-
-  private async verifyChatAccess(
-    chatId: string,
-    userProfileId: string,
-  ): Promise<boolean> {
+  private async getChat(chatId: string): Promise<Chat | null> {
+    return await this.chatRepository.findOne({
+      where: { id: chatId },
+      relations: ['members'],
+    });
+  }
+  private verifyChatAccess(chat: Chat, userProfileId: string): boolean {
     try {
-      const chat = await this.chatRepository.findOne({
-        where: { id: chatId },
-        relations: ['members'],
-      });
-
-      if (!chat) return false;
-
       const isMember = chat.members.some(
         (member) => member.id === userProfileId,
       );
@@ -232,6 +250,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.error('Error verifying chat access:', error);
       return false;
     }
+  }
+  private async sendMessage(
+    chat: Chat,
+    userProfileId: string,
+    content: string,
+  ): Promise<{ senderId: string; content: string; timestamp: Date }> {
+    const newMessage = {
+      senderId: userProfileId,
+      content: content,
+      timestamp: new Date(),
+    };
+
+    const updatedMessages = [...(chat.messages || []), newMessage];
+
+    await safeSave(this.chatRepository, {
+      ...chat,
+      messages: updatedMessages,
+    });
+
+    return newMessage;
   }
 
   private extractUserProfileIdFromToken(token: string): string | null {

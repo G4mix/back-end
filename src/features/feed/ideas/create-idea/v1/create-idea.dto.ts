@@ -8,7 +8,7 @@ import {
   Matches,
   MaxLength,
 } from 'class-validator';
-import { parseArraySafe } from 'src/shared/utils/parseArraySafe';
+import { parseArraySafe } from 'src/shared/utils/parse-array-safe.util';
 
 export class CreateIdeaInput {
   @IsString({ message: 'INVALID_TITLE' })

@@ -24,7 +24,7 @@ import {
   CollaborationRequestNotFound,
   UserNotAuthorized,
 } from 'src/shared/errors';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 import { Chat } from 'src/entities/chat.entity';
 
 @Controller('/collaboration-approval')

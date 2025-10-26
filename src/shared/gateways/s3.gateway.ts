@@ -29,7 +29,7 @@ type File = {
   destination: string;
   filename: string;
   path: string;
-  buffer: Buffer<ArrayBufferLike>;
+  buffer: Buffer;
 };
 
 export const fileInterceptorOptions: MulterOptions = {

@@ -26,7 +26,7 @@ import {
 } from 'src/shared/gateways/s3.gateway';
 import { ConfigService } from '@nestjs/config';
 import { PictureUpdateFail, UserNotFound } from 'src/shared/errors';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 import { Profile } from '../../../../entities/profile.entity';
 
 @Controller('/user')

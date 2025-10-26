@@ -14,7 +14,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment, CommentDto } from 'src/entities/comment.entity';
 import { Protected } from 'src/shared/decorators/protected.decorator';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 
 @Controller('/comment')
 export class CreateCommentController {

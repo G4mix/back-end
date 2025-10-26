@@ -10,7 +10,7 @@ import {
   validateSync,
 } from 'class-validator';
 import { InvalidProfile } from 'src/shared/errors';
-import { parseArraySafe } from 'src/shared/utils/parseArraySafe';
+import { parseArraySafe } from 'src/shared/utils/parse-array-safe.util';
 
 class UpdateUserInput {
   @IsString({ message: 'INVALID_NAME' })

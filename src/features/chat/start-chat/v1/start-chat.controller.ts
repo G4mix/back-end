@@ -19,7 +19,7 @@ import {
 import { Idea } from 'src/entities/idea.entity';
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 import {
   IdeaNotFound,
   PendingCollaborationRequestNotFound,

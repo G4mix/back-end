@@ -26,7 +26,7 @@ import { Idea, IdeaDto } from 'src/entities/idea.entity';
 import { Tag } from 'src/entities/tag.entity';
 import { AtLeastOneImage, IdeaNotFound } from 'src/shared/errors';
 import { GetIdeaByIdInput } from '../../get-idea-by-id/v1/get-idea-by-id.dto';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 
 @Controller('/idea')
 export class UpdateIdeaController {

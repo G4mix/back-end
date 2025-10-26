@@ -17,7 +17,7 @@ import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { Repository } from 'typeorm';
 import { CollaborationRequestInput } from './collaboration-request.dto';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 import {
   IdeaNotFound,
   PendingCollaborationRequestAlreadyExists,
