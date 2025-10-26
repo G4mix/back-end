@@ -58,11 +58,11 @@ export class Chat {
 
   toDto(currentUserId?: string, isListItem: boolean = false): ChatDto {
     const messages = isListItem ? this.messages.slice(-1) : this.messages;
-    const currentMember = this.members?.find(
-      (member) => member.id === currentUserId,
+    const otherMember = this.members?.find(
+      (member) => member.id !== currentUserId,
     );
-    const title = this.idea?.title ?? currentMember?.displayName ?? 'Chat';
-    const image = this.idea?.images?.[0] ?? currentMember?.icon ?? null;
+    const title = this.idea?.title ?? otherMember?.displayName ?? 'Chat';
+    const image = this.idea?.images[0] ?? otherMember?.icon ?? null;
 
     return {
       id: this.id,

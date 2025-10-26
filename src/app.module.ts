@@ -47,6 +47,7 @@ import { GetAllChatsController } from './features/chat/get-all-chats/v1/get-all-
 import { StartChatController } from './features/chat/start-chat/v1/start-chat.controller';
 import { GetCollaborationRequestController } from './features/collaboration-requests/get-collaboration-request/v1/get-collaboration-request.controller';
 import { CollaborationApprovalController } from './features/collaboration-requests/collaboration-approval/v1/collaboration-approval.controller';
+import { GetChatController } from './features/chat/get-chat/v1/get-chat.controller';
 
 @Module({
   imports: [
@@ -154,6 +155,7 @@ import { CollaborationApprovalController } from './features/collaboration-reques
     GetCollaborationRequestController,
     CollaborationApprovalController,
     GetAllChatsController,
+    GetChatController,
     StartChatController,
   ],
 })

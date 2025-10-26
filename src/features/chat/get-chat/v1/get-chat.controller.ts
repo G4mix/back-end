@@ -5,7 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
-  Query,
+  Param,
   Request,
   Version,
 } from '@nestjs/common';
@@ -30,7 +30,7 @@ export class GetChatController {
   @Protected()
   async getChat(
     @Request() req: RequestWithUserData,
-    @Query() { chatId }: GetChatInput,
+    @Param() { chatId }: GetChatInput,
   ): Promise<ChatDto> {
     const chat = await this.chatRepository.findOne({
       where: { id: chatId },
