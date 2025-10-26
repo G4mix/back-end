@@ -57,11 +57,9 @@ export class CollaborationApprovalController {
     if (collaborationRequest.idea.authorId !== userProfileId) {
       throw new UserNotAuthorized();
     }
-    if (status === CollaborationRequestStatus.APPROVED) {
-      if (!collaborationRequest.chatId) throw new ChatNotFound();
-      await this.chatRepository.delete(collaborationRequest.chatId);
-      collaborationRequest.chatId = null;
-    }
+    if (!collaborationRequest.chatId) throw new ChatNotFound();
+    await this.chatRepository.delete(collaborationRequest.chatId);
+    collaborationRequest.chatId = null;
     collaborationRequest.status = status;
     await safeSave(this.collaborationRequestRepository, collaborationRequest);
   }
