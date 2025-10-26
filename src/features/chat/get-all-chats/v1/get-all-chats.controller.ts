@@ -33,16 +33,8 @@ export class GetAllChatsController {
   ): Promise<GetAllChatsOutput> {
     const qb = this.chatRepository
       .createQueryBuilder('chat')
-      .leftJoinAndSelect('chat.owner', 'owner')
-      .leftJoinAndSelect('owner.user', 'ownerUser')
       .leftJoinAndSelect('chat.idea', 'idea')
-      .leftJoinAndSelect('idea.author', 'ideaAuthor')
-      .leftJoinAndSelect('ideaAuthor.user', 'ideaAuthorUser')
-      .leftJoinAndSelect('chat.collaborationRequest', 'collaborationRequest')
-      .leftJoinAndSelect('collaborationRequest.requester', 'requester')
-      .leftJoinAndSelect('requester.user', 'requesterUser')
       .leftJoinAndSelect('chat.members', 'members')
-      .leftJoinAndSelect('members.user', 'memberUser')
       .where('chat.ownerId = :currentUserId', {
         currentUserId: req.user.userProfileId,
       })
@@ -61,7 +53,7 @@ export class GetAllChatsController {
       pages,
       page,
       nextPage: nextPage >= pages ? null : nextPage,
-      data: chats.map((chat) => chat.toDto(req.user?.userProfileId)),
+      data: chats.map((chat) => chat.toDto(req.user?.userProfileId, true)),
     };
   }
 }

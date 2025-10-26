@@ -9,12 +9,9 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { Profile, ProfileDto } from './profile.entity';
-import { Idea, IdeaDto } from './idea.entity';
-import {
-  CollaborationRequest,
-  CollaborationRequestDto,
-} from './collaboration-request.entity';
+import { Profile } from './profile.entity';
+import { Idea } from './idea.entity';
+import { CollaborationRequest } from './collaboration-request.entity';
 
 @Entity('chats')
 export class Chat {
@@ -59,26 +56,28 @@ export class Chat {
   @CreateDateColumn()
   createdAt: Date;
 
-  toDto(currentUserId?: string): ChatDto {
-    const dto = new ChatDto();
-    dto.id = this.id;
-    dto.messages = this.messages ?? [];
-    dto.owner = this.owner?.toDto(currentUserId) ?? null;
-    dto.idea = this.idea?.toDto(currentUserId) ?? null;
-    dto.collaborationRequest = this.collaborationRequest?.toDto(false) ?? null;
-    dto.members =
-      this.members?.map((member) => member.toDto(currentUserId)) ?? [];
-    dto.createdAt = this.createdAt;
-    return dto;
+  toDto(currentUserId?: string, isListItem: boolean = false): ChatDto {
+    const messages = isListItem ? this.messages.slice(-1) : this.messages;
+    const currentMember = this.members?.find(
+      (member) => member.id === currentUserId,
+    );
+    const title = this.idea?.title ?? currentMember?.displayName ?? 'Chat';
+    const image = this.idea?.images?.[0] ?? currentMember?.icon ?? null;
+
+    return {
+      id: this.id,
+      title,
+      image,
+      messages,
+      createdAt: this.createdAt,
+    };
   }
 }
 
 export class ChatDto {
   id: string;
+  title: string;
+  image: string | null;
   messages: { senderId: string; content: string; timestamp: Date }[];
-  owner: ProfileDto | null;
-  idea: IdeaDto | null;
-  collaborationRequest: CollaborationRequestDto | null;
-  members: ProfileDto[];
   createdAt: Date;
 }
