@@ -43,7 +43,12 @@ export class CollaborationApprovalController {
   @HttpCode(HttpStatus.ACCEPTED)
   async getCollaborationRequest(
     @Request() { user: { userProfileId } }: RequestWithUserData,
-    @Query() { collaborationRequestId: id, status }: CollaborationApprovalInput,
+    @Query()
+    {
+      collaborationRequestId: id,
+      status,
+      feedback,
+    }: CollaborationApprovalInput,
   ): Promise<void> {
     const collaborationRequest =
       await this.collaborationRequestRepository.findOne({
@@ -51,16 +56,32 @@ export class CollaborationApprovalController {
         relations: ['idea', 'requester'],
       });
     if (!collaborationRequest) throw new CollaborationRequestNotFound();
+
     if (collaborationRequest.status !== CollaborationRequestStatus.PENDING) {
       throw new CollaborationRequestIsNotPending();
     }
+
     if (collaborationRequest.idea.authorId !== userProfileId) {
       throw new UserNotAuthorized();
     }
-    if (!collaborationRequest.chatId) throw new ChatNotFound();
-    await this.chatRepository.delete(collaborationRequest.chatId);
-    collaborationRequest.chatId = null;
+
+    if (
+      status === CollaborationRequestStatus.APPROVED &&
+      !collaborationRequest.chatId
+    ) {
+      throw new ChatNotFound();
+    }
+
+    if (collaborationRequest.chatId) {
+      const chatIdToDelete = collaborationRequest.chatId;
+      collaborationRequest.chatId = null;
+      await safeSave(this.collaborationRequestRepository, collaborationRequest);
+
+      await this.chatRepository.delete(chatIdToDelete);
+    }
+
     collaborationRequest.status = status;
+    collaborationRequest.feedback = feedback;
     await safeSave(this.collaborationRequestRepository, collaborationRequest);
   }
 }
