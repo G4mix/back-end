@@ -14,7 +14,7 @@ import { Repository } from 'typeorm';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { LikeType, ToggleLikeInput } from './toggle-like.dto';
 import { Like } from 'src/entities/like.entity';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 
 @Controller('/like')
 export class ToggleLikeController {

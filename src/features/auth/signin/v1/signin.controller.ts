@@ -15,7 +15,7 @@ import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
 import { InvalidEmailOrPassword } from 'src/shared/errors';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 import { Throttle } from '@nestjs/throttler';
 
 @Controller('/auth')

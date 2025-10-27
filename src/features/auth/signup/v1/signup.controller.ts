@@ -18,7 +18,7 @@ import { Profile } from 'src/entities/profile.entity';
 import { hashSync } from 'bcrypt';
 import { SESGateway } from 'src/shared/gateways/ses.gateway';
 import { UserAlreadyExists } from 'src/shared/errors';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 
 @Controller('/auth')
 export class SignupController {

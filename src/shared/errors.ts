@@ -108,3 +108,27 @@ export class PendingCollaborationRequestAlreadyExists extends ConflictException 
     super('PENDING_COLLABORATION_REQUEST_ALREADY_EXISTS');
   }
 }
+
+export class YouCannotRequestCollaborationForYourOwnIdea extends BadRequestException {
+  constructor() {
+    super('YOU_CANNOT_REQUEST_COLLABORATION_FOR_YOUR_OWN_IDEA');
+  }
+}
+
+export class ChatNotFound extends NotFoundException {
+  constructor() {
+    super('CHAT_NOT_FOUND');
+  }
+}
+
+export class PendingCollaborationRequestNotFound extends NotFoundException {
+  constructor() {
+    super('PENDING_COLLABORATION_REQUEST_NOT_FOUND');
+  }
+}
+
+export class YouCannotStartChatForAnotherUserIdea extends BadRequestException {
+  constructor() {
+    super('YOU_CANNOT_START_CHAT_FOR_ANOTHER_USER_IDEA');
+  }
+}

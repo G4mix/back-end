@@ -24,7 +24,7 @@ import { ConfigService } from '@nestjs/config';
 import { Idea, IdeaDto } from 'src/entities/idea.entity';
 import { Tag } from 'src/entities/tag.entity';
 import { AtLeastOneImage } from 'src/shared/errors';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 
 @Controller('/idea')
 export class CreateIdeaController {

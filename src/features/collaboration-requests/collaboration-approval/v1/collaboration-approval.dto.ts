@@ -1,4 +1,4 @@
-import { IsIn, IsUUID } from 'class-validator';
+import { IsIn, IsString, IsUUID, Length } from 'class-validator';
 import { CollaborationRequestStatus } from 'src/entities/collaboration-request.entity';
 
 export class CollaborationApprovalInput {
@@ -10,4 +10,8 @@ export class CollaborationApprovalInput {
     { message: 'INVALID_STATUS' },
   )
   readonly status: CollaborationRequestStatus;
+
+  @IsString({ message: 'INVALID_FEEDBACK' })
+  @Length(3, 255, { message: 'FEEDBACK_TOO_LONG' })
+  readonly feedback: string;
 }

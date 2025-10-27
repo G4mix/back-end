@@ -15,6 +15,13 @@ import { Like } from './like.entity';
 import { View } from './view.entity';
 import { Tag } from './tag.entity';
 import { CollaborationRequest } from './collaboration-request.entity';
+import { Chat } from './chat.entity';
+
+export enum IdeaStatus {
+  CLOSED = 'Closed',
+  OPEN = 'Open',
+  CANCELED = 'Canceled',
+}
 
 @Entity('ideas')
 export class Idea {
@@ -30,6 +37,9 @@ export class Idea {
   @Column()
   @Index()
   authorId: string;
+
+  @Column({ type: 'enum', enum: IdeaStatus, default: IdeaStatus.OPEN })
+  status: IdeaStatus;
 
   @ManyToOne(() => Profile, (profile) => profile.ideas, {
     onDelete: 'CASCADE',
@@ -60,6 +70,12 @@ export class Idea {
 
   @Column({ type: 'jsonb', default: [] })
   images: string[];
+
+  @OneToMany(() => Chat, (chat) => chat.idea, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
+  chats: Chat[];
 
   @CreateDateColumn()
   createdAt: Date;

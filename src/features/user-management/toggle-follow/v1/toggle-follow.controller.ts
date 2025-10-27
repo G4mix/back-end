@@ -16,7 +16,7 @@ import { Follow } from 'src/entities/follow.entity';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { UserNotFound, YouCannotFollowYourself } from 'src/shared/errors';
 import { ToggleFollowInput } from './toggle-follow.dto';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 
 @Controller('/follow')
 export class ToggleFollowController {
