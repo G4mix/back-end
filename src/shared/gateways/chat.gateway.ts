@@ -49,14 +49,8 @@ export enum ChatEvents {
   NEW_MESSAGE = 'new_message',
   USER_JOINED = 'user_joined',
   USER_LEFT = 'user_left',
-  JOINED_CHAT = 'joined_chat',
-  LEFT_CHAT = 'left_chat',
-  JOIN_CHAT = 'join_chat',
-  LEAVE_CHAT = 'leave_chat',
   SEND_MESSAGE = 'send_message',
-  JOIN_CHAT_ERROR = 'join_chat_error',
-  LEAVE_CHAT_ERROR = 'leave_chat_error',
-  SEND_MESSAGE_ERROR = 'send_message_error',
+  ERROR = 'error',
 }
 
 @WebSocketGateway({
@@ -78,53 +72,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly jwtService: JwtService,
   ) {}
 
-  handleConnection(client: AuthenticatedSocket) {
-    this.logger.log(`Client connected: ${client.id}`);
-  }
+  async handleConnection(client: AuthenticatedSocket) {
+    const { token, chatId } = client.handshake.query;
 
-  handleDisconnect(client: AuthenticatedSocket) {
-    this.logger.log(`Client disconnected: ${client.id}`);
-
-    const userProfileId = client.userProfileId;
-    if (!userProfileId) return;
-
-    client.currentChatId = undefined;
-
-    const userSockets = this.userSockets.get(userProfileId);
-    if (userSockets) {
-      userSockets.delete(client.id);
-      if (userSockets.size === 0) {
-        this.userSockets.delete(userProfileId);
-      }
-    }
-  }
-
-  @SubscribeMessage(ChatEvents.JOIN_CHAT)
-  async handleJoinChat(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody(new ValidationPipe({ transform: true })) data: JoinChatData,
-  ) {
     try {
-      const userProfileId = this.extractUserProfileIdFromToken(data.token);
+      const validationPipe = new ValidationPipe({ transform: true });
+      const data = (await validationPipe.transform(
+        { token, chatId },
+        { metatype: JoinChatData, type: 'body' },
+      )) as JoinChatData;
 
-      if (!userProfileId) {
-        client.emit(ChatEvents.JOIN_CHAT_ERROR, { message: 'Invalid token' });
-        return;
-      }
+      if (!data) throw new Error('UNAUTHORIZED');
+
+      const userProfileId = this.extractUserProfileIdFromToken(data.token);
+      if (!userProfileId) throw new Error('UNAUTHORIZED');
 
       const chat = await this.getChat(data.chatId);
-      if (!chat) {
-        client.emit(ChatEvents.JOIN_CHAT_ERROR, { message: 'Chat not found' });
-        return;
-      }
+      if (!chat) throw new Error('UNAUTHORIZED');
 
       const hasAccess = this.verifyChatAccess(chat, userProfileId);
-      if (!hasAccess) {
-        client.emit(ChatEvents.JOIN_CHAT_ERROR, {
-          message: 'Access denied to this chat',
-        });
-        return;
-      }
+      if (!hasAccess) throw new Error('UNAUTHORIZED');
 
       client.userProfileId = userProfileId;
       client.currentChatId = data.chatId;
@@ -134,50 +101,50 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       this.userSockets.get(userProfileId)!.add(client.id);
 
-      await client.join(data.chatId);
-
+      client.join(data.chatId);
       this.logger.log(`User ${userProfileId} joined chat ${data.chatId}`);
-      client.emit(ChatEvents.JOINED_CHAT, { chatId: data.chatId });
 
-      client.to(data.chatId).emit(ChatEvents.USER_JOINED, {
+      this.server.to(data.chatId).emit(ChatEvents.USER_JOINED, {
         userProfileId,
         chatId: data.chatId,
       });
     } catch (error) {
-      this.logger.error('Error joining chat:', error);
-      client.emit(ChatEvents.JOIN_CHAT_ERROR, {
-        message: 'Failed to join chat',
+      this.logger.error('Error connecting to chat:', error);
+      client.emit(ChatEvents.ERROR, {
+        type: 'JOIN_CHAT_ERROR',
+        message: error.message || 'UNAUTHORIZED',
       });
+      client.disconnect();
     }
   }
 
-  @SubscribeMessage(ChatEvents.LEAVE_CHAT)
-  async handleLeaveChat(@ConnectedSocket() client: AuthenticatedSocket) {
-    try {
-      const userProfileId = client.userProfileId;
-      const chatId = client.currentChatId;
+  async handleDisconnect(client: AuthenticatedSocket) {
+    this.logger.log(`Client disconnected: ${client.id}`);
 
-      if (userProfileId && chatId) {
-        await client.leave(chatId);
-        client.currentChatId = undefined;
-        this.logger.log(`User ${userProfileId} left chat ${chatId}`);
+    const userProfileId = client.userProfileId;
+    const chatId = client.currentChatId;
 
-        client.emit(ChatEvents.LEFT_CHAT, { chatId: chatId });
-        client.to(chatId).emit(ChatEvents.USER_LEFT, {
-          userProfileId,
-          chatId: chatId,
-        });
-      } else {
-        client.emit(ChatEvents.LEAVE_CHAT_ERROR, {
-          message: 'User not authenticated or not in any chat',
-        });
-      }
-    } catch (error) {
-      this.logger.error('Error leaving chat:', error);
-      client.emit(ChatEvents.LEAVE_CHAT_ERROR, {
-        message: 'Failed to leave chat',
+    if (userProfileId && chatId) {
+      await client.leave(chatId);
+      this.logger.log(`User ${userProfileId} left chat ${chatId}`);
+
+      client.to(chatId).emit(ChatEvents.USER_LEFT, {
+        userProfileId,
+        chatId: chatId,
       });
     }
+
+    if (userProfileId) {
+      const userSockets = this.userSockets.get(userProfileId);
+      if (userSockets) {
+        userSockets.delete(client.id);
+        if (userSockets.size === 0) {
+          this.userSockets.delete(userProfileId);
+        }
+      }
+    }
+
+    client.currentChatId = undefined;
   }
 
   @SubscribeMessage(ChatEvents.SEND_MESSAGE)
@@ -190,7 +157,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const chatId = client.currentChatId;
 
       if (!userProfileId || !chatId) {
-        client.emit(ChatEvents.SEND_MESSAGE_ERROR, {
+        client.emit(ChatEvents.ERROR, {
+          type: 'SEND_MESSAGE_ERROR',
           message: 'User not authenticated or not in a chat',
         });
         return;
@@ -198,7 +166,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const chat = await this.getChat(chatId);
       if (!chat) {
-        client.emit(ChatEvents.SEND_MESSAGE_ERROR, {
+        client.emit(ChatEvents.ERROR, {
+          type: 'SEND_MESSAGE_ERROR',
           message: 'Chat not found',
         });
         return;
@@ -206,7 +175,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const hasAccess = this.verifyChatAccess(chat, userProfileId);
       if (!hasAccess) {
-        client.emit(ChatEvents.SEND_MESSAGE_ERROR, {
+        client.emit(ChatEvents.ERROR, {
+          type: 'SEND_MESSAGE_ERROR',
           message: 'Access denied to this chat',
         });
         return;
@@ -228,7 +198,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
     } catch (error) {
       this.logger.error('Error sending message:', error);
-      client.emit(ChatEvents.SEND_MESSAGE_ERROR, {
+      client.emit(ChatEvents.ERROR, {
+        type: 'SEND_MESSAGE_ERROR',
         message: 'Failed to send message',
       });
     }
