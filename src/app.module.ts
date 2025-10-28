@@ -50,6 +50,8 @@ import { ChatGateway } from './shared/gateways/chat.gateway';
 import { GetCollaborationRequestController } from './features/collaboration-requests/get-collaboration-request/v1/get-collaboration-request.controller';
 import { CollaborationApprovalController } from './features/collaboration-requests/collaboration-approval/v1/collaboration-approval.controller';
 import { GetChatController } from './features/chat/get-chat/v1/get-chat.controller';
+import { Project } from './entities/project.entity';
+import { UpdateProjectController } from './features/project/update-project/v1/update-project.controller';
 
 @Module({
   imports: [
@@ -82,6 +84,7 @@ import { GetChatController } from './features/chat/get-chat/v1/get-chat.controll
       Comment,
       CollaborationRequest,
       Chat,
+      Project,
     ]),
     JwtModule.register({
       secret: process.env.JWT_SIGNING_KEY_SECRET,
@@ -161,6 +164,7 @@ import { GetChatController } from './features/chat/get-chat/v1/get-chat.controll
     GetChatController,
     StartChatController,
     SendMessageController,
+    UpdateProjectController,
   ],
 })
 export class AppModule {}
