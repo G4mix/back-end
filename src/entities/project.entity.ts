@@ -21,10 +21,10 @@ export class Project {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 100 })
+  @Column({ length: 100, default: 'Default title' })
   title: string;
 
-  @Column({ length: 300 })
+  @Column({ length: 300, default: 'Default description' })
   description: string;
 
   @Column({ type: 'varchar', length: 2048, nullable: true })
@@ -44,8 +44,12 @@ export class Project {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column()
+  chatId: string;
+
   @OneToOne(() => Chat, {
     nullable: true,
+    cascade: true,
   })
   @JoinColumn({ name: 'chat_id' })
   chat: Chat;
