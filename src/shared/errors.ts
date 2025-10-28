@@ -132,3 +132,9 @@ export class YouCannotStartChatForAnotherUserIdea extends BadRequestException {
     super('YOU_CANNOT_START_CHAT_FOR_ANOTHER_USER_IDEA');
   }
 }
+
+export class YouAreNotTheOwner extends BadRequestException {
+  constructor() {
+    super('YOU_ARE_NOT_THE_OWNER');
+  }
+}

@@ -18,7 +18,6 @@ import { UpdateProfileInput } from './update-user.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { hashSync } from 'bcrypt';
 import { ProfileDto } from 'src/entities/profile.entity';
-import { SESGateway } from 'src/shared/gateways/ses.gateway';
 import {
   S3Gateway,
   SUPPORTED_IMAGES,
@@ -35,7 +34,6 @@ export class UpdateUserController {
     @InjectRepository(Profile)
     private readonly profileRepository: Repository<Profile>,
     private readonly configService: ConfigService,
-    private readonly sesGateway: SESGateway,
     private readonly s3Gateway: S3Gateway,
   ) {}
   readonly logger = new Logger(this.constructor.name);
