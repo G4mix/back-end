@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Profile } from './profile.entity';
+import { Project } from './project.entity';
 
 @Entity('follows')
 @Unique(['followerUserId', 'followingUserId'])
@@ -21,6 +22,9 @@ export class Follow {
   @Column()
   followingUserId: string;
 
+  @Column()
+  followingProjectId: string;
+
   @ManyToOne(() => Profile, (profile) => profile.following, {
     onDelete: 'CASCADE',
   })
@@ -32,6 +36,12 @@ export class Follow {
   })
   @JoinColumn({ name: 'following_user_id' })
   followingUser: Profile;
+
+  @ManyToOne(() => Project, (project) => project.followers, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'following_project_id' })
+  followingProject: Project;
 
   @CreateDateColumn()
   createdAt: Date;

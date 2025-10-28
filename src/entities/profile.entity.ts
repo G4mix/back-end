@@ -16,6 +16,7 @@ import { Like } from './like.entity';
 import { View } from './view.entity';
 import { CollaborationRequest } from './collaboration-request.entity';
 import { Chat } from './chat.entity';
+import { Project } from './project.entity';
 
 @Entity('profiles')
 export class Profile {
@@ -81,6 +82,9 @@ export class Profile {
 
   @ManyToMany(() => Chat, (chat) => chat.members)
   chats: Chat[];
+
+  @ManyToMany(() => Project, (project) => project.members)
+  projects: Project[];
 
   @CreateDateColumn()
   createdAt: Date;

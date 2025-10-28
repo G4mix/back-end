@@ -16,6 +16,7 @@ import { View } from './view.entity';
 import { Tag } from './tag.entity';
 import { CollaborationRequest } from './collaboration-request.entity';
 import { Chat } from './chat.entity';
+import { Project } from './project.entity';
 
 export enum IdeaStatus {
   CLOSED = 'Closed',
@@ -46,6 +47,16 @@ export class Idea {
   })
   @JoinColumn({ name: 'author_id' })
   author: Profile;
+
+  @Column()
+  @Index()
+  projectId: string;
+
+  @ManyToOne(() => Project, (project) => project.posts, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'project_id' })
+  project: Project;
 
   @OneToMany(() => Comment, (comment) => comment.idea, {
     cascade: true,

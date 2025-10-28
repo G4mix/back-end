@@ -8,10 +8,12 @@ import {
   OneToOne,
   ManyToMany,
   JoinTable,
+  Index,
 } from 'typeorm';
 import { Profile } from './profile.entity';
 import { Idea } from './idea.entity';
 import { CollaborationRequest } from './collaboration-request.entity';
+import { Project } from './project.entity';
 
 @Entity('chats')
 export class Chat {
@@ -44,6 +46,16 @@ export class Chat {
   })
   @JoinColumn({ name: 'collaboration_request_id' })
   collaborationRequest: CollaborationRequest;
+
+  @Column()
+  @Index()
+  projectId: string;
+
+  @OneToOne(() => Project, (project) => project.chat, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'project_id' })
+  project: Project;
 
   @ManyToMany(() => Profile, { cascade: true })
   @JoinTable({
