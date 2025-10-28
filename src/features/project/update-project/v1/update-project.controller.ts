@@ -40,7 +40,7 @@ export class UpdateProjectController {
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
-  @Patch()
+  @Patch('/:projectId')
   @Version('1')
   @Protected()
   @HttpCode(HttpStatus.CREATED)
