@@ -44,8 +44,8 @@ export class Project {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column()
-  chatId: string;
+  @Column({ nullable: true })
+  chatId: string | null;
 
   @OneToOne(() => Chat, {
     nullable: true,

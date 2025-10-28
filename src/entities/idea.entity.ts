@@ -48,12 +48,13 @@ export class Idea {
   @JoinColumn({ name: 'author_id' })
   author: Profile;
 
-  @Column()
+  @Column({ nullable: true })
   @Index()
-  projectId: string;
+  projectId: string | null;
 
   @ManyToOne(() => Project, (project) => project.posts, {
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'project_id' })
   project: Project;

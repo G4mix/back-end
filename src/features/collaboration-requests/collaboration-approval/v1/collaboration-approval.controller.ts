@@ -17,7 +17,10 @@ import {
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { Repository } from 'typeorm';
-import { CollaborationApprovalInput } from './collaboration-approval.dto';
+import {
+  CollaborationApprovalInput,
+  CollaborationApprovalQueryInput,
+} from './collaboration-approval.dto';
 import {
   ChatNotFound,
   CollaborationRequestIsNotPending,
@@ -47,11 +50,8 @@ export class CollaborationApprovalController {
   async getCollaborationRequest(
     @Request() { user: { userProfileId } }: RequestWithUserData,
     @Query()
-    {
-      collaborationRequestId: id,
-      status,
-      feedback,
-    }: CollaborationApprovalInput,
+    { collaborationRequestId: id, status }: CollaborationApprovalQueryInput,
+    @Body() { feedback }: CollaborationApprovalInput,
   ): Promise<void> {
     const collaborationRequest =
       await this.collaborationRequestRepository.findOne({
@@ -107,7 +107,7 @@ export class CollaborationApprovalController {
     }
 
     let chat = await this.chatRepository.findOne({
-      where: { id: project.chatId },
+      where: { id: project.chatId! },
       relations: ['members'],
     });
     if (!chat) {

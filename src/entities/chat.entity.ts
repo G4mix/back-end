@@ -47,11 +47,12 @@ export class Chat {
   @JoinColumn({ name: 'collaboration_request_id' })
   collaborationRequest: CollaborationRequest;
 
-  @Column()
+  @Column({ nullable: true })
   @Index()
-  projectId: string;
+  projectId: string | null;
 
   @OneToOne(() => Project, (project) => project.chat, {
+    nullable: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'project_id' })
