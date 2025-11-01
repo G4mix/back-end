@@ -41,6 +41,7 @@ import { RecordViewController } from './features/feed/ideas/record-view/v1/recor
 import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/update-idea.controller';
 import { ToggleLikeController } from './features/feed/toggle-like/v1/toggle-like.controller';
 import { GetHealthStatusController } from './features/get-health-status/v1/get-health-status.controller';
+import { DeleteProjectController } from './features/project/delete-project/v1/delete-project.controller';
 import { GetAllProjectsController } from './features/project/get-all-projects/v1/get-all-projects.controller';
 import { GetProjectController } from './features/project/get-project/v1/get-project.controller';
 import { UpdateProjectController } from './features/project/update-project/v1/update-project.controller';
@@ -169,6 +170,7 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
     UpdateProjectController,
     GetAllProjectsController,
     GetProjectController,
+    DeleteProjectController,
   ],
 })
 export class AppModule {}
