@@ -1,4 +1,3 @@
-import { DeepPartial, QueryFailedError, Repository } from 'typeorm';
 import {
   BadRequestException,
   ConflictException,
@@ -6,6 +5,7 @@ import {
   NotFoundException,
   RequestTimeoutException,
 } from '@nestjs/common';
+import { DeepPartial, QueryFailedError, Repository } from 'typeorm';
 
 export async function safeSave<T extends object>(
   repository: Repository<T>,
