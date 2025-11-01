@@ -43,7 +43,7 @@ export class UpdateProjectController {
   @Patch('/:projectId')
   @Version('1')
   @Protected()
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(
     FileFieldsInterceptor(
       [
@@ -65,13 +65,6 @@ export class UpdateProjectController {
   ): Promise<ProjectDto> {
     const project = await this.projectRepository.findOne({
       where: { id: projectId },
-      relations: [
-        'owner',
-        'followers',
-        'followers.followerUser',
-        'followers.followerUser.followers',
-        'posts',
-      ],
     });
 
     if (project?.ownerId !== userProfileId) throw new YouAreNotTheOwner();
