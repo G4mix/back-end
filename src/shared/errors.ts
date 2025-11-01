@@ -1,11 +1,11 @@
 import { InternalServiceErrorException } from '@aws-sdk/client-sesv2';
 import {
+  BadRequestException,
   ConflictException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   NotFoundException,
-  ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
 
 export class UserNotAuthorized extends ForbiddenException {
@@ -136,5 +136,17 @@ export class YouCannotStartChatForAnotherUserIdea extends BadRequestException {
 export class YouAreNotTheOwner extends BadRequestException {
   constructor() {
     super('YOU_ARE_NOT_THE_OWNER');
+  }
+}
+
+export class ProjectNotFound extends NotFoundException {
+  constructor() {
+    super('PROJECT_NOT_FOUND');
+  }
+}
+
+export class InvalidTarget extends BadRequestException {
+  constructor() {
+    super('INVALID_TARGET');
   }
 }

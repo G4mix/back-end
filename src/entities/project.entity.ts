@@ -11,10 +11,10 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Profile } from './profile.entity';
-import { Idea } from './idea.entity';
-import { Follow } from './follow.entity';
 import { Chat } from './chat.entity';
+import { Follow } from './follow.entity';
+import { Idea } from './idea.entity';
+import { Profile } from './profile.entity';
 
 @Entity('project')
 export class Project {
@@ -76,17 +76,37 @@ export class Project {
 
   toDto(): ProjectDto {
     const project = new ProjectDto();
+    project.id = this.id;
     project.title = this.title;
     project.description = this.description;
     project.icon = this.icon;
     project.backgroundImage = this.backgroundImage;
+    project.ownerId = this.ownerId;
+    project.createdAt = this.createdAt;
+    project.followersCount = this.followers?.length ?? 0;
+    project.ideasCount = this.posts?.length ?? 0;
+
+    project.topFollowers =
+      this.followers
+        ?.filter((follow) => follow.followerUser)
+        .map((follow) => ({
+          name: follow.followerUser.displayName,
+          icon: follow.followerUser.icon,
+        })) ?? [];
+
     return project;
   }
 }
 
 export class ProjectDto {
+  id: string;
   title: string;
   description: string;
   icon: string | null;
   backgroundImage: string | null;
+  ownerId: string;
+  createdAt: Date;
+  followersCount: number;
+  ideasCount: number;
+  topFollowers: Array<{ name: string; icon: string | null }>;
 }
