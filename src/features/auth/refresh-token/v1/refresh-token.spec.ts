@@ -1,8 +1,8 @@
-import request from 'supertest';
-import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
-import { RefreshTokenOutput } from './refresh-token.dto';
 import { randomUUID } from 'crypto';
+import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
+import request from 'supertest';
 import { createTestUser } from 'test/test-helpers';
+import { RefreshTokenOutput } from './refresh-token.dto';
 
 interface ErrorResponse {
   message: string;

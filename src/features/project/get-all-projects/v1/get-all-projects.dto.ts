@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsUUID, Min } from 'class-validator';
-import { IdeaDto } from 'src/entities/idea.entity';
+import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { ProjectDto } from 'src/entities/project.entity';
 
-export class GetAllIdeasInput {
+export class GetAllProjectsInput {
   @IsOptional()
   @IsNumber({}, { message: 'INVALID_PAGE' })
   @Min(0, { message: 'INVALID_PAGE' })
@@ -15,19 +15,15 @@ export class GetAllIdeasInput {
   @IsOptional()
   quantity: number = 10;
 
+  @IsString({ message: 'INVALID_SEARCH' })
   @IsOptional()
-  @IsUUID(undefined, { message: 'INVALID_AUTHOR_ID' })
-  authorId?: string;
-
-  @IsOptional()
-  @IsUUID(undefined, { message: 'INVALID_PROJECT_ID' })
-  projectId?: string;
+  search?: string | undefined = '';
 }
 
-export class GetAllIdeasOutput {
+export class GetAllProjectsOutput {
   page: number;
   nextPage: number | null;
   pages: number;
   total: number;
-  data: IdeaDto[];
+  data: ProjectDto[];
 }

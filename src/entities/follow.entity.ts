@@ -1,13 +1,14 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
-  Unique,
+  Entity,
   JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { Profile } from './profile.entity';
+import { Project } from './project.entity';
 
 @Entity('follows')
 @Unique(['followerUserId', 'followingUserId'])
@@ -18,8 +19,11 @@ export class Follow {
   @Column()
   followerUserId: string;
 
-  @Column()
-  followingUserId: string;
+  @Column({ nullable: true })
+  followingUserId: string | null;
+
+  @Column({ nullable: true })
+  followingProjectId: string | null;
 
   @ManyToOne(() => Profile, (profile) => profile.following, {
     onDelete: 'CASCADE',
@@ -29,9 +33,17 @@ export class Follow {
 
   @ManyToOne(() => Profile, (profile) => profile.followers, {
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'following_user_id' })
   followingUser: Profile;
+
+  @ManyToOne(() => Project, (project) => project.followers, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'following_project_id' })
+  followingProject: Project;
 
   @CreateDateColumn()
   createdAt: Date;

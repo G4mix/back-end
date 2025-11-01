@@ -70,6 +70,7 @@ export class StartChatController {
     const chat = await safeSave(this.chatRepository, {
       ownerId: userProfileId,
       ideaId: idea.id,
+      collaborationRequestId: existingRequest.id,
       members: [{ id: userProfileId }, { id: requesterId }],
     });
     existingRequest.chatId = chat.id;
