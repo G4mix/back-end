@@ -150,3 +150,9 @@ export class InvalidTarget extends BadRequestException {
     super('INVALID_TARGET');
   }
 }
+
+export class YouCannotRemoveTheOwner extends BadRequestException {
+  constructor() {
+    super('YOU_CANNOT_REMOVE_THE_OWNER');
+  }
+}

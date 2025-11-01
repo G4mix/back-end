@@ -17,6 +17,7 @@ import {
   ProjectNotFound,
   UserNotFound,
   YouAreNotTheOwner,
+  YouCannotRemoveTheOwner,
 } from 'src/shared/errors';
 import { DataSource, Repository } from 'typeorm';
 import { RemoveMemberInput } from './remove-member.dto';
@@ -46,8 +47,10 @@ export class RemoveMemberController {
     });
 
     if (!project) throw new ProjectNotFound();
-    if (project.ownerId !== req.user.userProfileId) {
+    else if (project.ownerId !== req.user.userProfileId) {
       throw new YouAreNotTheOwner();
+    } else if (memberId === project.ownerId) {
+      throw new YouCannotRemoveTheOwner();
     }
 
     const memberExists = await this.dataSource.query(
