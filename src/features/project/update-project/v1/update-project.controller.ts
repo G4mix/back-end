@@ -11,24 +11,24 @@ import {
   UseInterceptors,
   Version,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Project, ProjectDto } from 'src/entities/project.entity';
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { PictureUpdateFail, YouAreNotTheOwner } from 'src/shared/errors';
-import { Project, ProjectDto } from 'src/entities/project.entity';
+import {
+  S3Gateway,
+  SUPPORTED_IMAGES,
+  fileInterceptorOptions,
+} from 'src/shared/gateways/s3.gateway';
+import { safeSave } from 'src/shared/utils/safe-save.util';
+import { Repository } from 'typeorm';
 import {
   UpdateProjectInput,
   UpdateProjectParamsInput,
 } from './update-project.dto';
-import {
-  fileInterceptorOptions,
-  S3Gateway,
-  SUPPORTED_IMAGES,
-} from 'src/shared/gateways/s3.gateway';
-import { ConfigService } from '@nestjs/config';
-import { safeSave } from 'src/shared/utils/safe-save.util';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('/project')
 export class UpdateProjectController {
@@ -65,6 +65,13 @@ export class UpdateProjectController {
   ): Promise<ProjectDto> {
     const project = await this.projectRepository.findOne({
       where: { id: projectId },
+      relations: [
+        'owner',
+        'followers',
+        'followers.followerUser',
+        'followers.followerUser.followers',
+        'posts',
+      ],
     });
 
     if (project?.ownerId !== userProfileId) throw new YouAreNotTheOwner();
