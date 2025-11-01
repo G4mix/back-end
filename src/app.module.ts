@@ -44,6 +44,7 @@ import { GetHealthStatusController } from './features/get-health-status/v1/get-h
 import { DeleteProjectController } from './features/project/delete-project/v1/delete-project.controller';
 import { GetAllProjectsController } from './features/project/get-all-projects/v1/get-all-projects.controller';
 import { GetProjectController } from './features/project/get-project/v1/get-project.controller';
+import { RemoveMemberController } from './features/project/remove-member/v1/remove-member.controller';
 import { UpdateProjectController } from './features/project/update-project/v1/update-project.controller';
 import { DeleteUserController } from './features/user-management/delete-user/v1/delete-user.controller';
 import { GetAllUsersController } from './features/user-management/get-all-users/v1/get-all-users.controller';
@@ -171,6 +172,7 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
     GetAllProjectsController,
     GetProjectController,
     DeleteProjectController,
+    RemoveMemberController,
   ],
 })
 export class AppModule {}
