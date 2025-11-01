@@ -1,4 +1,3 @@
-import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import {
   Controller,
   Get,
@@ -9,10 +8,11 @@ import {
   Request,
   Version,
 } from '@nestjs/common';
-import { GetAllIdeasOutput, GetAllIdeasInput } from './get-all-ideas.dto';
-import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Idea } from 'src/entities/idea.entity';
+import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
+import { Repository } from 'typeorm';
+import { GetAllIdeasInput, GetAllIdeasOutput } from './get-all-ideas.dto';
 
 @Controller('/idea')
 export class GetAllIdeasController {
@@ -27,7 +27,7 @@ export class GetAllIdeasController {
   @HttpCode(HttpStatus.OK)
   async getAllIdeas(
     @Request() req: RequestWithUserData,
-    @Query() { quantity, page, authorId }: GetAllIdeasInput,
+    @Query() { quantity, page, authorId, projectId }: GetAllIdeasInput,
   ): Promise<GetAllIdeasOutput> {
     const qb = this.ideaRepository
       .createQueryBuilder('idea')
@@ -44,6 +44,12 @@ export class GetAllIdeasController {
       qb.andWhere('idea.authorId != :userProfileId', {
         userProfileId: req.user.userProfileId,
       });
+    }
+
+    if (projectId) {
+      qb.andWhere('idea.projectId = :projectId', { projectId });
+    } else {
+      qb.andWhere('idea.projectId IS NULL');
     }
 
     qb.skip(page * quantity).take(quantity);
