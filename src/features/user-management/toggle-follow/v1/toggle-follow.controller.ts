@@ -46,6 +46,7 @@ export class ToggleFollowController {
   ): Promise<void> {
     if (userProfileId === targetUserId) throw new YouCannotFollowYourself();
     else if (targetUserId && targetProjectId) throw new InvalidTarget();
+    else if (!targetUserId && !targetProjectId) throw new InvalidTarget();
 
     if (targetUserId) {
       const targetUser = await this.userRepository.findOne({
