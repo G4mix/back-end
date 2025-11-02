@@ -1,6 +1,9 @@
-import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, Min } from 'class-validator';
-import { NotificationDto } from 'src/entities/notification.entity';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, Min } from 'class-validator';
+import {
+  NotificationDto,
+  NotificationType,
+} from 'src/entities/notification.entity';
 
 export class GetAllNotificationsInput {
   @IsOptional()
@@ -14,6 +17,19 @@ export class GetAllNotificationsInput {
   @Min(1, { message: 'INVALID_QUANTITY' })
   @IsOptional()
   quantity: number = 10;
+
+  @IsOptional()
+  @IsBoolean({ message: 'INVALID_IS_READ' })
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
+  isRead?: boolean;
+
+  @IsOptional()
+  @IsEnum(NotificationType, { message: 'INVALID_NOTIFICATION_TYPE' })
+  type?: NotificationType;
 }
 
 export class GetAllNotificationsOutput {
@@ -21,6 +37,5 @@ export class GetAllNotificationsOutput {
   nextPage: number | null;
   pages: number;
   total: number;
-  unreadCount: number;
   data: NotificationDto[];
 }

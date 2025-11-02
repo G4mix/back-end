@@ -12,7 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Notification } from 'src/entities/notification.entity';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import {
   GetAllNotificationsInput,
   GetAllNotificationsOutput,
@@ -32,7 +32,7 @@ export class GetAllNotificationsController {
   @Protected()
   async getAllNotifications(
     @Request() req: RequestWithUserData,
-    @Query() { quantity, page }: GetAllNotificationsInput,
+    @Query() { quantity, page, isRead, type }: GetAllNotificationsInput,
   ): Promise<GetAllNotificationsOutput> {
     const qb = this.notificationRepository
       .createQueryBuilder('notification')
@@ -40,19 +40,25 @@ export class GetAllNotificationsController {
       .leftJoinAndSelect('actorProfile.user', 'actorUser')
       .where('notification.userProfileId = :userProfileId', {
         userProfileId: req.user.userProfileId,
-      })
-      .orderBy('notification.createdAt', 'DESC');
+      });
+
+    if (isRead !== undefined) {
+      if (isRead) {
+        qb.andWhere('notification.readAt IS NOT NULL');
+      } else {
+        qb.andWhere('notification.readAt IS NULL');
+      }
+    }
+
+    if (type) {
+      qb.andWhere('notification.type = :type', { type });
+    }
+
+    qb.orderBy('notification.createdAt', 'DESC');
 
     qb.skip(page * quantity).take(quantity);
 
     const [notifications, total] = await qb.getManyAndCount();
-
-    const unreadCount = await this.notificationRepository.count({
-      where: {
-        userProfileId: req.user.userProfileId,
-        readAt: IsNull(),
-      },
-    });
 
     const pages = Math.ceil(total / quantity);
     const nextPage = page + 1;
@@ -62,7 +68,6 @@ export class GetAllNotificationsController {
       pages,
       page,
       nextPage: nextPage >= pages ? null : nextPage,
-      unreadCount,
       data: notifications.map((notification) => notification.toDto()),
     };
   }
