@@ -10,17 +10,19 @@ import {
   Version,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Chat } from 'src/entities/chat.entity';
 import {
   CollaborationRequest,
   CollaborationRequestStatus,
 } from 'src/entities/collaboration-request.entity';
+import {
+  Notification,
+  NotificationType,
+  RelatedEntityType,
+} from 'src/entities/notification.entity';
+import { Project } from 'src/entities/project.entity';
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
-import { Repository } from 'typeorm';
-import {
-  CollaborationApprovalInput,
-  CollaborationApprovalQueryInput,
-} from './collaboration-approval.dto';
 import {
   ChatNotFound,
   CollaborationRequestIsNotPending,
@@ -28,8 +30,11 @@ import {
   UserNotAuthorized,
 } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safe-save.util';
-import { Chat } from 'src/entities/chat.entity';
-import { Project } from 'src/entities/project.entity';
+import { Repository } from 'typeorm';
+import {
+  CollaborationApprovalInput,
+  CollaborationApprovalQueryInput,
+} from './collaboration-approval.dto';
 
 @Controller('/collaboration-approval')
 export class CollaborationApprovalController {
@@ -40,6 +45,8 @@ export class CollaborationApprovalController {
     private readonly chatRepository: Repository<Chat>,
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
+    @InjectRepository(Notification)
+    private readonly notificationRepository: Repository<Notification>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -87,7 +94,26 @@ export class CollaborationApprovalController {
     collaborationRequest.feedback = feedback;
     await safeSave(this.collaborationRequestRepository, collaborationRequest);
 
-    if (status !== CollaborationRequestStatus.APPROVED) return;
+    const isApproved = status === CollaborationRequestStatus.APPROVED;
+    const titleCode = isApproved
+      ? 'REQUEST_COLLABORATION_APPROVED'
+      : 'REQUEST_COLLABORATION_REJECTED';
+    const messageCode = isApproved
+      ? 'MESSAGE_REQUEST_COLLABORATION_APPROVED'
+      : 'MESSAGE_REQUEST_COLLABORATION_REJECTED';
+
+    await safeSave(this.notificationRepository, {
+      userProfileId: collaborationRequest.requesterId,
+      type: NotificationType.INVITE,
+      title: titleCode,
+      message: messageCode,
+      readAt: null,
+      actorProfileId: userProfileId,
+      relatedEntityId: collaborationRequest.id,
+      relatedEntityType: RelatedEntityType.COLLABORATION_REQUEST,
+    });
+
+    if (!isApproved) return;
 
     let project = collaborationRequest.idea.project;
     if (!project) {

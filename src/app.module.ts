@@ -14,6 +14,7 @@ import { Comment } from './entities/comment.entity';
 import { Follow } from './entities/follow.entity';
 import { Idea } from './entities/idea.entity';
 import { Like } from './entities/like.entity';
+import { Notification } from './entities/notification.entity';
 import { OAuth } from './entities/oauth.entity';
 import { Profile } from './entities/profile.entity';
 import { Project } from './entities/project.entity';
@@ -41,6 +42,8 @@ import { RecordViewController } from './features/feed/ideas/record-view/v1/recor
 import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/update-idea.controller';
 import { ToggleLikeController } from './features/feed/toggle-like/v1/toggle-like.controller';
 import { GetHealthStatusController } from './features/get-health-status/v1/get-health-status.controller';
+import { GetAllNotificationsController } from './features/notifications/get-all-notifications/v1/get-all-notifications.controller';
+import { ReadNotificationsController } from './features/notifications/read/v1/read.controller';
 import { DeleteProjectController } from './features/project/delete-project/v1/delete-project.controller';
 import { GetAllProjectsController } from './features/project/get-all-projects/v1/get-all-projects.controller';
 import { GetProjectController } from './features/project/get-project/v1/get-project.controller';
@@ -89,6 +92,7 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
       CollaborationRequest,
       Chat,
       Project,
+      Notification,
     ]),
     JwtModule.register({
       secret: process.env.JWT_SIGNING_KEY_SECRET,
@@ -173,6 +177,8 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
     GetProjectController,
     DeleteProjectController,
     RemoveMemberController,
+    GetAllNotificationsController,
+    ReadNotificationsController,
   ],
 })
 export class AppModule {}
