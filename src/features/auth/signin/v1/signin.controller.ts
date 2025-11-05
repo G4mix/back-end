@@ -14,94 +14,59 @@ import { SigninInput, SigninOutput } from './signin.dto';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { REFRESH_TOKEN_EXPIRATION } from 'src/jwt/constants';
-import {
-  InvalidEmailOrPassword,
-  TooManyLoginAttempts,
-} from 'src/shared/errors';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { InvalidEmailOrPassword } from 'src/shared/errors';
+import { safeSave } from 'src/shared/utils/safe-save.util';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('/auth')
 export class SignInController {
-  private readonly MAX_ATTEMPTS = 5;
-  private readonly BLOCK_TIME_MS = 30 * 60 * 1000;
   readonly logger = new Logger(this.constructor.name);
 
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
-    // private readonly sesGateway: SESGateway,
   ) {}
 
   @Post('/signin')
   @Version('1')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async signin(@Body() body: SigninInput): Promise<SigninOutput> {
     const user = await this.userRepository.findOne({
       where: { email: body.email },
       relations: [
-        'userProfile',
-        'userProfile.links',
-        'userProfile.followers',
-        'userProfile.following',
-        'userProfile.user',
+        'profile',
+        'profile.followers',
+        'profile.following',
+        'profile.user',
       ],
     });
 
     if (!user) throw new InvalidEmailOrPassword();
 
-    // if (!user.verified) {
-    //   const res = await this.sesGateway.checkEmailStatus(body.email);
-    //   if (res?.status === 'Success') {
-    //     user.verified = true;
-    //     await this.userRepository.save(user);
-    //     await this.sesGateway.sendEmail({
-    //       template: 'SignUp',
-    //       receiver: user.email,
-    //     });
-    //   }
-    // }
-
-    const now = new Date();
-
-    if (user.loginAttempts >= this.MAX_ATTEMPTS) {
-      if (user.blockedUntil && user.blockedUntil > now) {
-        throw new TooManyLoginAttempts();
-      }
-      user.loginAttempts = 0;
-      user.blockedUntil = null;
-      await safeSave(this.userRepository, user);
-    }
+    // todo: if the user is not verified, send a verification email
 
     if (!(await compare(body.password, user.password))) {
-      user.loginAttempts += 1;
-      if (user.loginAttempts === this.MAX_ATTEMPTS) {
-        user.blockedUntil = new Date(now.getTime() + this.BLOCK_TIME_MS);
-        // await this.sesService.sendEmail({ template: 'BlockedAccount', receiver: email });
-      }
-      await safeSave(this.userRepository, user);
-
       throw new InvalidEmailOrPassword();
     }
 
     const accessToken = this.jwtService.sign({
       sub: user.id,
-      userProfileId: user.userProfileId,
+      userProfileId: user.profileId,
     });
     const refreshToken = this.jwtService.sign(
-      { sub: user.id, userProfileId: user.userProfileId },
+      { sub: user.id, userProfileId: user.profileId },
       { expiresIn: REFRESH_TOKEN_EXPIRATION },
     );
 
-    user.loginAttempts = 0;
-    user.blockedUntil = null;
     user.refreshToken = refreshToken;
     await safeSave(this.userRepository, user);
 
     return {
       accessToken,
       refreshToken,
-      userProfile: user.userProfile.toDto(),
+      userProfile: user.profile.toDto(),
     };
   }
 }

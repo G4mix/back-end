@@ -8,9 +8,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserCode } from './user-code.entity';
-import { UserProfile } from './user-profile.entity';
-import { UserOAuth } from './user-oauth.entity';
+import { Profile } from './profile.entity';
+import { OAuth } from './oauth.entity';
 
 @Entity('users')
 export class User {
@@ -29,31 +28,27 @@ export class User {
   @Column({ default: false })
   verified: boolean;
 
-  @Column({ default: 0 })
-  loginAttempts: number;
-
-  @Column({ type: 'timestamp', nullable: true })
-  blockedUntil: Date | null;
+  @Column({ length: 6, nullable: true })
+  code: string;
 
   @Column({ unique: true })
-  userCodeId: string;
+  profileId: string;
 
-  @OneToOne(() => UserCode, (userCode) => userCode.user)
-  @JoinColumn({ name: 'user_code_id' })
-  userCode: UserCode;
-
-  @Column({ unique: true })
-  userProfileId: string;
-
-  @OneToOne(() => UserProfile, (profile) => profile.user)
-  @JoinColumn({ name: 'user_profile_id' })
-  userProfile: UserProfile;
+  @OneToOne(() => Profile, (profile) => profile.user, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'profile_id' })
+  profile: Profile;
 
   @Column({ type: 'varchar', unique: true, nullable: true })
   refreshToken: string | null;
 
-  @OneToMany(() => UserOAuth, (oauth) => oauth.user)
-  oauthAccounts: UserOAuth[];
+  @OneToMany(() => OAuth, (oauth) => oauth.user, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
+  oauth: OAuth[];
 
   @CreateDateColumn()
   createdAt: Date;

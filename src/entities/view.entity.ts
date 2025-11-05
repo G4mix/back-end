@@ -6,12 +6,13 @@ import {
   CreateDateColumn,
   Index,
   Unique,
+  JoinColumn,
 } from 'typeorm';
-import { UserProfile } from './user-profile.entity';
+import { Profile } from './profile.entity';
 import { Idea } from './idea.entity';
 
 @Entity('views')
-@Unique(['userProfileId', 'ideaId'])
+@Unique(['profileId', 'ideaId'])
 export class View {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -27,12 +28,13 @@ export class View {
 
   @Column()
   @Index()
-  userProfileId: string;
+  profileId: string;
 
-  @ManyToOne(() => UserProfile, (userProfile) => userProfile.views, {
+  @ManyToOne(() => Profile, (profile) => profile.views, {
     onDelete: 'CASCADE',
   })
-  userProfile: UserProfile;
+  @JoinColumn({ name: 'profile_id' })
+  profile: Profile;
 
   @CreateDateColumn()
   createdAt: Date;

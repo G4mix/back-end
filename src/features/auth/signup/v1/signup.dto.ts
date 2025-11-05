@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsEmail, IsString, Matches } from 'class-validator';
-import { UserProfileDto } from 'src/entities/user-profile.entity';
+import { ProfileDto } from 'src/entities/profile.entity';
 
 export class SignupInput {
   @IsEmail({}, { message: 'INVALID_EMAIL' })
@@ -22,5 +22,5 @@ export class SignupInput {
 export class SignupOutput {
   accessToken: string;
   refreshToken: string;
-  userProfile: UserProfileDto;
+  userProfile: ProfileDto;
 }

@@ -41,12 +41,10 @@ export class DeleteIdeaController {
       relations: [
         'author',
         'author.user',
-        'images',
         'tags',
         'comments',
         'likes',
         'views',
-        'links',
       ],
     });
     if (!idea) throw new IdeaNotFound();

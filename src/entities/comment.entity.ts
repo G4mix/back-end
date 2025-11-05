@@ -5,10 +5,10 @@ import {
   ManyToOne,
   OneToMany,
   CreateDateColumn,
-  UpdateDateColumn,
   Index,
+  JoinColumn,
 } from 'typeorm';
-import { UserProfile, UserProfileDto } from './user-profile.entity';
+import { Profile, ProfileDto } from './profile.entity';
 import { Idea } from './idea.entity';
 import { Like } from './like.entity';
 
@@ -27,6 +27,7 @@ export class Comment {
   @ManyToOne(() => Idea, (idea) => idea.comments, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'idea_id' })
   idea: Idea;
 
   @Column({ nullable: true })
@@ -36,6 +37,7 @@ export class Comment {
   @ManyToOne(() => Comment, (comment) => comment.replies, {
     onDelete: 'RESTRICT',
   })
+  @JoinColumn({ name: 'parent_comment_id' })
   parentComment: Comment | null;
 
   @OneToMany(() => Comment, (comment) => comment.parentComment)
@@ -45,19 +47,17 @@ export class Comment {
   @Index()
   authorId: string;
 
-  @ManyToOne(() => UserProfile, (userProfile) => userProfile.comments, {
+  @ManyToOne(() => Profile, (profile) => profile.comments, {
     onDelete: 'CASCADE',
   })
-  author: UserProfile;
+  @JoinColumn({ name: 'author_id' })
+  author: Profile;
 
   @OneToMany(() => Like, (like) => like.comment)
   likes: Like[];
 
   @CreateDateColumn()
   createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   toDto(currentUserId?: string): CommentDto {
     const dto = new CommentDto();
@@ -69,10 +69,9 @@ export class Comment {
     dto.likes = this.likes?.length ?? 0;
     dto.replies = this.replies?.length ?? 0;
     dto.isLiked = currentUserId
-      ? this.likes?.some((like) => like.userProfileId === currentUserId)
+      ? this.likes?.some((like) => like.profileId === currentUserId)
       : false;
     dto.createdAt = this.createdAt;
-    dto.updatedAt = this.updatedAt;
     return dto;
   }
 }
@@ -80,12 +79,11 @@ export class Comment {
 export class CommentDto {
   id: string;
   content: string;
-  author: UserProfileDto;
+  author: ProfileDto;
   ideaId: string;
   parentCommentId: string | null;
   likes: number;
   replies: number;
   isLiked: boolean;
   createdAt: Date;
-  updatedAt: Date;
 }

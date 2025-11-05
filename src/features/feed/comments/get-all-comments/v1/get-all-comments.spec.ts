@@ -13,7 +13,7 @@ describe('/v1/comment (GET)', () => {
     const idea = await createTestIdea(
       'Test Idea Title',
       'This is the content of the test idea',
-      user1.userProfileId,
+      user1.profileId,
       [], // no comments at creation
     );
 
@@ -24,29 +24,28 @@ describe('/v1/comment (GET)', () => {
     );
     const tokenUser2 = generateTestJwt({
       sub: user2.id,
-      userProfileId: user2.userProfileId,
+      userProfileId: user2.profileId,
     });
-      const user3 = await createTestUser(
+    const user3 = await createTestUser(
       'testuser3',
       'test3@example.com',
       'password12345',
-      );
-      const tokenUser3 = generateTestJwt({
-            sub: user3.id,
-            userProfileId: user3.userProfileId,
-          });
+    );
+    const tokenUser3 = generateTestJwt({
+      sub: user3.id,
+      userProfileId: user3.profileId,
+    });
 
-    const comment = await request(app.getHttpServer())
+    await request(app.getHttpServer())
       .post('/v1/comment')
       .set('Authorization', `Bearer ${tokenUser2}`)
       .send({
         content: 'Comment',
-        author: user2.userProfileId,
         ideaId: idea.id,
       });
 
-      // 1 comentário do user3
-      await request(app.getHttpServer())
+    // 1 comentário do user3
+    await request(app.getHttpServer())
       .post('/v1/comment')
       .set('Authorization', `Bearer ${tokenUser3}`)
       .send({
@@ -54,30 +53,32 @@ describe('/v1/comment (GET)', () => {
         ideaId: idea.id,
       });
 
-    const response = await request(app.getHttpServer())
-      .get(`/v1/comment?ideaId=${idea.id}`)
+    const response = await request(app.getHttpServer()).get(
+      `/v1/comment?ideaId=${idea.id}`,
+    );
 
-      expect(response.status).toEqual(200);
-      expect(response.body.data.length).toEqual(2);
-
+    expect(response.status).toEqual(200);
+    expect(response.body.data.length).toEqual(2);
   });
 
   it('should return 400 when idea id is invalid', async () => {
-      const ideaId = '1';
-      const response = await request(app.getHttpServer())
-      .get(`/v1/comment?ideaId=${ideaId}`)
+    const ideaId = '1';
+    const response = await request(app.getHttpServer()).get(
+      `/v1/comment?ideaId=${ideaId}`,
+    );
 
-      expect(response.status).toBe(400);
-      expect(response.body.data).toBeUndefined();
-      expect(response.body.message).toContain('INVALID_IDEA_ID');
+    expect(response.status).toBe(400);
+    expect(response.body.data).toBeUndefined();
+    expect(response.body.message).toContain('INVALID_IDEA_ID');
   });
 
   it('should return 404 when ideaId does not exist', async () => {
-      const ideaId = '1e9c20a4-3f8d-4b71-8c0e-92a15f0b6d2c';
-      const response = await request(app.getHttpServer())
-      .get(`/v1/comment?ideaId=${ideaId}`)
+    const ideaId = '1e9c20a4-3f8d-4b71-8c0e-92a15f0b6d2c';
+    const response = await request(app.getHttpServer()).get(
+      `/v1/comment?ideaId=${ideaId}`,
+    );
 
-      expect(response.status).toBe(404);
-      expect(response.body.message).toContain('IDEA_NOT_FOUND');
+    expect(response.status).toBe(404);
+    expect(response.body.message).toContain('IDEA_NOT_FOUND');
   });
 });

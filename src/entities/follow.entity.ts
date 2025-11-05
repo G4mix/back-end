@@ -1,12 +1,14 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { UserProfile } from './user-profile.entity';
+import { Profile } from './profile.entity';
+import { Project } from './project.entity';
 
 @Entity('follows')
 @Unique(['followerUserId', 'followingUserId'])
@@ -17,18 +19,31 @@ export class Follow {
   @Column()
   followerUserId: string;
 
-  @Column()
-  followingUserId: string;
+  @Column({ nullable: true })
+  followingUserId: string | null;
 
-  @ManyToOne(() => UserProfile, (userProfile) => userProfile.following, {
+  @Column({ nullable: true })
+  followingProjectId: string | null;
+
+  @ManyToOne(() => Profile, (profile) => profile.following, {
     onDelete: 'CASCADE',
   })
-  followerUser: UserProfile;
+  @JoinColumn({ name: 'follower_user_id' })
+  followerUser: Profile;
 
-  @ManyToOne(() => UserProfile, (userProfile) => userProfile.followers, {
+  @ManyToOne(() => Profile, (profile) => profile.followers, {
     onDelete: 'CASCADE',
+    nullable: true,
   })
-  followingUser: UserProfile;
+  @JoinColumn({ name: 'following_user_id' })
+  followingUser: Profile;
+
+  @ManyToOne(() => Project, (project) => project.followers, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'following_project_id' })
+  followingProject: Project;
 
   @CreateDateColumn()
   createdAt: Date;

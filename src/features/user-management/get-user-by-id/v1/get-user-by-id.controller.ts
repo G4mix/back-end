@@ -11,13 +11,13 @@ import { Repository } from 'typeorm';
 import { UserNotFound } from 'src/shared/errors';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { GetUserByIdInput } from './get-user-by-id.dto';
-import { UserProfile, UserProfileDto } from 'src/entities/user-profile.entity';
+import { Profile, ProfileDto } from 'src/entities/profile.entity';
 
 @Controller('/user')
 export class GetUserByIdController {
   constructor(
-    @InjectRepository(UserProfile)
-    private readonly userProfileRepository: Repository<UserProfile>,
+    @InjectRepository(Profile)
+    private readonly profileRepository: Repository<Profile>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -26,12 +26,12 @@ export class GetUserByIdController {
   async getUserbyId(
     @Param() { userProfileId }: GetUserByIdInput,
     @Request() req: RequestWithUserData,
-  ): Promise<UserProfileDto> {
-    const user = await this.userProfileRepository.findOne({
+  ): Promise<ProfileDto> {
+    const profile = await this.profileRepository.findOne({
       where: { id: userProfileId },
-      relations: ['user', 'links', 'followers', 'following'],
+      relations: ['user', 'followers', 'following'],
     });
-    if (!user) throw new UserNotFound();
-    return user.toDto(req.user?.userProfileId);
+    if (!profile) throw new UserNotFound();
+    return profile.toDto(req.user?.userProfileId);
   }
 }

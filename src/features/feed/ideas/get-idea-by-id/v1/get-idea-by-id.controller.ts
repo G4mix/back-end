@@ -35,12 +35,10 @@ export class GetIdeaByIdController {
       relations: [
         'author',
         'author.user',
-        'images',
         'tags',
         'comments',
         'likes',
         'views',
-        'links',
       ],
     });
     if (!idea) throw new IdeaNotFound();

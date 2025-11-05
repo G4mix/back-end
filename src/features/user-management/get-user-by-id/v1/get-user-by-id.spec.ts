@@ -3,7 +3,7 @@ import { generateTestJwt } from 'test/jwt-helper';
 
 import request from 'supertest';
 
-import { UserProfileDto } from 'src/entities/user-profile.entity';
+import { ProfileDto } from 'src/entities/profile.entity';
 
 interface ErrorResponse {
   message: string;
@@ -23,16 +23,16 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
-      .get(`/v1/user/${user.userProfileId}`)
+      .get(`/v1/user/${user.profileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserProfileDto;
-    expect(body.id).toEqual(user.userProfileId);
+    const body = response.body as ProfileDto;
+    expect(body.id).toEqual(user.profileId);
     expect(body.user.username).toEqual(user.username);
     expect(body.user.email).toEqual(user.email);
     expect(body.user.verified).toEqual(user.verified);
@@ -46,7 +46,7 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
 
     const response = await request(app.getHttpServer()).get(
-      `/v1/user/${user.userProfileId}`,
+      `/v1/user/${user.profileId}`,
     );
 
     expect(response.status).toEqual(200); // Guard está funcionando corretamente
@@ -60,7 +60,7 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
 
     const response = await request(app.getHttpServer())
-      .get(`/v1/user/${user.userProfileId}`)
+      .get(`/v1/user/${user.profileId}`)
       .set('Authorization', 'Bearer invalid-token');
 
     expect(response.status).toEqual(401);
@@ -74,7 +74,7 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -94,7 +94,7 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -119,15 +119,15 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
-      .get(`/v1/user/${user.userProfileId}`)
+      .get(`/v1/user/${user.profileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserProfileDto;
+    const body = response.body as ProfileDto;
     expect(body.user).toBeDefined();
     expect(body.user.id).toEqual(user.id);
   });
@@ -145,15 +145,15 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
-      .get(`/v1/user/${user.userProfileId}`)
+      .get(`/v1/user/${user.profileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserProfileDto;
+    const body = response.body as ProfileDto;
     expect(body.links).toBeDefined();
     expect(Array.isArray(body.links)).toBe(true);
   });
@@ -171,15 +171,15 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
-      .get(`/v1/user/${user.userProfileId}`)
+      .get(`/v1/user/${user.profileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserProfileDto;
+    const body = response.body as ProfileDto;
     expect(body.followers).toBeDefined();
     expect(typeof body.followers).toBe('number');
   });
@@ -197,15 +197,15 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
-      .get(`/v1/user/${user.userProfileId}`)
+      .get(`/v1/user/${user.profileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserProfileDto;
+    const body = response.body as ProfileDto;
     expect(body.following).toBeDefined();
     expect(typeof body.following).toBe('number');
   });
@@ -223,16 +223,16 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
-      .get(`/v1/user/${user.userProfileId}`)
+      .get(`/v1/user/${user.profileId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(200);
-    const body = response.body as UserProfileDto;
-    expect(body.id).toEqual(user.userProfileId);
+    const body = response.body as ProfileDto;
+    expect(body.id).toEqual(user.profileId);
   });
 
   it('should handle empty userProfileId parameter', async () => {
@@ -243,7 +243,7 @@ describe('/v1/user/{userProfileId} (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())

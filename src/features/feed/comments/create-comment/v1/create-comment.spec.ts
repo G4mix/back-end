@@ -14,11 +14,11 @@ describe('/v1/comment (POST)', () => {
 
     const token = generateTestJwt({
       sub: user.id,
-      userProfileId: user.userProfileId,
+      userProfileId: user.profileId,
     });
 
     const idea = await ideaRepository.save({
-      authorId: user.userProfileId,
+      authorId: user.profileId,
       title: 'titulo',
       content: 'Conteúdo',
     });
@@ -46,18 +46,18 @@ describe('/v1/comment (POST)', () => {
 
     const token = generateTestJwt({
       sub: user.id,
-      userProfileId: user.userProfileId,
+      userProfileId: user.profileId,
     });
 
     const idea = await ideaRepository.save({
-      authorId: user.userProfileId,
+      authorId: user.profileId,
       title: 'titulo',
       content: 'Conteúdo',
     });
 
     const comment = (await commentRepository.save({
       content: 'Conteúdo',
-      authorId: user.userProfileId,
+      authorId: user.profileId,
       ideaId: idea.id,
     } as unknown as DeepPartial<Comment>[])) as unknown as Comment;
 
@@ -85,11 +85,11 @@ describe('/v1/comment (POST)', () => {
 
     const token = generateTestJwt({
       sub: user.id,
-      userProfileId: user.userProfileId,
+      userProfileId: user.profileId,
     });
 
     const idea = await ideaRepository.save({
-      authorId: user.userProfileId,
+      authorId: user.profileId,
       title: 'titulo',
       content: 'Conteúdo',
     });

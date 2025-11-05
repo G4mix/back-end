@@ -14,7 +14,7 @@ import { Repository } from 'typeorm';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { LikeType, ToggleLikeInput } from './toggle-like.dto';
 import { Like } from 'src/entities/like.entity';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 
 @Controller('/like')
 export class ToggleLikeController {
@@ -33,8 +33,8 @@ export class ToggleLikeController {
     @Body() { targetLikeId, likeType }: ToggleLikeInput,
   ): Promise<void> {
     const targets = {
-      [LikeType.IDEA]: { userProfileId, ideaId: targetLikeId },
-      [LikeType.COMMENT]: { userProfileId, commentId: targetLikeId },
+      [LikeType.IDEA]: { profileId: userProfileId, ideaId: targetLikeId },
+      [LikeType.COMMENT]: { profileId: userProfileId, commentId: targetLikeId },
     };
 
     const targetLike = await this.likeRepository.findOne({

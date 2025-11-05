@@ -17,7 +17,7 @@ describe('/v1/user (GET)', () => {
 
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -58,7 +58,7 @@ describe('/v1/user (GET)', () => {
 
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -79,7 +79,7 @@ describe('/v1/user (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -107,7 +107,7 @@ describe('/v1/user (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -136,7 +136,7 @@ describe('/v1/user (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -157,7 +157,7 @@ describe('/v1/user (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -177,7 +177,7 @@ describe('/v1/user (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -196,7 +196,7 @@ describe('/v1/user (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -214,7 +214,7 @@ describe('/v1/user (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -233,7 +233,7 @@ describe('/v1/user (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -259,7 +259,7 @@ describe('/v1/user (GET)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -269,7 +269,7 @@ describe('/v1/user (GET)', () => {
     expect(response.status).toEqual(200);
     const body = response.body as GetAllUsersOutput;
     expect(body.data).toHaveLength(1);
-    expect(body.data[0].id).toEqual(otherUser.userProfileId);
-    expect(body.data[0].id).not.toEqual(currentUser.userProfileId);
+    expect(body.data[0].id).toEqual(otherUser.profileId);
+    expect(body.data[0].id).not.toEqual(currentUser.profileId);
   });
 });

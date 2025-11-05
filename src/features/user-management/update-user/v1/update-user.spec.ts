@@ -12,7 +12,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -34,7 +34,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -54,7 +54,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -80,7 +80,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -104,7 +104,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -132,7 +132,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -164,7 +164,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -183,7 +183,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -202,7 +202,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -221,7 +221,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -242,7 +242,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -261,7 +261,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -280,7 +280,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     jest
@@ -323,7 +323,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -337,10 +337,9 @@ describe('/v1/user (PATCH)', () => {
 
   it('should return 200 and create new user profile when user has no profile', async () => {
     // Create user without profile
-    const userCode = await userCodeRepository.save({ code: null });
     const bcrypt = require('bcrypt');
     const hashedPassword = bcrypt.hashSync('password123', 10);
-    const userProfile = await userProfileRepository.save({
+    const profile = await profileRepository.save({
       displayName: 'temp',
     });
 
@@ -349,13 +348,12 @@ describe('/v1/user (PATCH)', () => {
       email: 'test@example.com',
       password: hashedPassword,
       verified: true,
-      userCodeId: userCode.id,
-      userProfileId: userProfile.id,
+      profileId: profile.id,
     });
 
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -377,7 +375,7 @@ describe('/v1/user (PATCH)', () => {
     );
     const token = generateTestJwt({
       sub: currentUser.id,
-      userProfileId: currentUser.userProfileId,
+      userProfileId: currentUser.profileId,
     });
 
     await request(app.getHttpServer())

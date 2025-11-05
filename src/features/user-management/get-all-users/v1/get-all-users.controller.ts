@@ -10,14 +10,14 @@ import {
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { GetAllUsersOutput, GetAllUsersInput } from './get-all-users.dto';
 import { Repository } from 'typeorm';
-import { UserProfile } from 'src/entities/user-profile.entity';
+import { Profile } from 'src/entities/profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('/user')
 export class GetAllUsersController {
   constructor(
-    @InjectRepository(UserProfile)
-    private readonly userProfileRepository: Repository<UserProfile>,
+    @InjectRepository(Profile)
+    private readonly profileRepository: Repository<Profile>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -28,19 +28,18 @@ export class GetAllUsersController {
     @Request() req: RequestWithUserData,
     @Query() { search, quantity, page }: GetAllUsersInput,
   ): Promise<GetAllUsersOutput> {
-    const qb = this.userProfileRepository
-      .createQueryBuilder('userProfile')
-      .leftJoinAndSelect('userProfile.user', 'user')
-      .leftJoinAndSelect('userProfile.links', 'links')
-      .leftJoinAndSelect('userProfile.followers', 'followers')
-      .leftJoinAndSelect('userProfile.following', 'following')
-      .where('userProfile.id != :currentUserId', {
+    const qb = this.profileRepository
+      .createQueryBuilder('profile')
+      .leftJoinAndSelect('profile.user', 'user')
+      .leftJoinAndSelect('profile.followers', 'followers')
+      .leftJoinAndSelect('profile.following', 'following')
+      .where('profile.id != :currentUserId', {
         currentUserId: req.user.userProfileId,
       });
 
     if (search && search.trim() !== '') {
       qb.andWhere(
-        '(user.username ILIKE :search OR userProfile.displayName ILIKE :search)',
+        '(user.username ILIKE :search OR profile.displayName ILIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -50,7 +49,6 @@ export class GetAllUsersController {
     const [users, total] = await qb.getManyAndCount();
     const pages = Math.ceil(total / quantity);
     const nextPage = page + 1;
-
     return {
       total,
       pages,

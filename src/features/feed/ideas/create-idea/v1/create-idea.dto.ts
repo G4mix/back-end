@@ -4,11 +4,18 @@ import {
   IsArray,
   IsOptional,
   IsString,
+  IsUUID,
   IsUrl,
   Matches,
   MaxLength,
 } from 'class-validator';
-import { parseArraySafe } from 'src/shared/utils/parseArraySafe';
+import { parseArraySafe } from 'src/shared/utils/parse-array-safe.util';
+
+export class CreateIdeaQueryInput {
+  @IsOptional()
+  @IsUUID(undefined, { message: 'INVALID_PROJECT_ID' })
+  projectId?: string;
+}
 
 export class CreateIdeaInput {
   @IsString({ message: 'INVALID_TITLE' })

@@ -16,14 +16,14 @@ describe('/v1/follow (POST)', () => {
     );
     const token = generateTestJwt({
       sub: follower.id,
-      userProfileId: follower.userProfileId,
+      userProfileId: follower.profileId,
     });
 
     const response = await request(app.getHttpServer())
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        targetUserId: targetUser.userProfileId,
+        targetUserId: targetUser.profileId,
       });
 
     expect(response.status).toEqual(204);
@@ -31,8 +31,8 @@ describe('/v1/follow (POST)', () => {
     // Verify follow relationship was created
     const follow = await followRepository.findOne({
       where: {
-        followerUserId: follower.userProfileId,
-        followingUserId: targetUser.userProfileId,
+        followerUserId: follower.profileId,
+        followingUserId: targetUser.profileId,
       },
     });
     expect(follow).toBeDefined();
@@ -52,20 +52,20 @@ describe('/v1/follow (POST)', () => {
 
     // Create existing follow relationship
     await followRepository.save({
-      followerUserId: follower.userProfileId,
-      followingUserId: targetUser.userProfileId,
+      followerUserId: follower.profileId,
+      followingUserId: targetUser.profileId,
     });
 
     const token = generateTestJwt({
       sub: follower.id,
-      userProfileId: follower.userProfileId,
+      userProfileId: follower.profileId,
     });
 
     const response = await request(app.getHttpServer())
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        targetUserId: targetUser.userProfileId,
+        targetUserId: targetUser.profileId,
       });
 
     expect(response.status).toEqual(204);
@@ -73,8 +73,8 @@ describe('/v1/follow (POST)', () => {
     // Verify follow relationship was removed
     const follow = await followRepository.findOne({
       where: {
-        followerUserId: follower.userProfileId,
-        followingUserId: targetUser.userProfileId,
+        followerUserId: follower.profileId,
+        followingUserId: targetUser.profileId,
       },
     });
     expect(follow).toBeNull();
@@ -88,14 +88,14 @@ describe('/v1/follow (POST)', () => {
     );
     const token = generateTestJwt({
       sub: user.id,
-      userProfileId: user.userProfileId,
+      userProfileId: user.profileId,
     });
 
     const response = await request(app.getHttpServer())
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        targetUserId: user.userProfileId, // Same as current user
+        targetUserId: user.profileId, // Same as current user
       });
 
     expect(response.status).toEqual(400);
@@ -110,7 +110,7 @@ describe('/v1/follow (POST)', () => {
     );
     const token = generateTestJwt({
       sub: follower.id,
-      userProfileId: follower.userProfileId,
+      userProfileId: follower.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -132,7 +132,7 @@ describe('/v1/follow (POST)', () => {
     );
     const token = generateTestJwt({
       sub: follower.id,
-      userProfileId: follower.userProfileId,
+      userProfileId: follower.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -151,7 +151,7 @@ describe('/v1/follow (POST)', () => {
     );
     const token = generateTestJwt({
       sub: follower.id,
-      userProfileId: follower.userProfileId,
+      userProfileId: follower.profileId,
     });
 
     const response = await request(app.getHttpServer())
@@ -198,7 +198,7 @@ describe('/v1/follow (POST)', () => {
     );
     const token = generateTestJwt({
       sub: follower.id,
-      userProfileId: follower.userProfileId,
+      userProfileId: follower.profileId,
     });
 
     // First follow
@@ -206,15 +206,15 @@ describe('/v1/follow (POST)', () => {
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        targetUserId: targetUser.userProfileId,
+        targetUserId: targetUser.profileId,
       });
     expect(response.status).toEqual(204);
 
     // Verify follow exists
     let follow = await followRepository.findOne({
       where: {
-        followerUserId: follower.userProfileId,
-        followingUserId: targetUser.userProfileId,
+        followerUserId: follower.profileId,
+        followingUserId: targetUser.profileId,
       },
     });
     expect(follow).toBeDefined();
@@ -224,15 +224,15 @@ describe('/v1/follow (POST)', () => {
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        targetUserId: targetUser.userProfileId,
+        targetUserId: targetUser.profileId,
       });
     expect(response.status).toEqual(204);
 
     // Verify follow was removed
     follow = await followRepository.findOne({
       where: {
-        followerUserId: follower.userProfileId,
-        followingUserId: targetUser.userProfileId,
+        followerUserId: follower.profileId,
+        followingUserId: targetUser.profileId,
       },
     });
     expect(follow).toBeNull();
@@ -242,15 +242,15 @@ describe('/v1/follow (POST)', () => {
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        targetUserId: targetUser.userProfileId,
+        targetUserId: targetUser.profileId,
       });
     expect(response.status).toEqual(204);
 
     // Verify follow exists again
     follow = await followRepository.findOne({
       where: {
-        followerUserId: follower.userProfileId,
-        followingUserId: targetUser.userProfileId,
+        followerUserId: follower.profileId,
+        followingUserId: targetUser.profileId,
       },
     });
     expect(follow).toBeDefined();
@@ -275,11 +275,11 @@ describe('/v1/follow (POST)', () => {
 
     const token1 = generateTestJwt({
       sub: follower1.id,
-      userProfileId: follower1.userProfileId,
+      userProfileId: follower1.profileId,
     });
     const token2 = generateTestJwt({
       sub: follower2.id,
-      userProfileId: follower2.userProfileId,
+      userProfileId: follower2.profileId,
     });
 
     // First user follows target
@@ -287,7 +287,7 @@ describe('/v1/follow (POST)', () => {
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token1}`)
       .send({
-        targetUserId: targetUser.userProfileId,
+        targetUserId: targetUser.profileId,
       });
     expect(response.status).toEqual(204);
 
@@ -296,21 +296,21 @@ describe('/v1/follow (POST)', () => {
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token2}`)
       .send({
-        targetUserId: targetUser.userProfileId,
+        targetUserId: targetUser.profileId,
       });
     expect(response.status).toEqual(204);
 
     // Verify both follows exist
     const follow1 = await followRepository.findOne({
       where: {
-        followerUserId: follower1.userProfileId,
-        followingUserId: targetUser.userProfileId,
+        followerUserId: follower1.profileId,
+        followingUserId: targetUser.profileId,
       },
     });
     const follow2 = await followRepository.findOne({
       where: {
-        followerUserId: follower2.userProfileId,
-        followingUserId: targetUser.userProfileId,
+        followerUserId: follower2.profileId,
+        followingUserId: targetUser.profileId,
       },
     });
 
@@ -338,7 +338,7 @@ describe('/v1/follow (POST)', () => {
 
     const token = generateTestJwt({
       sub: follower.id,
-      userProfileId: follower.userProfileId,
+      userProfileId: follower.profileId,
     });
 
     // Follow first target
@@ -346,7 +346,7 @@ describe('/v1/follow (POST)', () => {
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        targetUserId: target1.userProfileId,
+        targetUserId: target1.profileId,
       });
     expect(response.status).toEqual(204);
 
@@ -355,21 +355,21 @@ describe('/v1/follow (POST)', () => {
       .post('/v1/follow')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        targetUserId: target2.userProfileId,
+        targetUserId: target2.profileId,
       });
     expect(response.status).toEqual(204);
 
     // Verify both follows exist
     const follow1 = await followRepository.findOne({
       where: {
-        followerUserId: follower.userProfileId,
-        followingUserId: target1.userProfileId,
+        followerUserId: follower.profileId,
+        followingUserId: target1.profileId,
       },
     });
     const follow2 = await followRepository.findOne({
       where: {
-        followerUserId: follower.userProfileId,
-        followingUserId: target2.userProfileId,
+        followerUserId: follower.profileId,
+        followingUserId: target2.profileId,
       },
     });
 

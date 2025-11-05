@@ -3,6 +3,7 @@ import {
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
+import { GlobalExceptionFilter } from './shared/filters/validation-exception.filter';
 
 export const setupApplication = (app: INestApplication) => {
   app.enableVersioning({
@@ -16,4 +17,6 @@ export const setupApplication = (app: INestApplication) => {
       transform: true,
     }),
   );
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
 };

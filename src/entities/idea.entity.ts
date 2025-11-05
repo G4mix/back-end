@@ -7,14 +7,22 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  JoinColumn,
 } from 'typeorm';
-import { UserProfile, UserProfileDto } from './user-profile.entity';
+import { Profile, ProfileDto } from './profile.entity';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { View } from './view.entity';
 import { Tag } from './tag.entity';
-import { Image, ImageDto } from './image.entity';
-import { Link } from './link.entity';
+import { CollaborationRequest } from './collaboration-request.entity';
+import { Chat } from './chat.entity';
+import { Project } from './project.entity';
+
+export enum IdeaStatus {
+  CLOSED = 'Closed',
+  OPEN = 'Open',
+  CANCELED = 'Canceled',
+}
 
 @Entity('ideas')
 export class Idea {
@@ -31,13 +39,34 @@ export class Idea {
   @Index()
   authorId: string;
 
-  @ManyToOne(() => UserProfile, (userProfile) => userProfile.ideas, {
+  @Column({ type: 'enum', enum: IdeaStatus, default: IdeaStatus.OPEN })
+  status: IdeaStatus;
+
+  @ManyToOne(() => Profile, (profile) => profile.ideas, {
     onDelete: 'CASCADE',
   })
-  author: UserProfile;
+  @JoinColumn({ name: 'author_id' })
+  author: Profile;
 
-  @OneToMany(() => Comment, (comment) => comment.idea)
+  @Column({ nullable: true })
+  @Index()
+  projectId: string | null;
+
+  @ManyToOne(() => Project, (project) => project.posts, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'project_id' })
+  project: Project;
+
+  @OneToMany(() => Comment, (comment) => comment.idea, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   comments: Comment[];
+
+  @OneToMany(() => CollaborationRequest, (req) => req.idea)
+  collaborationRequests: CollaborationRequest[];
 
   @OneToMany(() => Like, (like) => like.idea)
   likes: Like[];
@@ -45,22 +74,20 @@ export class Idea {
   @OneToMany(() => View, (view) => view.idea)
   views: View[];
 
-  @OneToMany(() => Link, (link) => link.idea, {
-    cascade: true,
-    orphanedRowAction: 'delete',
-  })
-  links: Link[];
-  @OneToMany(() => Tag, (tag) => tag.idea, {
-    cascade: true,
-    orphanedRowAction: 'delete',
-  })
+  @Column({ type: 'jsonb', default: [] })
+  links: string[];
+
+  @OneToMany(() => Tag, (tag) => tag.idea)
   tags: Tag[];
 
-  @OneToMany(() => Image, (image) => image.idea, {
+  @Column({ type: 'jsonb', default: [] })
+  images: string[];
+
+  @OneToMany(() => Chat, (chat) => chat.idea, {
     cascade: true,
     orphanedRowAction: 'delete',
   })
-  images: Image[];
+  chats: Chat[];
 
   @CreateDateColumn()
   createdAt: Date;
@@ -77,14 +104,14 @@ export class Idea {
     dto.comments = this.comments?.length ?? 0;
     dto.likes = this.likes?.length ?? 0;
     dto.views = this.views?.length ?? 0;
-    dto.links = this.links.map((link) => link.url) ?? [];
+    dto.links = this.links ?? [];
     dto.tags = this.tags?.map((tag) => tag.name) ?? [];
-    dto.images = this.images?.map((image) => image.toDto()) ?? [];
+    dto.images = this.images ?? [];
     dto.isLiked = currentUserId
-      ? this.likes?.some((like) => like.userProfileId === currentUserId)
+      ? this.likes?.some((like) => like.profileId === currentUserId)
       : false;
     dto.isViewed = currentUserId
-      ? this.views?.some((view) => view.userProfileId === currentUserId)
+      ? this.views?.some((view) => view.profileId === currentUserId)
       : false;
     dto.createdAt = this.createdAt;
     dto.updatedAt = this.updatedAt;
@@ -96,13 +123,13 @@ export class IdeaDto {
   id: string;
   title: string;
   content: string;
-  author?: UserProfileDto;
+  author?: ProfileDto;
   comments: number;
   likes: number;
   views: number;
   links: string[];
   tags: string[];
-  images: ImageDto[];
+  images: string[];
   isLiked: boolean;
   isViewed: boolean;
   createdAt: Date;

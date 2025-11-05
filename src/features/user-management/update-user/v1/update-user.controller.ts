@@ -14,12 +14,10 @@ import { Protected } from 'src/shared/decorators/protected.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
-import { UpdateUserProfileInput } from './update-user.dto';
+import { UpdateProfileInput } from './update-user.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { hashSync } from 'bcrypt';
-import { UserProfileDto } from 'src/entities/user-profile.entity';
-import { Link } from 'src/entities/link.entity';
-import { SESGateway } from 'src/shared/gateways/ses.gateway';
+import { ProfileDto } from 'src/entities/profile.entity';
 import {
   S3Gateway,
   SUPPORTED_IMAGES,
@@ -27,16 +25,15 @@ import {
 } from 'src/shared/gateways/s3.gateway';
 import { ConfigService } from '@nestjs/config';
 import { PictureUpdateFail, UserNotFound } from 'src/shared/errors';
-import { safeSave } from 'src/shared/utils/safeSave';
-import { UserProfile } from '../../../../entities/user-profile.entity';
+import { safeSave } from 'src/shared/utils/safe-save.util';
+import { Profile } from '../../../../entities/profile.entity';
 
 @Controller('/user')
 export class UpdateUserController {
   constructor(
-    @InjectRepository(UserProfile)
-    private readonly userProfileRepository: Repository<UserProfile>,
+    @InjectRepository(Profile)
+    private readonly profileRepository: Repository<Profile>,
     private readonly configService: ConfigService,
-    private readonly sesGateway: SESGateway,
     private readonly s3Gateway: S3Gateway,
   ) {}
   readonly logger = new Logger(this.constructor.name);
@@ -56,16 +53,16 @@ export class UpdateUserController {
   )
   async updateUser(
     @Request() { user: { sub: id, userProfileId } }: RequestWithUserData,
-    @Body() { autobiography, displayName, links, user }: UpdateUserProfileInput,
+    @Body() { autobiography, displayName, links, user }: UpdateProfileInput,
     @UploadedFiles()
     files: {
       icon?: Express.Multer.File[];
       backgroundImage?: Express.Multer.File[];
     },
-  ): Promise<UserProfileDto> {
-    const userProfile = await this.userProfileRepository.findOne({
+  ): Promise<ProfileDto> {
+    const userProfile = await this.profileRepository.findOne({
       where: { id: userProfileId },
-      relations: ['links', 'user'],
+      relations: ['user'],
     });
     if (!userProfile) throw new UserNotFound();
     const icon = files.icon?.[0];
@@ -96,16 +93,7 @@ export class UpdateUserController {
     }
 
     if (links) {
-      await this.userProfileRepository.manager.delete(Link, {
-        userProfileId,
-      });
-      const updatedLinks = links?.map((link) => {
-        const updatedLink = new Link();
-        updatedLink.url = link;
-        updatedLink.userProfileId = userProfileId;
-        return updatedLink;
-      });
-      userProfile.links = updatedLinks;
+      userProfile.links = links;
     }
 
     Object.assign(
@@ -118,14 +106,14 @@ export class UpdateUserController {
     if (email) {
       userProfile.user.email = email;
       userProfile.user.verified = false;
-      await this.sesGateway.verifyIdentity(email);
+      // todo: send email verification
     }
     Object.assign(
       userProfile.user,
       username && { username },
       password && { password: hashSync(password, 10) },
     );
-    await safeSave(this.userProfileRepository, userProfile);
+    await safeSave(this.profileRepository, userProfile);
 
     return userProfile.toDto();
   }

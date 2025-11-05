@@ -18,6 +18,10 @@ export class GetAllIdeasInput {
   @IsOptional()
   @IsUUID(undefined, { message: 'INVALID_AUTHOR_ID' })
   authorId?: string;
+
+  @IsOptional()
+  @IsUUID(undefined, { message: 'INVALID_PROJECT_ID' })
+  projectId?: string;
 }
 
 export class GetAllIdeasOutput {

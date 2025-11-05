@@ -23,12 +23,10 @@ import {
 } from 'src/shared/gateways/s3.gateway';
 import { ConfigService } from '@nestjs/config';
 import { Idea, IdeaDto } from 'src/entities/idea.entity';
-import { Link } from 'src/entities/link.entity';
 import { Tag } from 'src/entities/tag.entity';
-import { Image } from 'src/entities/image.entity';
 import { AtLeastOneImage, IdeaNotFound } from 'src/shared/errors';
 import { GetIdeaByIdInput } from '../../get-idea-by-id/v1/get-idea-by-id.dto';
-import { safeSave } from 'src/shared/utils/safeSave';
+import { safeSave } from 'src/shared/utils/safe-save.util';
 
 @Controller('/idea')
 export class UpdateIdeaController {
@@ -58,12 +56,10 @@ export class UpdateIdeaController {
       relations: [
         'author',
         'author.user',
-        'images',
         'tags',
         'comments',
         'likes',
         'views',
-        'links',
       ],
     });
     if (!idea) throw new IdeaNotFound();
@@ -73,15 +69,7 @@ export class UpdateIdeaController {
     idea.authorId = userProfileId;
 
     if (links) {
-      await this.ideaRepository.manager.delete(Link, { ideaId: idea.id });
-
-      const newLinks = links.map((link) => {
-        const newLink = new Link();
-        newLink.url = link;
-        newLink.ideaId = idea.id;
-        return newLink;
-      });
-      idea.links = newLinks;
+      idea.links = links;
     }
 
     if (tags) {
@@ -96,21 +84,15 @@ export class UpdateIdeaController {
       idea.tags = newTags;
     }
 
-    const newImages: Image[] = [];
+    const newImages: string[] = [];
     for (const image of images ?? []) {
-      await this.ideaRepository.manager.delete(Image, { ideaId: idea.id });
-
       const ideaImageRes = await this.s3Gateway.uploadFile({
         bucketName: this.configService.get<string>('PUBLIC_BUCKET_NAME')!,
         key: `user-${id}/ideas/${idea.id}/${image.originalname}`,
         file: image.buffer,
       });
       if (typeof ideaImageRes !== 'object') continue;
-      const newImage = new Image();
-      newImage.alt = `Image ${image.originalname}`;
-      newImage.src = ideaImageRes.fileUrl;
-      newImage.ideaId = idea.id;
-      newImages.push(newImage);
+      newImages.push(ideaImageRes.fileUrl);
     }
     idea.images = newImages;
 

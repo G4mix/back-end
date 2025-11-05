@@ -1,11 +1,11 @@
 import { InternalServiceErrorException } from '@aws-sdk/client-sesv2';
 import {
+  BadRequestException,
   ConflictException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   NotFoundException,
-  ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
 
 export class UserNotAuthorized extends ForbiddenException {
@@ -38,9 +38,9 @@ export class YouCannotFollowYourself extends BadRequestException {
   }
 }
 
-export class InvalidUserProfile extends BadRequestException {
+export class InvalidProfile extends BadRequestException {
   constructor() {
-    super('INVALID_USER_PROFILE');
+    super('INVALID_PROFILE');
   }
 }
 export class InvalidImageType extends BadRequestException {
@@ -82,5 +82,77 @@ export class AtLeastOneImage extends NotFoundException {
 export class ThatIsNotYourIdea extends NotFoundException {
   constructor() {
     super('THAT_IS_NOT_YOUR_IDEA');
+  }
+}
+
+export class CommentNotFound extends NotFoundException {
+  constructor() {
+    super('COMMENT_NOT_FOUND');
+  }
+}
+
+export class CollaborationRequestNotFound extends NotFoundException {
+  constructor() {
+    super('COLLABORATION_REQUEST_NOT_FOUND');
+  }
+}
+
+export class CollaborationRequestIsNotPending extends BadRequestException {
+  constructor() {
+    super('COLLABORATION_REQUEST_IS_NOT_PENDING');
+  }
+}
+
+export class PendingCollaborationRequestAlreadyExists extends ConflictException {
+  constructor() {
+    super('PENDING_COLLABORATION_REQUEST_ALREADY_EXISTS');
+  }
+}
+
+export class YouCannotRequestCollaborationForYourOwnIdea extends BadRequestException {
+  constructor() {
+    super('YOU_CANNOT_REQUEST_COLLABORATION_FOR_YOUR_OWN_IDEA');
+  }
+}
+
+export class ChatNotFound extends NotFoundException {
+  constructor() {
+    super('CHAT_NOT_FOUND');
+  }
+}
+
+export class PendingCollaborationRequestNotFound extends NotFoundException {
+  constructor() {
+    super('PENDING_COLLABORATION_REQUEST_NOT_FOUND');
+  }
+}
+
+export class YouCannotStartChatForAnotherUserIdea extends BadRequestException {
+  constructor() {
+    super('YOU_CANNOT_START_CHAT_FOR_ANOTHER_USER_IDEA');
+  }
+}
+
+export class YouAreNotTheOwner extends BadRequestException {
+  constructor() {
+    super('YOU_ARE_NOT_THE_OWNER');
+  }
+}
+
+export class ProjectNotFound extends NotFoundException {
+  constructor() {
+    super('PROJECT_NOT_FOUND');
+  }
+}
+
+export class InvalidTarget extends BadRequestException {
+  constructor() {
+    super('INVALID_TARGET');
+  }
+}
+
+export class YouCannotRemoveTheOwner extends BadRequestException {
+  constructor() {
+    super('YOU_CANNOT_REMOVE_THE_OWNER');
   }
 }
