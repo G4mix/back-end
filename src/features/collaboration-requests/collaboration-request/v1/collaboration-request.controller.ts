@@ -23,8 +23,10 @@ import { Profile } from 'src/entities/profile.entity';
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import {
+  CollaborationRequestAlreadyApproved,
   IdeaNotFound,
   PendingCollaborationRequestAlreadyExists,
+  UserAlreadyMemberOfTheProject,
   YouCannotRequestCollaborationForYourOwnIdea,
 } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safe-save.util';
@@ -64,14 +66,39 @@ export class CollaborationRequestController {
     if (collaborationRequest) {
       throw new PendingCollaborationRequestAlreadyExists();
     }
+    console.log('aaa');
+
+    const approvedRequest = await this.collaborationRequestRepository.findOne({
+      where: {
+        requesterId: userProfileId,
+        ideaId,
+        status: CollaborationRequestStatus.APPROVED,
+      }
+    });
+    if (approvedRequest) {
+      throw new CollaborationRequestAlreadyApproved();
+    }
+
+    console.log('bbb');
+
     const idea = await this.ideaRepository.findOne({
       where: { id: ideaId },
+      relations: ['project', 'project.members'],
     });
+
     if (!idea) throw new IdeaNotFound();
 
     if (idea.authorId === userProfileId) {
       throw new YouCannotRequestCollaborationForYourOwnIdea();
     }
+
+    console.log('ccc');
+
+    if (idea.project && idea.project.members?.some(member => member.id === userProfileId)) {
+      throw new UserAlreadyMemberOfTheProject();
+    }
+
+    console.log('ddd');
 
     const savedRequest = await safeSave(this.collaborationRequestRepository, {
       ideaId,

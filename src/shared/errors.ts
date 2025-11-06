@@ -109,6 +109,18 @@ export class PendingCollaborationRequestAlreadyExists extends ConflictException 
   }
 }
 
+export class CollaborationRequestAlreadyApproved extends BadRequestException {
+  constructor() {
+    super('COLLABORATION_REQUEST_ALREADY_APPROVED');
+  }
+}
+
+export class UserAlreadyMemberOfTheProject extends BadRequestException {
+  constructor() {
+    super('USER_ALREADY_MEMBER_OF_THE_PROJECT');
+  }
+}
+
 export class YouCannotRequestCollaborationForYourOwnIdea extends BadRequestException {
   constructor() {
     super('YOU_CANNOT_REQUEST_COLLABORATION_FOR_YOUR_OWN_IDEA');
