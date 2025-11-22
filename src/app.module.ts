@@ -43,7 +43,9 @@ import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/updat
 import { ToggleLikeController } from './features/feed/toggle-like/v1/toggle-like.controller';
 import { GetHealthStatusController } from './features/get-health-status/v1/get-health-status.controller';
 import { GetAllNotificationsController } from './features/notifications/get-all-notifications/v1/get-all-notifications.controller';
+import { GetUnreadCountController } from './features/notifications/get-unread-count/v1/get-unread-count.controller';
 import { ReadNotificationsController } from './features/notifications/read/v1/read.controller';
+import { StreamNotificationsController } from './features/notifications/stream-notification/v1/stream-notification.controller';
 import { DeleteProjectController } from './features/project/delete-project/v1/delete-project.controller';
 import { GetAllProjectsController } from './features/project/get-all-projects/v1/get-all-projects.controller';
 import { GetProjectController } from './features/project/get-project/v1/get-project.controller';
@@ -180,7 +182,9 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
     DeleteProjectController,
     RemoveMemberController,
     GetAllNotificationsController,
+    GetUnreadCountController,
     ReadNotificationsController,
+    StreamNotificationsController,
   ],
 })
 export class AppModule {}

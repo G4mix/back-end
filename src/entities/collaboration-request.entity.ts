@@ -74,6 +74,8 @@ export class CollaborationRequest {
     collaborationRequest.requesterName = !isRequester
       ? this.requester.displayName
       : null;
+    collaborationRequest.ideaId = this.ideaId;
+    collaborationRequest.requesterId = this.requesterId;
     return collaborationRequest;
   }
 }
@@ -84,4 +86,6 @@ export class CollaborationRequestDto {
   status: CollaborationRequestStatus;
   ideaTitle: string;
   requesterName: string | null;
+  ideaId: string;
+  requesterId: string;
 }
