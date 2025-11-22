@@ -34,7 +34,7 @@ export class GetChatController {
   ): Promise<ChatDto> {
     const chat = await this.chatRepository.findOne({
       where: { id: chatId },
-      relations: ['idea', 'members'],
+      relations: ['idea', 'members', 'project'],
     });
 
     if (!chat) throw new ChatNotFound();

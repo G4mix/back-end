@@ -207,7 +207,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private async getChat(chatId: string): Promise<Chat | null> {
     return await this.chatRepository.findOne({
       where: { id: chatId },
-      relations: ['members'],
+      relations: ['members', 'project'],
     });
   }
   private verifyChatAccess(chat: Chat, userProfileId: string): boolean {

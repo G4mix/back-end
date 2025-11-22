@@ -76,6 +76,15 @@ export class StartChatController {
     existingRequest.chatId = chat.id;
     await safeSave(this.collaborationRequestRepository, existingRequest);
 
-    return chat.toDto(userProfileId);
+    const chatWithRelations = await this.chatRepository.findOne({
+      where: { id: chat.id },
+      relations: ['members', 'project'],
+    });
+
+    if (!chatWithRelations) {
+      return chat.toDto(userProfileId);
+    }
+
+    return chatWithRelations.toDto(userProfileId);
   }
 }

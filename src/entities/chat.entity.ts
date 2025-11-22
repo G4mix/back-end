@@ -74,8 +74,8 @@ export class Chat {
     const otherMember = this.members?.find(
       (member) => member.id !== currentUserId,
     );
-    const title = this.idea?.title ?? otherMember?.displayName ?? 'Chat';
-    const image = this.idea?.images[0] ?? otherMember?.icon ?? null;
+    const title = this.project?.title ?? otherMember?.displayName ?? 'Chat';
+    const image = this.project?.icon ?? otherMember?.icon ?? null;
 
     return {
       id: this.id,

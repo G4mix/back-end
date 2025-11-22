@@ -35,6 +35,7 @@ export class GetAllChatsController {
       .createQueryBuilder('chat')
       .leftJoinAndSelect('chat.idea', 'idea')
       .leftJoinAndSelect('chat.members', 'members')
+      .leftJoinAndSelect('chat.project', 'project')
       .where('chat.ownerId = :currentUserId', {
         currentUserId: req.user.userProfileId,
       })

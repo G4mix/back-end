@@ -37,7 +37,7 @@ export class SendMessageController {
   ): Promise<SendMessageOutput> {
     const chat = await this.chatRepository.findOne({
       where: { id: chatId },
-      relations: ['members'],
+      relations: ['members', 'project'],
     });
 
     if (!chat) throw new ChatNotFound();
