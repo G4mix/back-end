@@ -15,11 +15,9 @@ import {
 } from 'src/entities/collaboration-request.entity';
 import { Idea } from 'src/entities/idea.entity';
 import {
-  Notification,
   NotificationType,
   RelatedEntityType,
 } from 'src/entities/notification.entity';
-import { Profile } from 'src/entities/profile.entity';
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import {
@@ -27,6 +25,7 @@ import {
   PendingCollaborationRequestAlreadyExists,
   YouCannotRequestCollaborationForYourOwnIdea,
 } from 'src/shared/errors';
+import { NotificationGateway } from 'src/shared/gateways/notification.gateway';
 import { safeSave } from 'src/shared/utils/safe-save.util';
 import { Repository } from 'typeorm';
 import { CollaborationRequestInput } from './collaboration-request.dto';
@@ -38,10 +37,7 @@ export class CollaborationRequestController {
     private readonly collaborationRequestRepository: Repository<CollaborationRequest>,
     @InjectRepository(Idea)
     private readonly ideaRepository: Repository<Idea>,
-    @InjectRepository(Notification)
-    private readonly notificationRepository: Repository<Notification>,
-    @InjectRepository(Profile)
-    private readonly profileRepository: Repository<Profile>,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -79,16 +75,15 @@ export class CollaborationRequestController {
       requesterId: userProfileId,
     });
 
-    await safeSave(this.notificationRepository, {
-      userProfileId: idea.authorId,
-      type: NotificationType.INVITE,
-      title: 'NEW_COLLABORATION_REQUEST',
-      message: 'MESSAGE_NEW_COLLABORATION_REQUEST',
-      readAt: null,
-      actorProfileId: userProfileId,
-      relatedEntityId: savedRequest.id,
-      relatedEntityType: RelatedEntityType.COLLABORATION_REQUEST,
-    });
+    await this.notificationGateway.createAndSendNotification(
+      idea.authorId,
+      NotificationType.INVITE,
+      'NEW_COLLABORATION_REQUEST',
+      'MESSAGE_NEW_COLLABORATION_REQUEST',
+      userProfileId,
+      savedRequest.id,
+      RelatedEntityType.COLLABORATION_REQUEST,
+    );
 
     return savedRequest;
   }

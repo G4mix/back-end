@@ -16,7 +16,6 @@ import {
   CollaborationRequestStatus,
 } from 'src/entities/collaboration-request.entity';
 import {
-  Notification,
   NotificationType,
   RelatedEntityType,
 } from 'src/entities/notification.entity';
@@ -29,6 +28,7 @@ import {
   CollaborationRequestNotFound,
   UserNotAuthorized,
 } from 'src/shared/errors';
+import { NotificationGateway } from 'src/shared/gateways/notification.gateway';
 import { safeSave } from 'src/shared/utils/safe-save.util';
 import { Repository } from 'typeorm';
 import {
@@ -45,8 +45,7 @@ export class CollaborationApprovalController {
     private readonly chatRepository: Repository<Chat>,
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
-    @InjectRepository(Notification)
-    private readonly notificationRepository: Repository<Notification>,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -102,16 +101,15 @@ export class CollaborationApprovalController {
       ? 'MESSAGE_REQUEST_COLLABORATION_APPROVED'
       : 'MESSAGE_REQUEST_COLLABORATION_REJECTED';
 
-    await safeSave(this.notificationRepository, {
-      userProfileId: collaborationRequest.requesterId,
-      type: NotificationType.INVITE,
-      title: titleCode,
-      message: messageCode,
-      readAt: null,
-      actorProfileId: userProfileId,
-      relatedEntityId: collaborationRequest.id,
-      relatedEntityType: RelatedEntityType.COLLABORATION_REQUEST,
-    });
+    await this.notificationGateway.createAndSendNotification(
+      collaborationRequest.requesterId,
+      NotificationType.INVITE,
+      titleCode,
+      messageCode,
+      userProfileId,
+      collaborationRequest.id,
+      RelatedEntityType.COLLABORATION_REQUEST,
+    );
 
     if (!isApproved) return;
 

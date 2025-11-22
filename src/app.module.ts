@@ -57,6 +57,7 @@ import { UpdateUserController } from './features/user-management/update-user/v1/
 import { JwtAuthGuard } from './jwt/auth.guard';
 import { JwtStrategy } from './jwt/jwt.strategy';
 import { ChatGateway } from './shared/gateways/chat.gateway';
+import { NotificationGateway } from './shared/gateways/notification.gateway';
 import { S3Gateway, S3_CLIENT } from './shared/gateways/s3.gateway';
 import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
 
@@ -143,6 +144,7 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
     SESGateway,
     S3Gateway,
     ChatGateway,
+    NotificationGateway,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
   controllers: [
