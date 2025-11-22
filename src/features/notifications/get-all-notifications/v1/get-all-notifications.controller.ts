@@ -9,7 +9,11 @@ import {
   Version,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Notification } from 'src/entities/notification.entity';
+import {
+  Notification,
+  RelatedEntityType,
+} from 'src/entities/notification.entity';
+import { CollaborationRequest } from 'src/entities/collaboration-request.entity';
 import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import { Repository } from 'typeorm';
@@ -23,6 +27,8 @@ export class GetAllNotificationsController {
   constructor(
     @InjectRepository(Notification)
     private readonly notificationRepository: Repository<Notification>,
+    @InjectRepository(CollaborationRequest)
+    private readonly collaborationRequestRepository: Repository<CollaborationRequest>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -63,12 +69,39 @@ export class GetAllNotificationsController {
     const pages = Math.ceil(total / quantity);
     const nextPage = page + 1;
 
+    const notificationsWithExtraData = await Promise.all(
+      notifications.map(async (notification) => {
+        let ideaTitle: string | undefined;
+        let ideaId: string | undefined;
+        let requesterId: string | undefined;
+
+        if (
+          notification.relatedEntityType ===
+            RelatedEntityType.COLLABORATION_REQUEST &&
+          notification.relatedEntityId
+        ) {
+          const collaborationRequest =
+            await this.collaborationRequestRepository.findOne({
+              where: { id: notification.relatedEntityId },
+              relations: ['idea'],
+            });
+          if (collaborationRequest) {
+            ideaTitle = collaborationRequest.idea.title;
+            ideaId = collaborationRequest.ideaId;
+            requesterId = collaborationRequest.requesterId;
+          }
+        }
+
+        return notification.toDto(ideaTitle, ideaId, requesterId);
+      }),
+    );
+
     return {
       total,
       pages,
       page,
       nextPage: nextPage >= pages ? null : nextPage,
-      data: notifications.map((notification) => notification.toDto()),
+      data: notificationsWithExtraData,
     };
   }
 }

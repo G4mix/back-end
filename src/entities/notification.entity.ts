@@ -71,7 +71,11 @@ export class Notification {
   @CreateDateColumn()
   createdAt: Date;
 
-  toDto(): NotificationDto {
+  toDto(
+    ideaTitle?: string,
+    ideaId?: string,
+    requesterId?: string,
+  ): NotificationDto {
     const dto = new NotificationDto();
     dto.id = this.id;
     dto.type = this.type;
@@ -84,6 +88,9 @@ export class Notification {
     dto.actorProfile = this.actorProfile ? this.actorProfile.toDto() : null;
     dto.relatedEntityId = this.relatedEntityId;
     dto.relatedEntityType = this.relatedEntityType;
+    if (ideaTitle) dto.ideaTitle = ideaTitle;
+    if (ideaId) dto.ideaId = ideaId;
+    if (requesterId) dto.requesterId = requesterId;
     return dto;
   }
 }
@@ -116,4 +123,7 @@ export class NotificationDto {
   } | null;
   relatedEntityId: string | null;
   relatedEntityType: RelatedEntityType | null;
+  ideaId?: string;
+  ideaTitle?: string;
+  requesterId?: string;
 }

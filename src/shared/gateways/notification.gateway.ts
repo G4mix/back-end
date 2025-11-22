@@ -9,6 +9,7 @@ import {
   RelatedEntityType,
 } from 'src/entities/notification.entity';
 import { User } from 'src/entities/user.entity';
+import { CollaborationRequest } from 'src/entities/collaboration-request.entity';
 import { Claims } from 'src/jwt/jwt.strategy';
 import { Repository } from 'typeorm';
 
@@ -33,6 +34,8 @@ export class NotificationGateway implements OnModuleDestroy {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Notification)
     private readonly notificationRepository: Repository<Notification>,
+    @InjectRepository(CollaborationRequest)
+    private readonly collaborationRequestRepository: Repository<CollaborationRequest>,
     private readonly jwtService: JwtService,
   ) {
     this.startHeartbeat();
@@ -204,15 +207,38 @@ export class NotificationGateway implements OnModuleDestroy {
       },
     );
 
+    let ideaTitle: string | undefined;
+    let ideaId: string | undefined;
+    let requesterId: string | undefined;
+
+    if (
+      relatedEntityType === RelatedEntityType.COLLABORATION_REQUEST &&
+      relatedEntityId
+    ) {
+      const collaborationRequest =
+        await this.collaborationRequestRepository.findOne({
+          where: { id: relatedEntityId },
+          relations: ['idea'],
+        });
+      if (collaborationRequest) {
+        ideaTitle = collaborationRequest.idea.title;
+        ideaId = collaborationRequest.ideaId;
+        requesterId = collaborationRequest.requesterId;
+      }
+    }
+
     if (notificationWithRelations) {
       this.sendNotificationToUser(
         userProfileId,
-        notificationWithRelations.toDto(),
+        notificationWithRelations.toDto(ideaTitle, ideaId, requesterId),
       );
       return notificationWithRelations;
     }
 
-    this.sendNotificationToUser(userProfileId, notification.toDto());
+    this.sendNotificationToUser(
+      userProfileId,
+      notification.toDto(ideaTitle, ideaId, requesterId),
+    );
     return notification;
   }
 
