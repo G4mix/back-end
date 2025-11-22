@@ -42,6 +42,7 @@ import { RecordViewController } from './features/feed/ideas/record-view/v1/recor
 import { UpdateIdeaController } from './features/feed/ideas/update-idea/v1/update-idea.controller';
 import { ToggleLikeController } from './features/feed/toggle-like/v1/toggle-like.controller';
 import { GetHealthStatusController } from './features/get-health-status/v1/get-health-status.controller';
+import { DeleteAllNotificationsController } from './features/notifications/delete-all/v1/delete-all-notifications.controller';
 import { GetAllNotificationsController } from './features/notifications/get-all-notifications/v1/get-all-notifications.controller';
 import { GetUnreadCountController } from './features/notifications/get-unread-count/v1/get-unread-count.controller';
 import { ReadNotificationsController } from './features/notifications/read/v1/read.controller';
@@ -184,6 +185,7 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
     GetAllNotificationsController,
     GetUnreadCountController,
     ReadNotificationsController,
+    DeleteAllNotificationsController,
     StreamNotificationsController,
   ],
 })
