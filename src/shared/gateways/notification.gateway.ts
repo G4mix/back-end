@@ -67,6 +67,10 @@ export class NotificationGateway implements OnModuleDestroy {
       this.userConnections.get(userId)!.add(connection);
 
       this.logger.log(`User ${userId} connected to SSE notifications`);
+      this.logger.log(
+        `Total connections for user ${userId}: ${this.userConnections.get(userId)!.size}`,
+      );
+      this.logger.log(`Total users connected: ${this.userConnections.size}`);
 
       this.sendEvent(response, 'connected', { userId });
 
@@ -142,22 +146,46 @@ export class NotificationGateway implements OnModuleDestroy {
     userId: string,
     notification: NotificationDto,
   ): void {
+    this.logger.log(
+      `Attempting to send notification ${notification.id} to user ${userId}`,
+    );
+    this.logger.log(
+      `Active connections: ${Array.from(this.userConnections.keys()).join(', ')}`,
+    );
+    this.logger.log(`Total users connected: ${this.userConnections.size}`);
+
     const connections = this.userConnections.get(userId);
     if (!connections || connections.size === 0) {
+      this.logger.warn(
+        `No connections found for user ${userId}. Notification ${notification.id} not sent.`,
+      );
+      this.logger.log(
+        `Available user IDs: ${Array.from(this.userConnections.keys()).join(', ')}`,
+      );
       return;
     }
 
+    this.logger.log(
+      `Found ${connections.size} connection(s) for user ${userId}`,
+    );
+
     const eventData = JSON.stringify({ notification });
     const sseMessage = `event: ${NotificationEvents.NEW_NOTIFICATION}\ndata: ${eventData}\n\n`;
+
+    this.logger.log(`SSE message: ${sseMessage.substring(0, 200)}...`);
 
     const deadConnections: SseConnection[] = [];
 
     for (const connection of connections) {
       try {
         connection.response.write(sseMessage);
+        this.logger.log(
+          `Successfully wrote notification ${notification.id} to connection for user ${userId}`,
+        );
       } catch (_error) {
         this.logger.warn(
           `Failed to send notification to user ${userId}, connection may be closed`,
+          _error,
         );
         deadConnections.push(connection);
       }
@@ -227,19 +255,20 @@ export class NotificationGateway implements OnModuleDestroy {
       }
     }
 
-    if (notificationWithRelations) {
-      this.sendNotificationToUser(
-        userProfileId,
-        notificationWithRelations.toDto(ideaTitle, ideaId, requesterId),
-      );
-      return notificationWithRelations;
-    }
+    const notificationDto = notificationWithRelations
+      ? notificationWithRelations.toDto(ideaTitle, ideaId, requesterId)
+      : notification.toDto(ideaTitle, ideaId, requesterId);
 
-    this.sendNotificationToUser(
-      userProfileId,
-      notification.toDto(ideaTitle, ideaId, requesterId),
+    this.logger.log(
+      `Sending notification ${notificationDto.id} to userProfileId: ${userProfileId}`,
     );
-    return notification;
+    this.logger.log(
+      `Is user connected? ${this.isUserConnected(userProfileId)}`,
+    );
+
+    this.sendNotificationToUser(userProfileId, notificationDto);
+
+    return notificationWithRelations || notification;
   }
 
   private startHeartbeat(): void {
