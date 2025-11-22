@@ -83,6 +83,9 @@ export class Chat {
       image,
       messages,
       createdAt: this.createdAt,
+      ownerId: this.ownerId,
+      collaborationRequestId: this.collaborationRequestId,
+      collaborationRequestStatus: this.collaborationRequest?.status,
     };
   }
 }
@@ -93,4 +96,7 @@ export class ChatDto {
   image: string | null;
   messages: { senderId: string; content: string; timestamp: Date }[];
   createdAt: Date;
+  ownerId: string | null;
+  collaborationRequestId: string | null;
+  collaborationRequestStatus?: string;
 }
