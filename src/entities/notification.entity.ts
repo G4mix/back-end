@@ -75,6 +75,7 @@ export class Notification {
     ideaTitle?: string,
     ideaId?: string,
     requesterId?: string,
+    collaborationRequestStatus?: string,
   ): NotificationDto {
     const dto = new NotificationDto();
     dto.id = this.id;
@@ -91,6 +92,8 @@ export class Notification {
     if (ideaTitle) dto.ideaTitle = ideaTitle;
     if (ideaId) dto.ideaId = ideaId;
     if (requesterId) dto.requesterId = requesterId;
+    if (collaborationRequestStatus)
+      dto.collaborationRequestStatus = collaborationRequestStatus;
     return dto;
   }
 }
@@ -126,4 +129,5 @@ export class NotificationDto {
   ideaId?: string;
   ideaTitle?: string;
   requesterId?: string;
+  collaborationRequestStatus?: string;
 }

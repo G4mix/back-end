@@ -238,6 +238,7 @@ export class NotificationGateway implements OnModuleDestroy {
     let ideaTitle: string | undefined;
     let ideaId: string | undefined;
     let requesterId: string | undefined;
+    let collaborationRequestStatus: string | undefined;
 
     if (
       relatedEntityType === RelatedEntityType.COLLABORATION_REQUEST &&
@@ -252,12 +253,23 @@ export class NotificationGateway implements OnModuleDestroy {
         ideaTitle = collaborationRequest.idea.title;
         ideaId = collaborationRequest.ideaId;
         requesterId = collaborationRequest.requesterId;
+        collaborationRequestStatus = collaborationRequest.status;
       }
     }
 
     const notificationDto = notificationWithRelations
-      ? notificationWithRelations.toDto(ideaTitle, ideaId, requesterId)
-      : notification.toDto(ideaTitle, ideaId, requesterId);
+      ? notificationWithRelations.toDto(
+          ideaTitle,
+          ideaId,
+          requesterId,
+          collaborationRequestStatus,
+        )
+      : notification.toDto(
+          ideaTitle,
+          ideaId,
+          requesterId,
+          collaborationRequestStatus,
+        );
 
     this.logger.log(
       `Sending notification ${notificationDto.id} to userProfileId: ${userProfileId}`,
