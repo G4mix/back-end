@@ -23,9 +23,12 @@ class UpdateUserInput {
   email?: string;
 
   @IsString({ message: 'INVALID_PASSWORD' })
-  @Matches(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, {
-    message: 'INVALID_PASSWORD',
-  })
+  @Matches(
+    /^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>_\-+=~`[\]\\;/'])[^{}]{6,}$/,
+    {
+      message: 'INVALID_PASSWORD',
+    },
+  )
   @IsOptional()
   password?: string;
 }

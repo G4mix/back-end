@@ -1,21 +1,20 @@
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
-  MessageBody,
   ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { ValidationPipe } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Chat } from 'src/entities/chat.entity';
-import { JwtService } from '@nestjs/jwt';
-import { Claims } from 'src/jwt/jwt.strategy';
 import { IsString, IsUUID } from 'class-validator';
+import { Server, Socket } from 'socket.io';
+import { Chat } from 'src/entities/chat.entity';
+import { Claims } from 'src/jwt/jwt.strategy';
+import { Repository } from 'typeorm';
 import { safeSave } from '../utils/safe-save.util';
 
 interface AuthenticatedSocket extends Socket {
