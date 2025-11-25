@@ -1,7 +1,7 @@
-import request from 'supertest';
 import { compareSync } from 'bcrypt';
-import { SignupOutput } from './signup.dto';
+import request from 'supertest';
 import { createTestUser } from 'test/test-helpers';
+import { SignupOutput } from './signup.dto';
 
 interface ErrorResponse {
   message: string;
