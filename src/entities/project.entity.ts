@@ -96,12 +96,12 @@ export class Project {
 
     project.isOwner = currentUserId ? this.ownerId === currentUserId : false;
     project.isFollowing = currentUserId
-      ? this.followers?.some(
+      ? (this.followers?.some(
           (follow) => follow.followerUserId === currentUserId,
-        ) ?? false
+        ) ?? false)
       : false;
     project.isMember = currentUserId
-      ? this.members?.some((member) => member.id === currentUserId) ?? false
+      ? (this.members?.some((member) => member.id === currentUserId) ?? false)
       : false;
 
     project.owner = this.owner?.toDto(currentUserId);

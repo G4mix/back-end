@@ -135,11 +135,13 @@ export class GetAllProjectsController {
       if (req.user?.userProfileId && projects.length > 0) {
         const projectIds = projects.map((p) => p.id);
         const userFollowsRaw = await this.dataSource.query(
-          `SELECT following_project_id FROM follows WHERE follower_user_id = $1::uuid AND following_project_id = ANY($2::uuid[])`,
+          `SELECT following_project_id as "followingProjectId" FROM follows WHERE follower_user_id = $1::uuid AND following_project_id = ANY($2::uuid[])`,
           [req.user.userProfileId, projectIds],
         );
-        const userFollowedProjectIds = new Set(
-          userFollowsRaw.map((row: any) => row.following_project_id),
+        const userFollowedProjectIds = new Set<string>(
+          (userFollowsRaw as Array<{ followingProjectId: string }>).map(
+            (row) => row.followingProjectId,
+          ),
         );
 
         for (const project of projects) {
@@ -158,9 +160,7 @@ export class GetAllProjectsController {
       pages,
       page,
       nextPage: nextPage >= pages ? null : nextPage,
-      data: projects.map((project) =>
-        project.toDto(req.user?.userProfileId),
-      ),
+      data: projects.map((project) => project.toDto(req.user?.userProfileId)),
     };
   }
 }
