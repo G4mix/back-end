@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail, IsString, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
 import { ProfileDto } from 'src/entities/profile.entity';
 
 export class SignupInput {
@@ -8,9 +8,12 @@ export class SignupInput {
 
   @IsNotEmpty({ message: 'PASSWORD_REQUIRED' })
   @IsString({ message: 'INVALID_PASSWORD' })
-  @Matches(/^(?=.*\d)(?=.*[A-Z])(?=.*[$*&@#! ])[^{}]{6,}$/, {
-    message: 'INVALID_PASSWORD',
-  })
+  @Matches(
+    /^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":|<>_\-+=~`[\]\\;/'])[^{}]{6,}$/,
+    {
+      message: 'INVALID_PASSWORD',
+    },
+  )
   readonly password: string;
 
   @IsNotEmpty({ message: 'USERNAME_REQUIRED' })
