@@ -9,14 +9,14 @@ import {
   Version,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { SendMessageInput, SendMessageOutput } from './send-message.dto';
 import { Chat } from 'src/entities/chat.entity';
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
-import { safeSave } from 'src/shared/utils/safe-save.util';
 import { ChatNotFound, UserNotAuthorized } from 'src/shared/errors';
 import { ChatEvents, ChatGateway } from 'src/shared/gateways/chat.gateway';
+import { safeSave } from 'src/shared/utils/safe-save.util';
+import { Repository } from 'typeorm';
+import { SendMessageInput, SendMessageOutput } from './send-message.dto';
 
 @Controller('/chat')
 export class SendMessageController {
@@ -42,14 +42,15 @@ export class SendMessageController {
 
     if (!chat) throw new ChatNotFound();
 
-    const isMember = chat.members?.some(
-      (member) => member.id === userProfileId,
-    );
+    const member = chat.members?.find((member) => member.id === userProfileId);
 
-    if (!isMember) throw new UserNotAuthorized();
+    if (!member) throw new UserNotAuthorized();
+
+    const senderName = member.displayName || 'anonymous';
 
     const newMessage = {
       senderId: userProfileId,
+      senderName,
       content,
       timestamp: new Date(),
     };

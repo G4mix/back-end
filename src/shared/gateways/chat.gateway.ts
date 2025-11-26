@@ -1,25 +1,25 @@
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
-  MessageBody,
   ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { ValidationPipe } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Chat } from 'src/entities/chat.entity';
-import { JwtService } from '@nestjs/jwt';
-import { Claims } from 'src/jwt/jwt.strategy';
 import { IsString, IsUUID } from 'class-validator';
+import { Server, Socket } from 'socket.io';
+import { Chat } from 'src/entities/chat.entity';
+import { Claims } from 'src/jwt/jwt.strategy';
+import { Repository } from 'typeorm';
 import { safeSave } from '../utils/safe-save.util';
 
 interface AuthenticatedSocket extends Socket {
   userProfileId?: string;
+  senderName?: string;
   currentChatId?: string;
 }
 
@@ -40,6 +40,7 @@ export interface NewMessageEvent {
   chatId: string;
   message: {
     senderId: string;
+    senderName: string;
     content: string;
     timestamp: Date;
   };
@@ -93,7 +94,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const hasAccess = this.verifyChatAccess(chat, userProfileId);
       if (!hasAccess) throw new Error('UNAUTHORIZED');
 
+      const member = chat.members.find((m) => m.id === userProfileId);
+
       client.userProfileId = userProfileId;
+      client.senderName = member?.displayName || '';
       client.currentChatId = data.chatId;
 
       if (!this.userSockets.has(userProfileId)) {
@@ -185,6 +189,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const newMessage = await this.sendMessage(
         chat,
         userProfileId,
+        client.senderName || '',
         data.content,
       );
 
@@ -225,10 +230,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private async sendMessage(
     chat: Chat,
     userProfileId: string,
+    senderName: string,
     content: string,
-  ): Promise<{ senderId: string; content: string; timestamp: Date }> {
+  ): Promise<{
+    senderId: string;
+    senderName: string;
+    content: string;
+    timestamp: Date;
+  }> {
     const newMessage = {
       senderId: userProfileId,
+      senderName,
       content: content,
       timestamp: new Date(),
     };

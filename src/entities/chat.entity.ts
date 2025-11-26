@@ -1,18 +1,18 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
-  JoinColumn,
-  OneToOne,
-  ManyToMany,
-  JoinTable,
+  Entity,
   Index,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Profile } from './profile.entity';
-import { Idea } from './idea.entity';
 import { CollaborationRequest } from './collaboration-request.entity';
+import { Idea } from './idea.entity';
+import { Profile } from './profile.entity';
 import { Project } from './project.entity';
 
 @Entity('chats')
@@ -21,7 +21,12 @@ export class Chat {
   id: string;
 
   @Column({ type: 'jsonb', default: [] })
-  messages: { senderId: string; content: string; timestamp: Date }[];
+  messages: {
+    senderId: string;
+    senderName?: string;
+    content: string;
+    timestamp: Date;
+  }[];
 
   @Column({ nullable: true })
   ownerId: string | null;
@@ -94,7 +99,12 @@ export class ChatDto {
   id: string;
   title: string;
   image: string | null;
-  messages: { senderId: string; content: string; timestamp: Date }[];
+  messages: {
+    senderId: string;
+    senderName?: string;
+    content: string;
+    timestamp: Date;
+  }[];
   createdAt: Date;
   ownerId: string | null;
   collaborationRequestId: string | null;

@@ -11,6 +11,7 @@ export class SendMessageInput {
 
 export class SendMessageOutput {
   senderId: string;
+  senderName: string;
   content: string;
   timestamp: Date;
 }
