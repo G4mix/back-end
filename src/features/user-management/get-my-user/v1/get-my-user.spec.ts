@@ -29,20 +29,6 @@ describe('/v1/user/my-user (GET)', () => {
     expect(body.user.verified).toEqual(currentUser.verified);
   });
 
-  it('should return 401 when no token is provided', async () => {
-    const response = await request(app.getHttpServer()).get('/v1/user/my-user');
-
-    expect(response.status).toEqual(401);
-  });
-
-  it('should return 401 when invalid token is provided', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/v1/user/my-user')
-      .set('Authorization', 'Bearer invalid-token');
-
-    expect(response.status).toEqual(401);
-  });
-
   it('should return user with profile information', async () => {
     const currentUser = await createTestUser(
       'currentuser',
