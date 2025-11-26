@@ -40,7 +40,7 @@ export class GetAllIdeasController {
 
     if (authorId) {
       qb.andWhere('idea.authorId = :authorId', { authorId });
-    } else if (!authorId && req.user?.userProfileId) {
+    } else if (!authorId && req.user?.userProfileId && !projectId) {
       qb.andWhere('idea.authorId != :userProfileId', {
         userProfileId: req.user.userProfileId,
       });
