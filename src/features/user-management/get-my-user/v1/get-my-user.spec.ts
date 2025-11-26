@@ -5,10 +5,6 @@ import request from 'supertest';
 
 import { ProfileDto } from 'src/entities/profile.entity';
 
-interface ErrorResponse {
-  message: string;
-}
-
 describe('/v1/user/my-user (GET)', () => {
   it('should return 200 and current user data when authenticated', async () => {
     const currentUser = await createTestUser(
