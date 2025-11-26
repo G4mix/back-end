@@ -36,7 +36,15 @@ export class GetProjectController {
   ): Promise<ProjectDto> {
     const project = await this.projectRepository.findOne({
       where: { id: projectId },
-      relations: ['owner', 'owner.user', 'posts'],
+      relations: [
+        'owner',
+        'owner.user',
+        'posts',
+        'members',
+        'members.user',
+        'followers',
+        'followers.followerUser',
+      ],
     });
 
     if (!project) throw new ProjectNotFound();
@@ -91,6 +99,19 @@ export class GetProjectController {
       return follow;
     });
 
-    return project.toDto();
+    if (req.user?.userProfileId) {
+      const userFollow = await this.dataSource.query(
+        `SELECT 1 FROM follows WHERE follower_user_id = $1::uuid AND following_project_id = $2::uuid LIMIT 1`,
+        [req.user.userProfileId, projectId],
+      );
+      if (userFollow.length > 0) {
+        const userFollowEntity = new Follow();
+        userFollowEntity.followerUserId = req.user.userProfileId;
+        userFollowEntity.followingProjectId = projectId;
+        project.followers = [userFollowEntity, ...project.followers];
+      }
+    }
+
+    return project.toDto(req.user?.userProfileId);
   }
 }

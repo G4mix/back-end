@@ -14,7 +14,7 @@ import {
 import { Chat } from './chat.entity';
 import { Follow } from './follow.entity';
 import { Idea } from './idea.entity';
-import { Profile } from './profile.entity';
+import { Profile, ProfileDto } from './profile.entity';
 
 @Entity('project')
 export class Project {
@@ -74,7 +74,7 @@ export class Project {
   })
   followers: Follow[];
 
-  toDto(): ProjectDto {
+  toDto(currentUserId?: string): ProjectDto {
     const project = new ProjectDto();
     project.id = this.id;
     project.title = this.title;
@@ -94,6 +94,26 @@ export class Project {
           icon: follow.followerUser.icon,
         })) ?? [];
 
+    project.isOwner = currentUserId ? this.ownerId === currentUserId : false;
+    project.isFollowing = currentUserId
+      ? this.followers?.some(
+          (follow) => follow.followerUserId === currentUserId,
+        ) ?? false
+      : false;
+    project.isMember = currentUserId
+      ? this.members?.some((member) => member.id === currentUserId) ?? false
+      : false;
+
+    project.owner = this.owner?.toDto(currentUserId);
+
+    if (project.isOwner && this.members) {
+      project.members = this.members.map((member) =>
+        member.toDto(currentUserId),
+      );
+    } else {
+      project.members = null;
+    }
+
     return project;
   }
 }
@@ -109,4 +129,9 @@ export class ProjectDto {
   followersCount: number;
   ideasCount: number;
   topFollowers: Array<{ name: string; icon: string | null }>;
+  isFollowing: boolean;
+  isOwner: boolean;
+  isMember: boolean;
+  owner?: ProfileDto;
+  members: ProfileDto[] | null;
 }

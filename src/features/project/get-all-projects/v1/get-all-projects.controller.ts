@@ -40,7 +40,10 @@ export class GetAllProjectsController {
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.owner', 'owner')
       .leftJoinAndSelect('owner.user', 'user')
-      .leftJoinAndSelect('project.posts', 'posts');
+      .leftJoinAndSelect('project.posts', 'posts')
+      .leftJoinAndSelect('project.members', 'members')
+      .leftJoinAndSelect('project.followers', 'followers')
+      .leftJoinAndSelect('followers.followerUser', 'followerUser');
 
     if (search && search.trim() !== '') {
       qb.andWhere(
@@ -128,6 +131,26 @@ export class GetAllProjectsController {
           return follow;
         }) as any;
       }
+
+      if (req.user?.userProfileId && projects.length > 0) {
+        const projectIds = projects.map((p) => p.id);
+        const userFollowsRaw = await this.dataSource.query(
+          `SELECT following_project_id FROM follows WHERE follower_user_id = $1::uuid AND following_project_id = ANY($2::uuid[])`,
+          [req.user.userProfileId, projectIds],
+        );
+        const userFollowedProjectIds = new Set(
+          userFollowsRaw.map((row: any) => row.following_project_id),
+        );
+
+        for (const project of projects) {
+          if (userFollowedProjectIds.has(project.id)) {
+            const userFollowEntity = new Follow();
+            userFollowEntity.followerUserId = req.user.userProfileId;
+            userFollowEntity.followingProjectId = project.id;
+            project.followers = [userFollowEntity, ...project.followers];
+          }
+        }
+      }
     }
 
     return {
@@ -135,7 +158,9 @@ export class GetAllProjectsController {
       pages,
       page,
       nextPage: nextPage >= pages ? null : nextPage,
-      data: projects.map((project) => project.toDto()),
+      data: projects.map((project) =>
+        project.toDto(req.user?.userProfileId),
+      ),
     };
   }
 }
