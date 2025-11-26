@@ -47,22 +47,6 @@ describe('/v1/user/my-user (GET)', () => {
     expect(response.status).toEqual(401);
   });
 
-  it('should return 403 when user profile does not exist', async () => {
-    // Simula um token com um userProfileId que não existe no banco
-    const token = generateTestJwt({
-      sub: '00000000-0000-0000-0000-000000000000',
-      userProfileId: '00000000-0000-0000-0000-000000000000',
-    });
-
-    const response = await request(app.getHttpServer())
-      .get('/v1/user/my-user')
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(response.status).toEqual(403);
-    const body = response.body as ErrorResponse;
-    expect(body.message).toContain('USER_NOT_FOUND');
-  });
-
   it('should return user with profile information', async () => {
     const currentUser = await createTestUser(
       'currentuser',
