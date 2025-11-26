@@ -41,17 +41,17 @@
     "socket.io": "^4.8.1",
     "typeorm-naming-strategies": "^4.1.0",
     "@nestjs/cli": "^11.0.10",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^22.10.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/schematics": "^11.0.7",
     "@nestjs/testing": "^11.1.6",
-    "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
-    "@types/multer": "^2.0.0",
-    "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
