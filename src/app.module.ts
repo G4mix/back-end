@@ -54,6 +54,7 @@ import { RemoveMemberController } from './features/project/remove-member/v1/remo
 import { UpdateProjectController } from './features/project/update-project/v1/update-project.controller';
 import { DeleteUserController } from './features/user-management/delete-user/v1/delete-user.controller';
 import { GetAllUsersController } from './features/user-management/get-all-users/v1/get-all-users.controller';
+import { GetMyUserController } from './features/user-management/get-my-user/v1/get-my-user.controller';
 import { GetUserByIdController } from './features/user-management/get-user-by-id/v1/get-user-by-id.controller';
 import { ToggleFollowController } from './features/user-management/toggle-follow/v1/toggle-follow.controller';
 import { UpdateUserController } from './features/user-management/update-user/v1/update-user.controller';
@@ -156,6 +157,7 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
     SignupController,
     RefreshTokenController,
     GetAllUsersController,
+    GetMyUserController,
     GetUserByIdController,
     DeleteUserController,
     ToggleFollowController,
