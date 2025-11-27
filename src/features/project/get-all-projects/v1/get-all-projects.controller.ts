@@ -144,12 +144,31 @@ export class GetAllProjectsController {
           ),
         );
 
+        const userProfile = await this.dataSource.query(
+          `SELECT display_name, icon FROM profiles WHERE id = $1::uuid LIMIT 1`,
+          [req.user.userProfileId],
+        );
+
+        const userDisplayName =
+          userProfile.length > 0 ? userProfile[0].display_name : null;
+
         for (const project of projects) {
           if (userFollowedProjectIds.has(project.id)) {
-            const userFollowEntity = new Follow();
-            userFollowEntity.followerUserId = req.user.userProfileId;
-            userFollowEntity.followingProjectId = project.id;
-            project.followers = [userFollowEntity, ...project.followers];
+            const topFollowers = topFollowersByProject.get(project.id) ?? [];
+            const isUserInTopFollowers = topFollowers.some(
+              (follower) => follower.name === userDisplayName,
+            );
+
+            if (!isUserInTopFollowers) {
+              const userFollowEntity = new Follow();
+              userFollowEntity.followerUserId = req.user.userProfileId;
+              userFollowEntity.followingProjectId = project.id;
+              userFollowEntity.followerUser = {
+                displayName: userDisplayName,
+                icon: userProfile[0]?.icon ?? null,
+              } as Profile;
+              project.followers = [userFollowEntity, ...project.followers];
+            }
           }
         }
       }

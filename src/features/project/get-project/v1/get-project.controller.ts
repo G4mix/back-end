@@ -105,10 +105,31 @@ export class GetProjectController {
         [req.user.userProfileId, projectId],
       );
       if (userFollow.length > 0) {
-        const userFollowEntity = new Follow();
-        userFollowEntity.followerUserId = req.user.userProfileId;
-        userFollowEntity.followingProjectId = projectId;
-        project.followers = [userFollowEntity, ...project.followers];
+        const userProfile = await this.dataSource.query(
+          `SELECT display_name, icon FROM profiles WHERE id = $1::uuid LIMIT 1`,
+          [req.user.userProfileId],
+        );
+
+        const userDisplayName =
+          userProfile.length > 0 ? userProfile[0].display_name : null;
+
+        const isUserInTopFollowers = (
+          topFollowersRaw as Array<{
+            displayName: string;
+            icon: string | null;
+          }>
+        ).some((follower) => follower.displayName === userDisplayName);
+
+        if (!isUserInTopFollowers) {
+          const userFollowEntity = new Follow();
+          userFollowEntity.followerUserId = req.user.userProfileId;
+          userFollowEntity.followingProjectId = projectId;
+          userFollowEntity.followerUser = {
+            displayName: userDisplayName,
+            icon: userProfile[0]?.icon ?? null,
+          } as Profile;
+          project.followers = [userFollowEntity, ...project.followers];
+        }
       }
     }
 
