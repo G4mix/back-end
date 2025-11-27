@@ -87,11 +87,13 @@ export class GetProjectController {
 
     project.followers = (
       topFollowersRaw as Array<{
+        followerUserId: string;
         displayName: string;
         icon: string | null;
       }>
     ).map((row) => {
       const follow = new Follow();
+      follow.followerUserId = row.followerUserId;
       follow.followerUser = {
         displayName: row.displayName,
         icon: row.icon,
@@ -99,12 +101,16 @@ export class GetProjectController {
       return follow;
     });
 
+    let isUserFollowing = false;
+
     if (req.user?.userProfileId) {
       const userFollow = await this.dataSource.query(
         `SELECT 1 FROM follows WHERE follower_user_id = $1::uuid AND following_project_id = $2::uuid LIMIT 1`,
         [req.user.userProfileId, projectId],
       );
-      if (userFollow.length > 0) {
+      isUserFollowing = userFollow.length > 0;
+
+      if (isUserFollowing) {
         const userProfile = await this.dataSource.query(
           `SELECT display_name, icon FROM profiles WHERE id = $1::uuid LIMIT 1`,
           [req.user.userProfileId],
@@ -115,10 +121,13 @@ export class GetProjectController {
 
         const isUserInTopFollowers = (
           topFollowersRaw as Array<{
+            followerUserId: string;
             displayName: string;
             icon: string | null;
           }>
-        ).some((follower) => follower.displayName === userDisplayName);
+        ).some(
+          (follower) => follower.followerUserId === req.user.userProfileId,
+        );
 
         if (!isUserInTopFollowers) {
           const userFollowEntity = new Follow();
@@ -133,6 +142,6 @@ export class GetProjectController {
       }
     }
 
-    return project.toDto(req.user?.userProfileId);
+    return project.toDto(req.user?.userProfileId, isUserFollowing);
   }
 }

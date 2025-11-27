@@ -58,6 +58,8 @@ export class GetAllProjectsController {
     const pages = Math.ceil(total / quantity);
     const nextPage = page + 1;
 
+    let userFollowedProjectIds = new Set<string>();
+
     if (projects.length > 0) {
       const projectIds = projects.map((p) => p.id);
 
@@ -102,11 +104,16 @@ export class GetAllProjectsController {
 
       const topFollowersByProject = new Map<
         string,
-        Array<{ name: string; icon: string | null }>
+        Array<{
+          name: string;
+          icon: string | null;
+          followerUserId: string;
+        }>
       >();
 
       for (const row of topFollowersRaw as Array<{
         followingProjectId: string;
+        followerUserId: string;
         displayName: string;
         icon: string | null;
       }>) {
@@ -117,6 +124,7 @@ export class GetAllProjectsController {
         topFollowersByProject.get(projectId)!.push({
           name: row.displayName,
           icon: row.icon,
+          followerUserId: row.followerUserId,
         });
       }
 
@@ -124,6 +132,7 @@ export class GetAllProjectsController {
         const topFollowers = topFollowersByProject.get(project.id) ?? [];
         project.followers = topFollowers.map((tf) => {
           const follow = new Follow();
+          follow.followerUserId = tf.followerUserId;
           follow.followerUser = {
             displayName: tf.name,
             icon: tf.icon,
@@ -138,7 +147,7 @@ export class GetAllProjectsController {
           `SELECT following_project_id as "followingProjectId" FROM follows WHERE follower_user_id = $1::uuid AND following_project_id = ANY($2::uuid[])`,
           [req.user.userProfileId, projectIds],
         );
-        const userFollowedProjectIds = new Set<string>(
+        userFollowedProjectIds = new Set<string>(
           (userFollowsRaw as Array<{ followingProjectId: string }>).map(
             (row) => row.followingProjectId,
           ),
@@ -156,7 +165,7 @@ export class GetAllProjectsController {
           if (userFollowedProjectIds.has(project.id)) {
             const topFollowers = topFollowersByProject.get(project.id) ?? [];
             const isUserInTopFollowers = topFollowers.some(
-              (follower) => follower.name === userDisplayName,
+              (follower) => follower.followerUserId === req.user.userProfileId,
             );
 
             if (!isUserInTopFollowers) {
@@ -179,7 +188,14 @@ export class GetAllProjectsController {
       pages,
       page,
       nextPage: nextPage >= pages ? null : nextPage,
-      data: projects.map((project) => project.toDto(req.user?.userProfileId)),
+      data: projects.map((project) =>
+        project.toDto(
+          req.user?.userProfileId,
+          req.user?.userProfileId
+            ? userFollowedProjectIds.has(project.id)
+            : undefined,
+        ),
+      ),
     };
   }
 }

@@ -74,7 +74,7 @@ export class Project {
   })
   followers: Follow[];
 
-  toDto(currentUserId?: string): ProjectDto {
+  toDto(currentUserId?: string, isFollowingOverride?: boolean): ProjectDto {
     const project = new ProjectDto();
     project.id = this.id;
     project.title = this.title;
@@ -95,11 +95,14 @@ export class Project {
         })) ?? [];
 
     project.isOwner = currentUserId ? this.ownerId === currentUserId : false;
-    project.isFollowing = currentUserId
-      ? (this.followers?.some(
-          (follow) => follow.followerUserId === currentUserId,
-        ) ?? false)
-      : false;
+    project.isFollowing =
+      isFollowingOverride !== undefined
+        ? isFollowingOverride
+        : currentUserId
+          ? (this.followers?.some(
+              (follow) => follow.followerUserId === currentUserId,
+            ) ?? false)
+          : false;
     project.isMember = currentUserId
       ? (this.members?.some((member) => member.id === currentUserId) ?? false)
       : false;
