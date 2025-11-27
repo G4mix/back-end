@@ -64,6 +64,8 @@ export class StartChatController {
     if (!idea) throw new IdeaNotFound();
 
     if (idea.authorId !== userProfileId) {
+      console.log('idea.authorId', idea.authorId);
+      console.log('userProfileid', userProfileId);
       throw new YouCannotStartChatForAnotherUserIdea();
     }
 

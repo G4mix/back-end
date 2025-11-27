@@ -30,7 +30,7 @@ import {
   YouCannotRequestCollaborationForYourOwnIdea,
 } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safe-save.util';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CollaborationRequestInput } from './collaboration-request.dto';
 
 @Controller('/collaboration-request')
@@ -55,32 +55,29 @@ export class CollaborationRequestController {
     @Request() { user: { userProfileId } }: RequestWithUserData,
     @Body() { message, ideaId }: CollaborationRequestInput,
   ): Promise<CollaborationRequest> {
-    const collaborationRequest =
+    const statusesToCheck = [
+      CollaborationRequestStatus.PENDING,
+      CollaborationRequestStatus.APPROVED,
+    ];
+
+    const existingRequest =
       await this.collaborationRequestRepository.findOne({
         where: {
           requesterId: userProfileId,
           ideaId,
-          status: CollaborationRequestStatus.PENDING,
+          status: In(statusesToCheck)
         },
       });
-    if (collaborationRequest) {
-      throw new PendingCollaborationRequestAlreadyExists();
-    }
-    console.log('aaa');
-
-    const approvedRequest = await this.collaborationRequestRepository.findOne({
-      where: {
-        requesterId: userProfileId,
-        ideaId,
-        status: CollaborationRequestStatus.APPROVED,
+    if (existingRequest) {
+      if (existingRequest.status === CollaborationRequestStatus.PENDING) {
+        throw new PendingCollaborationRequestAlreadyExists();
       }
-    });
-    if (approvedRequest) {
-      throw new CollaborationRequestAlreadyApproved();
+
+      if (existingRequest.status === CollaborationRequestStatus.APPROVED) {
+        throw new CollaborationRequestAlreadyApproved();
+      }
     }
-
-    console.log('bbb');
-
+    
     const idea = await this.ideaRepository.findOne({
       where: { id: ideaId },
       relations: ['project', 'project.members'],
@@ -92,13 +89,9 @@ export class CollaborationRequestController {
       throw new YouCannotRequestCollaborationForYourOwnIdea();
     }
 
-    console.log('ccc');
-
     if (idea.project && idea.project.members?.some(member => member.id === userProfileId)) {
       throw new UserAlreadyMemberOfTheProject();
     }
-
-    console.log('ddd');
 
     const savedRequest = await safeSave(this.collaborationRequestRepository, {
       ideaId,
