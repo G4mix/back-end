@@ -102,6 +102,7 @@ export class UpdateUserController {
       autobiography && { autobiography },
     );
 
+    console.log(user);
     const { email, password, username } = user;
     if (email) {
       userProfile.user.email = email;
