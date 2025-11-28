@@ -117,6 +117,9 @@ export class CollaborationApprovalController {
     if (!project) {
       project = await safeSave(this.projectRepository, {
         ownerId: userProfileId,
+        title: collaborationRequest.idea.title,
+        description: collaborationRequest.idea.content,
+        backgroundImage: collaborationRequest.idea.images[0],
         members: [
           { id: userProfileId },
           { id: collaborationRequest.requesterId },
