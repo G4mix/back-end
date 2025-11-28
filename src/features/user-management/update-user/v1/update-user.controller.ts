@@ -27,12 +27,15 @@ import { ConfigService } from '@nestjs/config';
 import { PictureUpdateFail, UserNotFound } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safe-save.util';
 import { Profile } from '../../../../entities/profile.entity';
+import { User } from '../../../../entities/user.entity';
 
 @Controller('/user')
 export class UpdateUserController {
   constructor(
     @InjectRepository(Profile)
     private readonly profileRepository: Repository<Profile>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly s3Gateway: S3Gateway,
   ) {}
@@ -103,17 +106,21 @@ export class UpdateUserController {
     );
 
     const { email, password, username } = user;
-    if (email) {
-      userProfile.user.email = email;
-      userProfile.user.verified = false;
-      // todo: send email verification
+    const hasUserChanges = email || password || username;
+
+    if (hasUserChanges) {
+      const user = userProfile.user;
+
+      Object.assign(
+        user,
+        email && { email, verified: false },
+        username && { username },
+        password && { password: hashSync(password, 10) },
+      );
+
+      await safeSave(this.userRepository, user);
     }
-    Object.assign(
-      userProfile.user,
-      username && { username },
-      password && { password: hashSync(password, 10) },
-    );
-    console.log(userProfile.user);
+
     await safeSave(this.profileRepository, userProfile);
 
     return userProfile.toDto();
