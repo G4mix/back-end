@@ -77,7 +77,10 @@ export class Idea {
   @Column({ type: 'jsonb', default: [] })
   links: string[];
 
-  @OneToMany(() => Tag, (tag) => tag.idea)
+  @OneToMany(() => Tag, (tag) => tag.idea, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   tags: Tag[];
 
   @Column({ type: 'jsonb', default: [] })
