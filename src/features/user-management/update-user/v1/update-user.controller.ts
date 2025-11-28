@@ -102,7 +102,6 @@ export class UpdateUserController {
       autobiography && { autobiography },
     );
 
-    console.log(user);
     const { email, password, username } = user;
     if (email) {
       userProfile.user.email = email;
@@ -114,6 +113,7 @@ export class UpdateUserController {
       username && { username },
       password && { password: hashSync(password, 10) },
     );
+    console.log(userProfile.user);
     await safeSave(this.profileRepository, userProfile);
 
     return userProfile.toDto();
