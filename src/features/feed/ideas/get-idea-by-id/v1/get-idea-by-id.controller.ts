@@ -39,6 +39,9 @@ export class GetIdeaByIdController {
         'comments',
         'likes',
         'views',
+        'collaborationRequests',
+        'project',
+        'project.members',
       ],
     });
     if (!idea) throw new IdeaNotFound();

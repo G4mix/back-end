@@ -36,7 +36,10 @@ export class GetAllIdeasController {
       .leftJoinAndSelect('idea.tags', 'tags')
       .leftJoinAndSelect('idea.comments', 'comments')
       .leftJoinAndSelect('idea.likes', 'likes')
-      .leftJoinAndSelect('idea.views', 'views');
+      .leftJoinAndSelect('idea.views', 'views')
+      .leftJoinAndSelect('idea.collaborationRequests', 'collaborationRequests')
+      .leftJoinAndSelect('idea.project', 'project')
+      .leftJoinAndSelect('project.members', 'projectMembers');
 
     if (authorId) {
       qb.andWhere('idea.authorId = :authorId', { authorId });

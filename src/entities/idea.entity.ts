@@ -14,7 +14,10 @@ import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { View } from './view.entity';
 import { Tag } from './tag.entity';
-import { CollaborationRequest } from './collaboration-request.entity';
+import {
+  CollaborationRequest,
+  CollaborationRequestStatus,
+} from './collaboration-request.entity';
 import { Chat } from './chat.entity';
 import { Project } from './project.entity';
 
@@ -116,6 +119,17 @@ export class Idea {
     dto.isViewed = currentUserId
       ? this.views?.some((view) => view.profileId === currentUserId)
       : false;
+    dto.hasPendingCollaborationRequest = currentUserId
+      ? (this.collaborationRequests?.some(
+          (req) =>
+            req.requesterId === currentUserId &&
+            req.status === CollaborationRequestStatus.PENDING,
+        ) ?? false)
+      : false;
+    dto.isProjectMember =
+      currentUserId && this.project?.members
+        ? this.project.members.some((member) => member.id === currentUserId)
+        : false;
     dto.createdAt = this.createdAt;
     dto.updatedAt = this.updatedAt;
     return dto;
@@ -135,6 +149,8 @@ export class IdeaDto {
   images: string[];
   isLiked: boolean;
   isViewed: boolean;
+  hasPendingCollaborationRequest: boolean;
+  isProjectMember: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
