@@ -3,7 +3,6 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
-  Inject,
   Logger,
   Patch,
   Query,
@@ -47,7 +46,7 @@ export class CollaborationApprovalController {
     private readonly chatRepository: Repository<Chat>,
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
-    @Inject(Idea)
+    @InjectRepository(Idea)
     private readonly ideaRepository: Repository<Idea>,
     private readonly notificationGateway: NotificationGateway,
   ) {}
