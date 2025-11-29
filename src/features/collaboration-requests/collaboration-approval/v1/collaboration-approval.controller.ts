@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Inject,
   Logger,
   Patch,
   Query,
@@ -35,6 +36,7 @@ import {
   CollaborationApprovalInput,
   CollaborationApprovalQueryInput,
 } from './collaboration-approval.dto';
+import { Idea } from 'src/entities/idea.entity';
 
 @Controller('/collaboration-approval')
 export class CollaborationApprovalController {
@@ -45,6 +47,8 @@ export class CollaborationApprovalController {
     private readonly chatRepository: Repository<Chat>,
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
+    @Inject(Idea)
+    private readonly ideaRepository: Repository<Idea>,
     private readonly notificationGateway: NotificationGateway,
   ) {}
   readonly logger = new Logger(this.constructor.name);
@@ -124,6 +128,10 @@ export class CollaborationApprovalController {
           { id: userProfileId },
           { id: collaborationRequest.requesterId },
         ],
+      });
+      await safeSave(this.ideaRepository, {
+        id: collaborationRequest.ideaId,
+        projectId: project.id,
       });
     } else {
       await this.projectRepository
