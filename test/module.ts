@@ -56,7 +56,7 @@ export const clearDatabase = async (app: INestApplication) => {
 
   try {
     // Disable foreign key checks temporarily
-    await dataSource.query('SET session_replication_role = replica;');
+    // await dataSource.query('SET session_replication_role = replica;');
 
     // Get all table names from the database
     const tables = await dataSource.query(`
@@ -88,7 +88,7 @@ export const clearDatabase = async (app: INestApplication) => {
     }
 
     // Re-enable foreign key checks
-    await dataSource.query('SET session_replication_role = DEFAULT;');
+    // await dataSource.query('SET session_replication_role = DEFAULT;');
   } catch (error) {
     console.warn('Error clearing database:', (error as Error).message);
     // Continue with tests even if clearing fails

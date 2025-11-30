@@ -156,3 +156,15 @@ export class YouCannotRemoveTheOwner extends BadRequestException {
     super('YOU_CANNOT_REMOVE_THE_OWNER');
   }
 }
+
+export class CollaborationRequestAlreadyApproved extends BadRequestException {
+  constructor() {
+    super('COLLABORATION_REQUEST_ALREADY_APPROVED');
+  }
+}
+
+export class UserAlreadyMemberOfTheProject extends BadRequestException {
+  constructor() {
+    super('USER_ALREADY_MEMBER_OF_THE_PROJECT');
+  }
+}

@@ -23,12 +23,14 @@ import { Profile } from 'src/entities/profile.entity';
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import {
+  CollaborationRequestAlreadyApproved,
   IdeaNotFound,
   PendingCollaborationRequestAlreadyExists,
+  UserAlreadyMemberOfTheProject,
   YouCannotRequestCollaborationForYourOwnIdea,
 } from 'src/shared/errors';
 import { safeSave } from 'src/shared/utils/safe-save.util';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CollaborationRequestInput } from './collaboration-request.dto';
 
 @Controller('/collaboration-request')
@@ -53,24 +55,44 @@ export class CollaborationRequestController {
     @Request() { user: { userProfileId } }: RequestWithUserData,
     @Body() { message, ideaId }: CollaborationRequestInput,
   ): Promise<CollaborationRequest> {
-    const collaborationRequest =
-      await this.collaborationRequestRepository.findOne({
-        where: {
-          requesterId: userProfileId,
-          ideaId,
-          status: CollaborationRequestStatus.PENDING,
-        },
-      });
-    if (collaborationRequest) {
-      throw new PendingCollaborationRequestAlreadyExists();
+    const statusesToCheck = [
+      CollaborationRequestStatus.PENDING,
+      CollaborationRequestStatus.APPROVED,
+    ];
+
+    const existingRequest = await this.collaborationRequestRepository.findOne({
+      where: {
+        requesterId: userProfileId,
+        ideaId,
+        status: In(statusesToCheck),
+      },
+    });
+    if (existingRequest) {
+      if (existingRequest.status === CollaborationRequestStatus.PENDING) {
+        throw new PendingCollaborationRequestAlreadyExists();
+      }
+
+      if (existingRequest.status === CollaborationRequestStatus.APPROVED) {
+        throw new CollaborationRequestAlreadyApproved();
+      }
     }
+
     const idea = await this.ideaRepository.findOne({
       where: { id: ideaId },
+      relations: ['project', 'project.members'],
     });
+
     if (!idea) throw new IdeaNotFound();
 
     if (idea.authorId === userProfileId) {
       throw new YouCannotRequestCollaborationForYourOwnIdea();
+    }
+
+    if (
+      idea.project &&
+      idea.project.members?.some((member) => member.id === userProfileId)
+    ) {
+      throw new UserAlreadyMemberOfTheProject();
     }
 
     const savedRequest = await safeSave(this.collaborationRequestRepository, {

@@ -1,15 +1,15 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
+  Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Profile } from './profile.entity';
-import { Idea } from './idea.entity';
 import { Chat } from './chat.entity';
+import { Idea } from './idea.entity';
+import { Profile } from './profile.entity';
 
 export enum CollaborationRequestStatus {
   PENDING = 'Pending',
@@ -72,7 +72,7 @@ export class CollaborationRequest {
     collaborationRequest.message = this.message;
     collaborationRequest.ideaTitle = this.idea.title;
     collaborationRequest.requesterName = !isRequester
-      ? this.requester.displayName
+      ? (this.requester?.displayName ?? null)
       : null;
     return collaborationRequest;
   }

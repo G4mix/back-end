@@ -16,12 +16,16 @@ import {
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from 'src/entities/comment.entity';
+import { IdeaNotFound } from 'src/shared/errors';
+import { Idea } from 'src/entities/idea.entity';
 
 @Controller('/comment')
 export class GetAllCommentsController {
   constructor(
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
+    @InjectRepository(Idea)
+    private readonly ideaRepository: Repository<Idea>,
   ) {}
   readonly logger = new Logger(this.constructor.name);
 
@@ -32,6 +36,14 @@ export class GetAllCommentsController {
     @Request() req: RequestWithUserData,
     @Query() { quantity, page, ideaId, parentCommentId }: GetAllCommentsInput,
   ): Promise<GetAllCommentsOutput> {
+    if (!ideaId) throw new IdeaNotFound();
+
+    const idea = await this.ideaRepository.findOne({
+      where: { id: ideaId },
+    });
+
+    if (!idea) throw new IdeaNotFound();
+
     const qb = this.commentRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.author', 'author')
