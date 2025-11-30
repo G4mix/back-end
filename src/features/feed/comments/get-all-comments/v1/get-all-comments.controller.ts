@@ -39,9 +39,9 @@ export class GetAllCommentsController {
     if (!ideaId) throw new IdeaNotFound();
 
     const idea = await this.ideaRepository.findOne({
-      where: { id: ideaId }
+      where: { id: ideaId },
     });
-    
+
     if (!idea) throw new IdeaNotFound();
 
     const qb = this.commentRepository

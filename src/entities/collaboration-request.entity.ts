@@ -72,7 +72,7 @@ export class CollaborationRequest {
     collaborationRequest.message = this.message;
     collaborationRequest.ideaTitle = this.idea.title;
     collaborationRequest.requesterName = !isRequester
-      ? this.requester?.displayName ?? null
+      ? (this.requester?.displayName ?? null)
       : null;
     return collaborationRequest;
   }

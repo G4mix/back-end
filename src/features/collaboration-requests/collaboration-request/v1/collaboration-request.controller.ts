@@ -60,14 +60,13 @@ export class CollaborationRequestController {
       CollaborationRequestStatus.APPROVED,
     ];
 
-    const existingRequest =
-      await this.collaborationRequestRepository.findOne({
-        where: {
-          requesterId: userProfileId,
-          ideaId,
-          status: In(statusesToCheck)
-        },
-      });
+    const existingRequest = await this.collaborationRequestRepository.findOne({
+      where: {
+        requesterId: userProfileId,
+        ideaId,
+        status: In(statusesToCheck),
+      },
+    });
     if (existingRequest) {
       if (existingRequest.status === CollaborationRequestStatus.PENDING) {
         throw new PendingCollaborationRequestAlreadyExists();
@@ -77,7 +76,7 @@ export class CollaborationRequestController {
         throw new CollaborationRequestAlreadyApproved();
       }
     }
-    
+
     const idea = await this.ideaRepository.findOne({
       where: { id: ideaId },
       relations: ['project', 'project.members'],
@@ -89,7 +88,10 @@ export class CollaborationRequestController {
       throw new YouCannotRequestCollaborationForYourOwnIdea();
     }
 
-    if (idea.project && idea.project.members?.some(member => member.id === userProfileId)) {
+    if (
+      idea.project &&
+      idea.project.members?.some((member) => member.id === userProfileId)
+    ) {
       throw new UserAlreadyMemberOfTheProject();
     }
 

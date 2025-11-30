@@ -15,7 +15,7 @@ export class GetAllCommentsInput {
   @IsOptional()
   quantity: number = 10;
 
-  @IsUUID(undefined, { message: 'INVALID_IDEA_ID'})
+  @IsUUID(undefined, { message: 'INVALID_IDEA_ID' })
   ideaId: string;
 
   @IsOptional()
