@@ -1,20 +1,21 @@
-import { INestApplication } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
-import { JwtService } from '@nestjs/jwt';
-import { clearDatabase, createTestModule, setupTestApp } from './module';
-import { User } from 'src/entities/user.entity';
-import { Profile } from 'src/entities/profile.entity';
-import { App } from 'supertest/types';
 import { S3Client } from '@aws-sdk/client-s3';
-import { S3_CLIENT } from '../src/shared/gateways/s3.gateway';
-import { SES_CLIENT } from 'src/shared/gateways/ses.gateway';
 import { SESv2Client } from '@aws-sdk/client-sesv2';
+import { INestApplication } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { TestingModule } from '@nestjs/testing';
+import { Comment } from 'src/entities/comment.entity';
 import { Follow } from 'src/entities/follow.entity';
 import { Idea } from 'src/entities/idea.entity';
 import { Like } from 'src/entities/like.entity';
+import { Profile } from 'src/entities/profile.entity';
 import { Tag } from 'src/entities/tag.entity';
+import { User } from 'src/entities/user.entity';
 import { View } from 'src/entities/view.entity';
-import { TestingModule } from '@nestjs/testing';
+import { SES_CLIENT } from 'src/shared/gateways/ses.gateway';
+import { App } from 'supertest/types';
+import { DataSource, Repository } from 'typeorm';
+import { S3_CLIENT } from '../src/shared/gateways/s3.gateway';
+import { clearDatabase, createTestModule, setupTestApp } from './module';
 
 declare global {
   var app: INestApplication<App>;
