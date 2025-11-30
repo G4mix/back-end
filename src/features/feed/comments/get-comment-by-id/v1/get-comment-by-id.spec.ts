@@ -166,10 +166,10 @@ describe('/v1/comment/:id (GET)', () => {
   });
 
   it('should return comment and correct isLiked', async () => {
-    const { user: user1, idea, token } = await setupTestUserAndIdea(
-      'testuser1',
-      'test1@example.com',
-    );
+    const {
+      idea,
+      token,
+    } = await setupTestUserAndIdea('testuser1', 'test1@example.com');
     const [user2, user3] = await setupMultipleTestUsers(2);
     const commentId = await createTestComment(
       'Comment with likes',
@@ -196,12 +196,7 @@ describe('/v1/comment/:id (GET)', () => {
       token,
     );
 
-    await createRepliesForComment(
-      parentCommentId,
-      idea.id,
-      user.profileId,
-      3,
-    );
+    await createRepliesForComment(parentCommentId, idea.id, user.profileId, 3);
 
     const response = await getCommentById(parentCommentId);
 
