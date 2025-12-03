@@ -11,22 +11,22 @@ import {
   UseInterceptors,
   Version,
 } from '@nestjs/common';
-import { Protected } from 'src/shared/decorators/protected.decorator';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
-import { UpdateIdeaInput } from './update-idea.dto';
+import { ConfigService } from '@nestjs/config';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Idea, IdeaDto } from 'src/entities/idea.entity';
+import { Tag } from 'src/entities/tag.entity';
+import { type RequestWithUserData } from 'src/jwt/jwt.strategy';
+import { Protected } from 'src/shared/decorators/protected.decorator';
+import { AtLeastOneImage, IdeaNotFound } from 'src/shared/errors';
 import {
   S3Gateway,
   fileInterceptorOptions,
 } from 'src/shared/gateways/s3.gateway';
-import { ConfigService } from '@nestjs/config';
-import { Idea, IdeaDto } from 'src/entities/idea.entity';
-import { Tag } from 'src/entities/tag.entity';
-import { AtLeastOneImage, IdeaNotFound } from 'src/shared/errors';
-import { GetIdeaByIdInput } from '../../get-idea-by-id/v1/get-idea-by-id.dto';
 import { safeSave } from 'src/shared/utils/safe-save.util';
+import { Repository } from 'typeorm';
+import { GetIdeaByIdInput } from '../../get-idea-by-id/v1/get-idea-by-id.dto';
+import { UpdateIdeaInput } from './update-idea.dto';
 
 @Controller('/idea')
 export class UpdateIdeaController {
