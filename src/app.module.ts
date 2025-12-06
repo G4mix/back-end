@@ -78,7 +78,7 @@ import { SESGateway, SES_CLIENT } from './shared/gateways/ses.gateway';
         autoLoadEntities: true,
         entities: [join(__dirname, '/entities/*.entity.{ts,js}')],
         logging: false,
-        synchronize: false,
+        synchronize: configService.get<string>('NODE_ENV') === 'development',
         namingStrategy: new SnakeNamingStrategy(),
         migrationsRun: false,
         migrations: [join(__dirname, './migrations/*.{ts,js}')],

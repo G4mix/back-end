@@ -15,6 +15,7 @@ import {
   CollaborationRequest,
   CollaborationRequestStatus,
 } from 'src/entities/collaboration-request.entity';
+import { Idea } from 'src/entities/idea.entity';
 import {
   NotificationType,
   RelatedEntityType,
@@ -23,7 +24,6 @@ import { Project } from 'src/entities/project.entity';
 import type { RequestWithUserData } from 'src/jwt/jwt.strategy';
 import { Protected } from 'src/shared/decorators/protected.decorator';
 import {
-  ChatNotFound,
   CollaborationRequestIsNotPending,
   CollaborationRequestNotFound,
   UserNotAuthorized,
@@ -35,7 +35,6 @@ import {
   CollaborationApprovalInput,
   CollaborationApprovalQueryInput,
 } from './collaboration-approval.dto';
-import { Idea } from 'src/entities/idea.entity';
 
 @Controller('/collaboration-approval')
 export class CollaborationApprovalController {
@@ -77,26 +76,65 @@ export class CollaborationApprovalController {
       throw new UserNotAuthorized();
     }
 
-    if (
-      status === CollaborationRequestStatus.APPROVED &&
-      !collaborationRequest.chatId
-    ) {
-      throw new ChatNotFound();
-    }
+    const pendingChatId = collaborationRequest.chatId;
+    const isApproved = status === CollaborationRequestStatus.APPROVED;
+    if (isApproved) {
+      let project = collaborationRequest.idea.project;
+      if (!project) {
+        project = await safeSave(this.projectRepository, {
+          ownerId: userProfileId,
+          title: collaborationRequest.idea.title,
+          description: collaborationRequest.idea.content,
+          backgroundImage: collaborationRequest.idea.images[0],
+          members: [
+            { id: userProfileId },
+            { id: collaborationRequest.requesterId },
+          ],
+        });
+        await safeSave(this.ideaRepository, {
+          id: collaborationRequest.ideaId,
+          projectId: project.id,
+        });
+      } else {
+        await this.projectRepository
+          .createQueryBuilder()
+          .relation(Project, 'members')
+          .of(project)
+          .add(collaborationRequest.requesterId);
+      }
 
-    if (collaborationRequest.chatId) {
-      const chatIdToDelete = collaborationRequest.chatId;
-      collaborationRequest.chatId = null;
-      await safeSave(this.collaborationRequestRepository, collaborationRequest);
-
-      await this.chatRepository.delete(chatIdToDelete);
+      let chat = project.chatId
+        ? await this.chatRepository.findOne({
+            where: { id: project.chatId },
+            relations: ['members'],
+          })
+        : null;
+      if (!chat) {
+        chat = await safeSave(this.chatRepository, {
+          projectId: project.id,
+          ownerId: userProfileId,
+          members: [
+            { id: userProfileId },
+            { id: collaborationRequest.requesterId },
+          ],
+        });
+        project.chatId = chat.id;
+        await safeSave(this.projectRepository, project);
+      } else {
+        chat.members = [...chat.members, collaborationRequest.requester];
+        await safeSave(this.chatRepository, chat);
+      }
     }
 
     collaborationRequest.status = status;
     collaborationRequest.feedback = feedback;
+    collaborationRequest.chatId = null;
     await safeSave(this.collaborationRequestRepository, collaborationRequest);
 
-    const isApproved = status === CollaborationRequestStatus.APPROVED;
+    if (pendingChatId) {
+      await this.chatRepository.delete(pendingChatId);
+    }
+
     const titleCode = isApproved
       ? 'REQUEST_COLLABORATION_APPROVED'
       : 'REQUEST_COLLABORATION_REJECTED';
@@ -113,51 +151,5 @@ export class CollaborationApprovalController {
       collaborationRequest.id,
       RelatedEntityType.COLLABORATION_REQUEST,
     );
-
-    if (!isApproved) return;
-
-    let project = collaborationRequest.idea.project;
-    if (!project) {
-      project = await safeSave(this.projectRepository, {
-        ownerId: userProfileId,
-        title: collaborationRequest.idea.title,
-        description: collaborationRequest.idea.content,
-        backgroundImage: collaborationRequest.idea.images[0],
-        members: [
-          { id: userProfileId },
-          { id: collaborationRequest.requesterId },
-        ],
-      });
-      await safeSave(this.ideaRepository, {
-        id: collaborationRequest.ideaId,
-        projectId: project.id,
-      });
-    } else {
-      await this.projectRepository
-        .createQueryBuilder()
-        .relation(Project, 'members')
-        .of(project)
-        .add(collaborationRequest.requesterId);
-    }
-
-    let chat = await this.chatRepository.findOne({
-      where: { id: project.chatId! },
-      relations: ['members'],
-    });
-    if (!chat) {
-      chat = await safeSave(this.chatRepository, {
-        projectId: project.id,
-        ownerId: userProfileId,
-        members: [
-          { id: userProfileId },
-          { id: collaborationRequest.requesterId },
-        ],
-      });
-      project.chatId = chat.id;
-      await safeSave(this.projectRepository, project);
-    } else {
-      chat.members = [...chat.members, collaborationRequest.requester];
-      await safeSave(this.chatRepository, chat);
-    }
   }
 }
