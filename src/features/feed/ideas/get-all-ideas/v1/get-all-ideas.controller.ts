@@ -55,6 +55,8 @@ export class GetAllIdeasController {
       qb.andWhere('idea.projectId IS NULL');
     }
 
+    qb.orderBy('idea.createdAt', 'DESC');
+
     qb.skip(page * quantity).take(quantity);
 
     const [ideas, total] = await qb.getManyAndCount();
