@@ -49,6 +49,12 @@ export class GetProjectController {
 
     if (!project) throw new ProjectNotFound();
 
+    if (project.posts) {
+      project.posts.sort((a, b) => {
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
+    }
+
     const topFollowersRaw = await this.dataSource.query(
       `
       WITH follower_counts AS (
