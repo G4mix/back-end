@@ -43,7 +43,8 @@ jobs:
           echo "GITHUB_CLIENT_SECRET=dwadwadwa" >> .env && \
           echo "LINKEDIN_CLIENT_ID=dwadwadwa" >> .env && \
           echo "LINKEDIN_CLIENT_SECRET=dwadwadwa" >> .env && \
-          echo "REDIRECT_URL=http://localhost:8080" >> .env
+          echo "REDIRECT_URL=http://localhost:8080" >> .env && \
+          echo "FRONTEND_URL=http://localhost:3000" >> .env
 
       - name: Install Docker
         run: |
